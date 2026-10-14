@@ -12,6 +12,7 @@ import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
 import TicketView from "./pages/TicketView";
 import Settings from "./pages/Settings";
+import Webhooks from "./pages/Webhooks";
 
 function RequireAuth({ children }) {
   const { token } = useAuth();
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/requesters" element={<Requesters />} />
+        <Route path="/webhooks" element={<Webhooks />} />
         <Route path="/settings" element={<Settings />} />
         <Route
           path="/admin"

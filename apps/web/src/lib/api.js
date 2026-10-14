@@ -99,6 +99,17 @@ export const api = {
   getConversation: (token, id) => request(`/assistant/conversations/${id}`, { token }),
   assistantFeedback: (token, body) =>
     request("/assistant/feedback", { method: "POST", token, body }),
+
+  // Webhooks
+  listWebhooks: (token) => request("/webhooks", { token }),
+  createWebhook: (token, body) => request("/webhooks", { method: "POST", token, body }),
+  updateWebhook: (token, id, body) =>
+    request(`/webhooks/${id}`, { method: "PATCH", token, body }),
+  deleteWebhook: (token, id) => request(`/webhooks/${id}`, { method: "DELETE", token }),
+  webhookDeliveries: (token, id, params = {}) =>
+    request(`/webhooks/${id}/deliveries${buildQuery(params)}`, { token }),
+  replayWebhookDelivery: (token, deliveryId) =>
+    request(`/webhooks/deliveries/${deliveryId}/replay`, { method: "POST", token }),
 };
 
 function parseSse(chunk) {

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Sun,
   Users,
+  Webhook,
 } from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials, isPlatformAdmin } from "../lib/format";
@@ -21,6 +22,7 @@ const NAV = [
   { to: "/assistant", label: "Assistant", icon: Bot },
   { to: "/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/requesters", label: "Requesters", icon: Users },
+  { to: "/webhooks", label: "Webhooks", icon: Webhook },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
