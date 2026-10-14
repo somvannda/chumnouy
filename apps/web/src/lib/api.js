@@ -65,4 +65,15 @@ export const api = {
     request("/console/settings/ai", { method: "PATCH", token, body }),
   updateNotificationSettings: (token, body) =>
     request("/console/settings/notifications", { method: "PATCH", token, body }),
+
+  // Knowledge base
+  listKnowledge: (token, params = {}) =>
+    request(`/knowledge/articles${buildQuery(params)}`, { token }),
+  getKnowledgeArticle: (token, id) => request(`/knowledge/articles/${id}`, { token }),
+  createKnowledgeArticle: (token, body) =>
+    request("/knowledge/articles", { method: "POST", token, body }),
+  updateKnowledgeArticle: (token, id, body) =>
+    request(`/knowledge/articles/${id}`, { method: "PATCH", token, body }),
+  restoreKnowledgeArticle: (token, id) =>
+    request(`/knowledge/articles/${id}/restore`, { method: "POST", token }),
 };

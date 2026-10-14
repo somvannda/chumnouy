@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { BookOpen, Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials } from "../lib/format";
 import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
