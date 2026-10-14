@@ -6,8 +6,8 @@ Each task in §4 is sized to be started and finished in its own chat session.
 ## 1. Where things stand
 
 Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
-knowledge base, the AI assistant, the public requester surface and the agent
-console are implemented and tested.
+knowledge base, the AI assistant, the public requester surface, the agent console
+and the platform admin router are implemented and tested.
 
 | Area | State |
 |---|---|
@@ -23,11 +23,11 @@ console are implemented and tested.
 | Knowledge: workspace articles, sections/locales, seeded default corpus | Done |
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
+| Admin router: accounts, workspaces, usage, quota (separate platform credential) | Done |
 | Migrations | `0001`…`0007` (`0007_requesters`) |
-| Tests | 54 API (in-memory SQLite) + 6 web (`node --test`) |
+| Tests | 57 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: admin router, Notifyr hand-off, Chmaba POS migration, embeddable
-widget.
+Not built yet: Notifyr hand-off, Chmaba POS migration, embeddable widget.
 
 ## 2. Run & verify locally
 
@@ -96,9 +96,9 @@ Signup/login screens, inbox (saved views), ticket view with thread + composer,
 integrations & API-key management. Reuses `@chmaba/ui`. Web tests run under
 `node --test`.
 
-### C7 — Admin router (platform operator)
+### C7 — Admin router (platform operator) ✅
 `/api/admin/*`: accounts, workspaces, usage, quota. Separate credential
-(`platform_role`), never reachable with a tenant key. Branch: `feat/admin`.
+(`platform_role`), never reachable with a tenant key.
 
 ### C8 — Notifyr hand-off
 Raise ticket events to the Notifyr API (new ticket → agents, reply → requester,

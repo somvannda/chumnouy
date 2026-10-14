@@ -211,8 +211,16 @@ enforced server-side, so a token can never read another requester's ticket.
 ## 10. Admin (platform operator)
 
 `/api/admin/*` — accounts, workspaces, usage, quota, abuse, impersonation. Separate
-router and credential, never reachable with a tenant API key. Mirrors Chmaba's
-`admin.py` split.
+router and credential (a console user whose `platform_role` is `admin`/`super_admin`),
+never reachable with a tenant API key. Mirrors Chmaba's `admin.py` split.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/admin/accounts` | Accounts + workspace counts |
+| `GET` | `/admin/workspaces` | List/search, filter `active` |
+| `GET` | `/admin/workspaces/{id}` | Detail: counts + quota |
+| `PATCH` | `/admin/workspaces/{id}` | Enable/disable, set quota |
+| `GET` | `/admin/usage` | Platform-wide counts |
 
 ## 11. Auth (console users)
 
