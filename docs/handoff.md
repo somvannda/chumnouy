@@ -45,6 +45,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest                       # 78 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
+python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
 uvicorn app.main:app --reload --port 8100
 
 # Console
