@@ -123,11 +123,10 @@ are write-only. Unblocks the assistant end-to-end.
 A small embeddable JS widget for the public surface (C5), backed by a requester
 portal token. Branch: `feat/widget`.
 
-### D3 — Console depth
-Knowledge editor, assistant page, requesters view and webhook management in the
-agent console (C6 covered auth / inbox / ticket view / integrations only).
-The **Settings**, **Knowledge**, **Assistant** and **Requesters** screens now
-ship; the webhook-management screen remains.
+### D3 — Console depth ✅
+The agent console now covers inbox, ticket view, integrations, settings, the
+knowledge editor, the grounded assistant (streaming), requesters and webhook
+management.
 
 ### D4 — Platform admin console ✅
 Console UI over `/api/admin/*`: usage cards, accounts, workspaces with
