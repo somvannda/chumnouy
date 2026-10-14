@@ -6,7 +6,7 @@ psycopg[binary]
 alembic
 pydantic
 pydantic-settings
-python-jose[cryptography]
-passlib[bcrypt]
+PyJWT
+bcrypt
 httpx
 email-validator

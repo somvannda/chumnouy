@@ -8,11 +8,16 @@ endpoint must run:
 and commit the updated ``openapi.json`` alongside the change.
 """
 import json
+import sys
 from pathlib import Path
 
-from app.main import app
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-OUTPUT = Path(__file__).resolve().parents[1] / "openapi.json"
+from app.main import app  # noqa: E402
+
+OUTPUT = ROOT / "openapi.json"
 
 
 def build_spec() -> dict:
