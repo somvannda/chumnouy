@@ -24,14 +24,14 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
 | Admin router: accounts, workspaces, usage, quota (separate platform credential) | Done |
+| Admin console: platform usage/accounts/workspaces, quota (platform admins) | Done |
 | Notifyr hand-off: ticket events raised to Notifyr (best-effort) | Done |
 | Workspace settings: per-workspace AI provider + Notifyr override (console) | Done |
 | Migrations | `0001`…`0007` (`0007_requesters`) |
 | Tests | 66 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: embeddable widget, deeper console screens
-(knowledge/assistant/requesters/webhooks), platform admin console, API hardening
-(idempotency + error envelope).
+Not built yet: embeddable widget, remaining console screens (assistant,
+requesters, webhooks), API hardening (idempotency + error envelope).
 
 > **Out of scope here:** the Chmaba POS support/help cutover. That migration is
 > owned by the Chmaba POS project — Chumnouy only provides the API it migrates
@@ -129,8 +129,10 @@ agent console (C6 covered auth / inbox / ticket view / integrations only).
 The **Settings** and **Knowledge** screens now ship, closing the D1 loop and
 adding the corpus editor; the assistant/requesters/webhooks screens remain.
 
-### D4 — Platform admin console
-Console UI over `/api/admin/*` (accounts, workspaces, usage, quota).
+### D4 — Platform admin console ✅
+Console UI over `/api/admin/*`: usage cards, accounts, workspaces with
+enable/disable and quota. Shown only to platform admins
+(`UserRead.platform_role`) behind a route guard.
 
 ### D5 — API hardening
 `Idempotency-Key` on writes and the `{ "error": { code, message, details } }`
