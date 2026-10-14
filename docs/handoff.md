@@ -27,11 +27,12 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Admin console: platform usage/accounts/workspaces, quota (platform admins) | Done |
 | Notifyr hand-off: ticket events raised to Notifyr (best-effort) | Done |
 | Workspace settings: per-workspace AI provider + Notifyr override (console) | Done |
-| Migrations | `0001`…`0007` (`0007_requesters`) |
-| Tests | 66 API (in-memory SQLite) + 6 web (`node --test`) |
+| Idempotency: ticket creation honours `Idempotency-Key` | Done |
+| Migrations | `0001`…`0008` (`0008_idempotency`) |
+| Tests | 69 API (in-memory SQLite) + 7 web (`node --test`) |
 
-Not built yet: embeddable widget, remaining console screens (assistant,
-requesters, webhooks), API hardening (idempotency + error envelope).
+Not built yet: embeddable widget; the `{error:{code,message,details}}` envelope
+and public-surface rate limits.
 
 > **Out of scope here:** the Chmaba POS support/help cutover. That migration is
 > owned by the Chmaba POS project — Chumnouy only provides the API it migrates
@@ -44,7 +45,7 @@ requesters, webhooks), API hardening (idempotency + error envelope).
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 66 passing
+python -m pytest                       # 69 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -134,8 +135,10 @@ enable/disable and quota. Shown only to platform admins
 (`UserRead.platform_role`) behind a route guard.
 
 ### D5 — API hardening
-`Idempotency-Key` on writes and the `{ "error": { code, message, details } }`
-envelope from `docs/api.md`; rate limiting on the public surface.
+**Idempotent ticket creation** shipped (`Idempotency-Key`, migration
+`0008_idempotency`). Still open: the `{ "error": { code, message, details } }`
+envelope from `docs/api.md` (breaking — scope across API + console + tests) and
+rate limiting on the public surface.
 
 ## 5. Decisions
 

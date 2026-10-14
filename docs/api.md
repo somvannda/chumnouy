@@ -11,6 +11,7 @@ Base URL: `https://api.chumnouy.chmaba.com/v1` (dev: `http://127.0.0.1:8100/v1`)
 - Machine auth: `Authorization: Bearer chm_live_…` (or `X-Api-Key`).
 - Console auth: `Authorization: Bearer <jwt>`.
 - Writes accept `Idempotency-Key: <uuid>`; a repeat returns the original result.
+  Implemented for ticket creation (`POST /v1/tickets`).
 - Pagination: `?limit=&cursor=`; response carries `{ "data": [...], "next_cursor": "…" }`.
 - Errors: `{ "error": { "code": "…", "message": "…", "details": {…} } }` with a
   proper HTTP status. `429` includes `Retry-After`.
