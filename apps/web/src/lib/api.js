@@ -85,4 +85,72 @@ export const api = {
   adminWorkspace: (token, id) => request(`/workspaces/${id}`, { token, base: "/api/admin" }),
   updateAdminWorkspace: (token, id, body) =>
     request(`/workspaces/${id}`, { method: "PATCH", token, base: "/api/admin", body }),
+
+  // Requesters
+  listRequesters: (token, params = {}) => request(`/requesters${buildQuery(params)}`, { token }),
+  getRequester: (token, id) => request(`/requesters/${id}`, { token }),
+  updateRequester: (token, id, body) =>
+    request(`/requesters/${id}`, { method: "PATCH", token, body }),
+  issuePortalToken: (token, id) =>
+    request(`/requesters/${id}/portal-token`, { method: "POST", token }),
+
+  // Assistant
+  listConversations: (token) => request("/assistant/conversations", { token }),
+  getConversation: (token, id) => request(`/assistant/conversations/${id}`, { token }),
+  assistantFeedback: (token, body) =>
+    request("/assistant/feedback", { method: "POST", token, body }),
 };
+
+function parseSse(chunk) {
+  let event = "message";
+  let data = "";
+  for (const line of chunk.split("\n")) {
+    if (line.startsWith("event:")) event = line.slice(6).trim();
+    else if (line.startsWith("data:")) data += line.slice(5).trim();
+  }
+  if (!data) return null;
+  try {
+    return { event, data: JSON.parse(data) };
+  } catch {
+    return null;
+  }
+}
+
+// Streams POST /assistant/chat (SSE). Calls `onEvent({ event, data })` per event
+// and returns when the stream ends. Throws ApiError on a non-2xx response.
+export async function chatStream(token, body, { onEvent, signal } = {}) {
+  const res = await fetch(`${BASE}/api/v1/assistant/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let detail = res.statusText;
+    try {
+      detail = JSON.parse(text)?.detail || detail;
+    } catch {
+      /* keep statusText */
+    }
+    throw new ApiError(detail, res.status);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let index = buffer.indexOf("\n\n");
+    while (index !== -1) {
+      const event = parseSse(buffer.slice(0, index));
+      buffer = buffer.slice(index + 2);
+      if (event && onEvent) onEvent(event);
+      index = buffer.indexOf("\n\n");
+    }
+  }
+}

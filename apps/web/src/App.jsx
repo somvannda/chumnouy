@@ -3,10 +3,12 @@ import Layout from "./components/Layout";
 import { useAuth } from "./context/auth";
 import { isPlatformAdmin } from "./lib/format";
 import Admin from "./pages/Admin";
+import Assistant from "./pages/Assistant";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
 import Knowledge from "./pages/Knowledge";
 import Login from "./pages/Login";
+import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
 import TicketView from "./pages/TicketView";
 import Settings from "./pages/Settings";
@@ -40,6 +42,8 @@ export default function App() {
         <Route path="/tickets/:id" element={<TicketView />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/knowledge" element={<Knowledge />} />
+        <Route path="/assistant" element={<Assistant />} />
+        <Route path="/requesters" element={<Requesters />} />
         <Route path="/settings" element={<Settings />} />
         <Route
           path="/admin"

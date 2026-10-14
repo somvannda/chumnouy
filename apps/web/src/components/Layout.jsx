@@ -1,12 +1,26 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BookOpen, Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, ShieldCheck, Sun } from "lucide-react";
+import {
+  BookOpen,
+  Bot,
+  Inbox,
+  KeyRound,
+  LifeBuoy,
+  LogOut,
+  Moon,
+  Settings,
+  ShieldCheck,
+  Sun,
+  Users,
+} from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials, isPlatformAdmin } from "../lib/format";
 import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/assistant", label: "Assistant", icon: Bot },
   { to: "/knowledge", label: "Knowledge", icon: BookOpen },
+  { to: "/requesters", label: "Requesters", icon: Users },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
