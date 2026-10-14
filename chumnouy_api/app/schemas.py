@@ -36,6 +36,7 @@ class UserRead(APIModel):
     email: EmailStr
     name: str
     is_verified: bool
+    platform_role: str = "user"
     created_at: datetime
 
 

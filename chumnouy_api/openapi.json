@@ -2185,6 +2185,11 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "platform_role": {
+            "default": "user",
+            "title": "Platform Role",
+            "type": "string"
           }
         },
         "required": [
