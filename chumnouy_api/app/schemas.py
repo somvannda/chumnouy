@@ -96,3 +96,78 @@ class ApiKeyCreated(BaseModel):
 
     key: str
     api_key: ApiKeyRead
+
+
+# --- Tickets -----------------------------------------------------------------
+# Read models are built explicitly in the service (the ORM attribute for the
+# JSON column is ``metadata_json`` because SQLAlchemy reserves ``.metadata``).
+
+
+class RequesterInput(BaseModel):
+    external_id: str = Field(min_length=1, max_length=120)
+    name: str | None = Field(default=None, max_length=160)
+    email: EmailStr | None = None
+    phone: str | None = Field(default=None, max_length=40)
+    metadata: dict = Field(default_factory=dict)
+
+
+class RequesterRead(BaseModel):
+    id: UUID
+    external_id: str
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    metadata: dict = Field(default_factory=dict)
+
+
+class TicketMessageCreate(BaseModel):
+    body: str = Field(min_length=1)
+    visibility: Literal["public", "internal"] = "public"
+
+
+class TicketMessageRead(BaseModel):
+    id: UUID
+    author_type: str
+    visibility: str
+    body: str
+    created_at: datetime
+
+
+class TicketCreate(BaseModel):
+    subject: str = Field(min_length=1, max_length=255)
+    message: str = Field(min_length=1)
+    requester: RequesterInput
+    priority: Literal["low", "normal", "high", "urgent"] = "normal"
+    tags: list[str] = Field(default_factory=list)
+    metadata: dict = Field(default_factory=dict)
+
+
+class TicketUpdate(BaseModel):
+    subject: str | None = Field(default=None, max_length=255)
+    status: Literal["open", "pending", "resolved", "closed"] | None = None
+    priority: Literal["low", "normal", "high", "urgent"] | None = None
+    assignee_user_id: UUID | None = None
+    tags: list[str] | None = None
+
+
+class TicketRead(BaseModel):
+    id: UUID
+    reference: str
+    subject: str
+    status: str
+    priority: str
+    assignee_user_id: UUID | None = None
+    requester: RequesterRead | None = None
+    tags: list[str] = Field(default_factory=list)
+    metadata: dict = Field(default_factory=dict)
+    created_at: datetime
+    resolved_at: datetime | None = None
+
+
+class TicketDetailRead(TicketRead):
+    messages: list[TicketMessageRead] = Field(default_factory=list)
+
+
+class TicketListRead(BaseModel):
+    data: list[TicketRead] = Field(default_factory=list)
+    next_cursor: str | None = None

@@ -17,7 +17,9 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     String,
+    Text,
     UniqueConstraint,
     Uuid,
 )
@@ -145,3 +147,102 @@ class ApiKey(Base, TimestampMixin):
     @property
     def is_active(self) -> bool:
         return self.revoked_at is None
+
+
+# --- Ticket domain ------------------------------------------------------------
+# References are short and workspace-scoped (CMY-1042); the UUID is the wire id.
+
+
+class Requester(Base, TimestampMixin):
+    """An external end user (the integrator's customer), keyed by their id."""
+
+    __tablename__ = "requesters"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "external_id", name="uq_requester_workspace_external"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    external_id: Mapped[str] = mapped_column(String(120))
+    name: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+
+
+class Ticket(Base, TimestampMixin):
+    """A support conversation. ``subject`` + the first message are its opening."""
+
+    __tablename__ = "tickets"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "reference", name="uq_ticket_workspace_reference"),
+        Index("ix_ticket_workspace_created", "workspace_id", "created_at"),
+        Index("ix_ticket_workspace_status", "workspace_id", "status"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    number: Mapped[int] = mapped_column(Integer)
+    reference: Mapped[str] = mapped_column(String(20))
+    subject: Mapped[str] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    priority: Mapped[str] = mapped_column(String(20), default="normal")
+    requester_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("requesters.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    source_integration_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("integrations.id", ondelete="SET NULL"), nullable=True
+    )
+    assignee_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    tags: Mapped[list] = mapped_column(JSON, default=list)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    first_response_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TicketMessage(Base):
+    """One message in a ticket thread (requester, agent, system or ai)."""
+
+    __tablename__ = "ticket_messages"
+    __table_args__ = (Index("ix_ticket_message_ticket_created", "ticket_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    author_type: Mapped[str] = mapped_column(String(20), default="requester")
+    author_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    visibility: Mapped[str] = mapped_column(String(20), default="public")
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class TicketEvent(Base):
+    """Append-only timeline entry for a ticket (created, replied, assigned, …)."""
+
+    __tablename__ = "ticket_events"
+    __table_args__ = (Index("ix_ticket_event_ticket_created", "ticket_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    type: Mapped[str] = mapped_column(String(40))
+    actor_type: Mapped[str] = mapped_column(String(20), default="system")
+    actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
