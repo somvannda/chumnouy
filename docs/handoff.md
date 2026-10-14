@@ -6,14 +6,14 @@ Each task in §4 is sized to be started and finished in its own chat session.
 ## 1. Where things stand
 
 Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
-knowledge base, the AI assistant and the public requester surface are implemented
-and tested.
+knowledge base, the AI assistant, the public requester surface and the agent
+console are implemented and tested.
 
 | Area | State |
 |---|---|
 | Repo layout, docs, ADRs, shared `@chmaba/ui` tokens | Done |
 | FastAPI skeleton (config, db, alembic, `export_openapi.py`, CI) | Done |
-| Console skeleton (Vite/React/Tailwind on the Chmaba design system) | Done |
+| Agent console: auth, inbox (saved views), ticket view + composer, integrations & keys | Done |
 | Tenancy: Account → Workspace → Integration + API keys | Done |
 | Console auth: signup / login / me | Done |
 | Machine auth: scoped API keys (test/live) + `whoami` | Done |
@@ -24,10 +24,10 @@ and tested.
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
 | Migrations | `0001`…`0007` (`0007_requesters`) |
-| Tests | 54 passing (in-memory SQLite) |
+| Tests | 54 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: console UI, admin router, Notifyr hand-off, Chmaba POS migration,
-embeddable widget.
+Not built yet: admin router, Notifyr hand-off, Chmaba POS migration, embeddable
+widget.
 
 ## 2. Run & verify locally
 
@@ -42,7 +42,7 @@ python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
 
 # Console
-cd apps\web; npm install; npm run dev    # http://localhost:8101
+cd apps\web; npm install; npm test; npm run build; npm run dev   # http://localhost:8101
 ```
 
 ## 3. Conventions (see `AGENTS.md`)
@@ -91,9 +91,10 @@ Migration `0006_assistant`.
 endpoints (`/v1/public/tickets`) returning public messages only. Embeddable
 widget still to come. Migration `0007_requesters`.
 
-### C6 — Console UI
+### C6 — Console UI ✅
 Signup/login screens, inbox (saved views), ticket view with thread + composer,
-integrations & API-key management. Reuse `@chmaba/ui`. Branch: `feat/console-ui`.
+integrations & API-key management. Reuses `@chmaba/ui`. Web tests run under
+`node --test`.
 
 ### C7 — Admin router (platform operator)
 `/api/admin/*`: accounts, workspaces, usage, quota. Separate credential
