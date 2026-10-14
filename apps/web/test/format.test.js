@@ -5,6 +5,7 @@ import {
   buildQuery,
   formatRelativeTime,
   initials,
+  isPlatformAdmin,
   priorityTone,
   statusTone,
   truncate,
@@ -54,4 +55,11 @@ test("viewParams maps saved views to filters", () => {
   assert.deepEqual(viewParams("unassigned"), { assignee: "none" });
   assert.deepEqual(viewParams("all"), {});
   assert.deepEqual(viewParams("unknown"), {});
+});
+
+test("isPlatformAdmin", () => {
+  assert.equal(isPlatformAdmin({ platform_role: "admin" }), true);
+  assert.equal(isPlatformAdmin({ platform_role: "super_admin" }), true);
+  assert.equal(isPlatformAdmin({ platform_role: "user" }), false);
+  assert.equal(isPlatformAdmin(null), false);
 });

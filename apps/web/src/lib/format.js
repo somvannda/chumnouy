@@ -86,3 +86,9 @@ export const SAVED_VIEWS = [
 export function viewParams(viewId) {
   return (SAVED_VIEWS.find((view) => view.id === viewId) || SAVED_VIEWS[0]).params;
 }
+
+export const PLATFORM_ROLES = ["admin", "super_admin"];
+
+export function isPlatformAdmin(user) {
+  return Boolean(user && PLATFORM_ROLES.includes(user.platform_role));
+}

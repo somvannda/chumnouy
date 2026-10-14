@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BookOpen, Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { BookOpen, Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, ShieldCheck, Sun } from "lucide-react";
 import { useAuth } from "../context/auth";
-import { initials } from "../lib/format";
+import { initials, isPlatformAdmin } from "../lib/format";
 import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
@@ -15,6 +15,9 @@ export default function Layout() {
   const { workspace, user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
+  const nav = isPlatformAdmin(user)
+    ? [...NAV, { to: "/admin", label: "Admin", icon: ShieldCheck }]
+    : NAV;
 
   function signOut() {
     logout();
@@ -31,7 +34,7 @@ export default function Layout() {
           <span className="text-base font-extrabold text-ink">Chumnouy</span>
         </div>
         <nav className="flex gap-1 px-3 pb-3 lg:flex-col">
-          {NAV.map(({ to, label, icon: Icon }) => (
+          {nav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

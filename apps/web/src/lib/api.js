@@ -13,8 +13,8 @@ export class ApiError extends Error {
   }
 }
 
-export async function request(path, { method = "GET", token, body, headers = {} } = {}) {
-  const res = await fetch(`${BASE}/api/v1${path}`, {
+export async function request(path, { method = "GET", token, body, headers = {}, base = "/api/v1" } = {}) {
+  const res = await fetch(`${BASE}${base}${path}`, {
     method,
     headers: {
       ...(body ? { "Content-Type": "application/json" } : {}),
@@ -76,4 +76,13 @@ export const api = {
     request(`/knowledge/articles/${id}`, { method: "PATCH", token, body }),
   restoreKnowledgeArticle: (token, id) =>
     request(`/knowledge/articles/${id}/restore`, { method: "POST", token }),
+
+  // Platform admin (separate prefix + credential)
+  adminUsage: (token) => request("/usage", { token, base: "/api/admin" }),
+  adminAccounts: (token) => request("/accounts", { token, base: "/api/admin" }),
+  adminWorkspaces: (token, params = {}) =>
+    request(`/workspaces${buildQuery(params)}`, { token, base: "/api/admin" }),
+  adminWorkspace: (token, id) => request(`/workspaces/${id}`, { token, base: "/api/admin" }),
+  updateAdminWorkspace: (token, id, body) =>
+    request(`/workspaces/${id}`, { method: "PATCH", token, base: "/api/admin", body }),
 };

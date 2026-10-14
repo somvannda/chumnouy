@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { useAuth } from "./context/auth";
+import { isPlatformAdmin } from "./lib/format";
+import Admin from "./pages/Admin";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
 import Knowledge from "./pages/Knowledge";
@@ -12,6 +14,12 @@ import Settings from "./pages/Settings";
 function RequireAuth({ children }) {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const { user } = useAuth();
+  if (!isPlatformAdmin(user)) return <Navigate to="/inbox" replace />;
   return children;
 }
 
@@ -33,6 +41,14 @@ export default function App() {
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <Admin />
+            </RequireAdmin>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
