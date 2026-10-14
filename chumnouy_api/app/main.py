@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app import errors
 from app.api.admin import router as admin_router
 from app.api.assistant import router as assistant_router
 from app.api.auth import router as auth_router
@@ -64,6 +65,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+errors.install(app)
+
 PUBLIC_PREFIX = "/api/v1/public"
 
 
@@ -78,7 +81,7 @@ async def limit_public_requests(request: Request, call_next):
             window_seconds=60,
         ):
             return JSONResponse(
-                {"detail": "Too many requests; slow down"},
+                errors.envelope("too_many_requests", "Too many requests; slow down"),
                 status_code=429,
                 headers={"Retry-After": "60"},
             )

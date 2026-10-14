@@ -63,7 +63,7 @@ async def test_chat_requires_configuration(client):
     _, headers = await _signup(client, email="unset@example.com")
     resp = await client.post("/api/v1/assistant/chat", json={"question": "How do refunds work?"}, headers=headers)
     assert resp.status_code == 400
-    assert "configured" in resp.json()["detail"].lower()
+    assert "configured" in resp.json()["error"]["message"].lower()
 
 
 async def test_chat_streams_a_grounded_answer(client, db_session, monkeypatch):
