@@ -246,3 +246,43 @@ class TicketEvent(Base):
     actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
     data: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class TicketAttachment(Base):
+    """A file attached to a ticket or one of its messages.
+
+    Rows start *unowned* (``ticket_id`` is NULL) while a requester or agent is
+    composing, then are claimed by the request/reply that references them. A
+    claimed row with ``message_id`` NULL belongs to the opening question; a set
+    ``message_id`` attaches the file to that thread message. ``sha256`` is the
+    content digest, unique per workspace so identical bytes collapse to one file
+    on disk. Ported from Chmaba POS ``SupportTicketAttachment`` (workspace-scoped).
+    """
+
+    __tablename__ = "ticket_attachments"
+    __table_args__ = (
+        Index("ix_ticket_attachment_workspace_sha", "workspace_id", "sha256"),
+        Index("ix_ticket_attachment_ticket_created", "ticket_id", "created_at"),
+        Index("ix_ticket_attachment_message_id", "message_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ticket_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=True
+    )
+    message_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("ticket_messages.id", ondelete="CASCADE"), nullable=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    url: Mapped[str] = mapped_column(String(500))
+    sha256: Mapped[str] = mapped_column(String(64))
+    content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    byte_size: Mapped[int] = mapped_column(Integer, default=0)
+    original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

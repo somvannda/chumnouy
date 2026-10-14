@@ -123,6 +123,18 @@ class RequesterRead(BaseModel):
 class TicketMessageCreate(BaseModel):
     body: str = Field(min_length=1)
     visibility: Literal["public", "internal"] = "public"
+    attachment_ids: list[UUID] = Field(default_factory=list)
+
+
+class AttachmentRead(APIModel):
+    """A staged or claimed file. ``url`` is served from the media prefix."""
+
+    id: UUID
+    url: str
+    content_type: str | None = None
+    byte_size: int
+    original_filename: str | None = None
+    position: int
 
 
 class TicketMessageRead(BaseModel):
@@ -131,6 +143,7 @@ class TicketMessageRead(BaseModel):
     visibility: str
     body: str
     created_at: datetime
+    attachments: list[AttachmentRead] = Field(default_factory=list)
 
 
 class TicketCreate(BaseModel):
@@ -140,6 +153,7 @@ class TicketCreate(BaseModel):
     priority: Literal["low", "normal", "high", "urgent"] = "normal"
     tags: list[str] = Field(default_factory=list)
     metadata: dict = Field(default_factory=dict)
+    attachment_ids: list[UUID] = Field(default_factory=list)
 
 
 class TicketUpdate(BaseModel):
@@ -166,6 +180,11 @@ class TicketRead(BaseModel):
 
 class TicketDetailRead(TicketRead):
     messages: list[TicketMessageRead] = Field(default_factory=list)
+    attachments: list[AttachmentRead] = Field(default_factory=list)
+
+
+class AttachmentClaim(BaseModel):
+    attachment_ids: list[UUID] = Field(default_factory=list)
 
 
 class TicketListRead(BaseModel):

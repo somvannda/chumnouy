@@ -15,6 +15,8 @@ from app.db import get_db
 from app.deps import TenantContext, require_tenant_scopes
 from app.models import Ticket, TicketEvent
 from app.schemas import (
+    AttachmentClaim,
+    AttachmentRead,
     TicketCreate,
     TicketDetailRead,
     TicketListRead,
@@ -23,6 +25,7 @@ from app.schemas import (
     TicketRead,
     TicketUpdate,
 )
+from app.services import attachments as attachments_svc
 from app.services import tickets as svc
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
@@ -44,7 +47,10 @@ async def create_ticket(
     ctx: TenantContext = Depends(_write),
     db: AsyncSession = Depends(get_db),
 ) -> TicketDetailRead:
-    return await svc.create_ticket(db, ctx, payload)
+    try:
+        return await svc.create_ticket(db, ctx, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 
 @router.get("", response_model=TicketListRead)
@@ -101,7 +107,29 @@ async def add_message(
     db: AsyncSession = Depends(get_db),
 ) -> TicketMessageRead:
     ticket = await _get_ticket(db, ctx, ticket_id)
-    return await svc.add_message(db, ctx, ticket, payload)
+    try:
+        return await svc.add_message(db, ctx, ticket, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post(
+    "/{ticket_id}/attachments",
+    response_model=list[AttachmentRead],
+    status_code=status.HTTP_201_CREATED,
+)
+async def attach_files(
+    ticket_id: UUID,
+    payload: AttachmentClaim,
+    ctx: TenantContext = Depends(_write),
+    db: AsyncSession = Depends(get_db),
+) -> list[AttachmentRead]:
+    """Claim staged uploads onto a ticket (no message) as opening files."""
+    ticket = await _get_ticket(db, ctx, ticket_id)
+    try:
+        return await attachments_svc.claim_attachments(db, ctx, ticket, payload.attachment_ids)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 
 @router.post("/{ticket_id}/resolve", response_model=TicketRead)

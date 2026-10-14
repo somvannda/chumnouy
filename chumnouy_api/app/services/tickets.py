@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.deps import TenantContext
 from app.models import Requester, Ticket, TicketEvent, TicketMessage, utcnow
 from app.schemas import (
+    AttachmentRead,
     RequesterInput,
     RequesterRead,
     TicketCreate,
@@ -24,6 +25,7 @@ from app.schemas import (
     TicketRead,
     TicketUpdate,
 )
+from app.services import attachments as attachments_svc
 
 REFERENCE_PREFIX = "CMY"
 OPEN_STATUSES = ("open", "pending")
@@ -58,13 +60,16 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
     )
 
 
-def _message_read(message: TicketMessage) -> TicketMessageRead:
+def _message_read(
+    message: TicketMessage, attachments: list[AttachmentRead] | None = None
+) -> TicketMessageRead:
     return TicketMessageRead(
         id=message.id,
         author_type=message.author_type,
         visibility=message.visibility,
         body=message.body,
         created_at=message.created_at,
+        attachments=attachments or [],
     )
 
 
@@ -159,6 +164,17 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         body=payload.message,
     )
     db.add(message)
+    try:
+        await attachments_svc.bind_attachments(
+            db,
+            workspace_id=ctx.workspace.id,
+            ticket_id=ticket.id,
+            message_id=None,
+            attachment_ids=payload.attachment_ids,
+        )
+    except ValueError:
+        await db.rollback()
+        raise
     await record_event(
         db,
         ticket=ticket,
@@ -168,9 +184,11 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
     )
     await db.commit()
     await db.refresh(ticket)
+    grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(message)],
+        messages=[_message_read(message, grouped.get(message.id, []))],
+        attachments=grouped.get(None, []),
     )
 
 
@@ -199,9 +217,11 @@ async def ticket_detail(db: AsyncSession, ticket: Ticket) -> TicketDetailRead:
             .order_by(TicketMessage.created_at)
         )
     ).scalars().all()
+    grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(m) for m in messages],
+        messages=[_message_read(m, grouped.get(m.id, [])) for m in messages],
+        attachments=grouped.get(None, []),
     )
 
 
@@ -265,6 +285,18 @@ async def add_message(
         body=payload.body,
     )
     db.add(message)
+    await db.flush()
+    try:
+        await attachments_svc.bind_attachments(
+            db,
+            workspace_id=ticket.workspace_id,
+            ticket_id=ticket.id,
+            message_id=message.id,
+            attachment_ids=payload.attachment_ids,
+        )
+    except ValueError:
+        await db.rollback()
+        raise
     if agent and payload.visibility == "public" and ticket.first_response_at is None:
         ticket.first_response_at = utcnow()
     if not agent and ticket.status == "pending":
@@ -279,7 +311,8 @@ async def add_message(
     )
     await db.commit()
     await db.refresh(message)
-    return _message_read(message)
+    grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
+    return _message_read(message, grouped.get(message.id, []))
 
 
 async def apply_update(
