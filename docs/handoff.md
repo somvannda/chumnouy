@@ -5,8 +5,8 @@ Each task in §4 is sized to be started and finished in its own chat session.
 
 ## 1. Where things stand
 
-Status: tenancy, API-key auth, the ticket domain, attachments, webhooks and the
-knowledge base are implemented and tested.
+Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
+knowledge base and the AI assistant are implemented and tested.
 
 | Area | State |
 |---|---|
@@ -20,11 +20,12 @@ knowledge base are implemented and tested.
 | Attachments: staged upload + claim, content-addressed media store | Done |
 | Webhooks: registrations, signed delivery, retry/backoff, delivery log + replay | Done |
 | Knowledge: workspace articles, sections/locales, seeded default corpus | Done |
-| Migrations | `0001_tenancy`, `0002_tickets`, `0003_attachments`, `0004_webhooks`, `0005_knowledge` |
-| Tests | 43 passing (in-memory SQLite) |
+| AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
+| Migrations | `0001`…`0006` (`0006_assistant`) |
+| Tests | 49 passing (in-memory SQLite) |
 
-Not built yet: AI assistant, public/requester surface, console UI, admin router,
-Notifyr hand-off, Chmaba POS migration.
+Not built yet: public/requester surface, console UI, admin router, Notifyr
+hand-off, Chmaba POS migration.
 
 ## 2. Run & verify locally
 
@@ -33,7 +34,7 @@ Notifyr hand-off, Chmaba POS migration.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 43 passing
+python -m pytest                       # 49 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -77,10 +78,11 @@ retry/backoff worker, delivery log and replay endpoint. Events:
 `verticals`/`roles` metadata, seeded default corpus (seeded on signup).
 Migration `0005_knowledge`.
 
-### C4 — AI assistant
-Provider plumbing reused from Chaba's `services/ai.py` (per-workspace key +
-env fallback), retrieval over the knowledge corpus, streaming `POST
-/v1/assistant/chat`, `feedback`, agent draft endpoints. Branch: `feat/assistant`.
+### C4 — AI assistant ✅
+Provider plumbing reused from Chaba's `services/ai.py` (per-workspace settings +
+env fallback), retrieval over the knowledge corpus, streaming
+`POST /v1/assistant/chat`, conversations, `feedback`, agent draft endpoints.
+Migration `0006_assistant`.
 
 ### C5 — Requesters + public surface
 `requesters` CRUD (already modelled), requester tokens, customer portal endpoints

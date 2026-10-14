@@ -55,6 +55,6 @@ Tailwind (react-router, lucide-react)** on the frontend, sharing the
 
 ## Status
 
-In progress. Tenancy, API-key auth, the ticket domain, attachments, webhooks and
-the knowledge base are implemented and tested. See
+In progress. Tenancy, API-key auth, the ticket domain, attachments, webhooks, the
+knowledge base and the AI assistant are implemented and tested. See
 [`docs/handoff.md`](docs/handoff.md) for the roadmap.

@@ -138,13 +138,19 @@ Request body (`/assistant/chat`):
 ```json
 {
   "question": "How do I refund an order?",
+  "conversation_id": null,
   "history": [{ "role": "user", "content": "…" }],
   "locale": "en",
   "context": { "vertical": "electronics", "role": "owner" }
 }
 ```
 
-Stream events: `token`, `citation`, `tool`, `done`, `error`.
+Stream events: `citation`, `token`, `done`, `error`. Scope: `assistant:use`.
+Answers are grounded in the workspace knowledge corpus (retrieval by locale and
+optional vertical/role); each stream starts with a `citation` event listing the
+articles used. The provider/key is configured per workspace (`workspace.settings`:
+`ai_provider`, `ai_api_key`, `ai_model`, `ai_base_url`), falling back to the
+`AI_*` environment variables; an unconfigured workspace returns `400`.
 
 ## 7. Webhooks
 
