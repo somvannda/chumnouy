@@ -122,9 +122,9 @@ direct DB writes: the AI provider (`ai_provider` / `ai_model` / `ai_base_url` /
 `ai_api_key`) and the Notifyr override, stored in `workspace.settings`. Secrets
 are write-only. Unblocks the assistant end-to-end.
 
-### D2 — Embeddable widget
-A small embeddable JS widget for the public surface (C5), backed by a requester
-portal token. Branch: `feat/widget`.
+### D2 — Embeddable widget ✅
+`packages/widget/chumnouy-widget.js` — a dependency-free launcher over the public
+surface, driven by a requester portal token (list, open, reply). No build step.
 
 ### D3 — Console depth ✅
 The agent console now covers inbox, ticket view, integrations, settings, the

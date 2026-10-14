@@ -33,6 +33,7 @@ apps/
   web/               Agent console + workspace admin (React + Vite)
 packages/
   ui/                @chmaba/ui — shared design tokens + Tailwind preset
+  widget/            Embeddable support launcher (public requester surface)
   api-client/        TypeScript client generated from the committed OpenAPI spec
 docs/                Architecture, ADRs, API contract, reuse notes
 deploy/              docker-compose + deployment notes

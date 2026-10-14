@@ -215,6 +215,10 @@ Auth: a requester portal token (`Authorization: Bearer rqt_…` or
 messages are ever returned — internal notes and the requester's own scope are
 enforced server-side, so a token can never read another requester's ticket.
 
+`packages/widget/` ships a dependency-free embeddable launcher over these
+endpoints (list, open, reply) for integrators who want the portal without
+building UI.
+
 ## 10. Admin (platform operator)
 
 `/api/admin/*` — accounts, workspaces, usage, quota, abuse, impersonation. Separate
