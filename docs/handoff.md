@@ -28,7 +28,13 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Migrations | `0001`…`0007` (`0007_requesters`) |
 | Tests | 62 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: Chmaba POS migration, embeddable widget.
+Not built yet: workspace settings surface, embeddable widget, deeper console
+screens (knowledge/assistant/requesters/webhooks), platform admin console, API
+hardening (idempotency + error envelope).
+
+> **Out of scope here:** the Chmaba POS support/help cutover. That migration is
+> owned by the Chmaba POS project — Chumnouy only provides the API it migrates
+> onto, and ships no POS-side code or cutover runbook.
 
 ## 2. Run & verify locally
 
@@ -37,7 +43,7 @@ Not built yet: Chmaba POS migration, embeddable widget.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 54 passing
+python -m pytest                       # 62 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -106,17 +112,33 @@ Ticket events are raised to the Notifyr API (new ticket → agents, public reply
 requester / agents). Best-effort: a ticket write never fails because Notifyr is
 unreachable or unconfigured. Config: `notifyr_api_url`, `notifyr_api_key`.
 
-### C9 — Chmaba POS migration
-Point POS support/help at Chumnouy; delete the in-app support backend once parity
-is verified. Owns the cutover runbook. Branch: `feat/pos-support-migration`.
+### D1 — Workspace settings surface
+Console endpoints to configure a workspace without direct DB writes: the AI
+provider (`ai_provider` / `ai_model` / `ai_base_url` / `ai_api_key`) and the
+Notifyr hand-off override, stored in `workspace.settings`. Unblocks the assistant
+end-to-end. Branch: `feat/workspace-settings`.
 
-## 5. Open decisions
+### D2 — Embeddable widget
+A small embeddable JS widget for the public surface (C5), backed by a requester
+portal token. Branch: `feat/widget`.
 
-1. **Console vs API-first scope** — is the React console a priority next, or do we
-   stay API-only and build the console later? (Backlog assumes console later.)
-2. **Separate `apps/admin`** — v1 assumes an admin router on the same API, not a
-   second app. Confirm before C7.
-3. **Widget** — ship an embeddable JS widget, or customer-portal only (C5)?
-4. **AI data tools contract** — how an integrator exposes their own read-only data
-   to the assistant (decide before C4).
+### D3 — Console depth
+Knowledge editor, assistant page, requesters view and webhook management in the
+agent console (C6 covered auth / inbox / ticket view / integrations only).
+
+### D4 — Platform admin console
+Console UI over `/api/admin/*` (accounts, workspaces, usage, quota).
+
+### D5 — API hardening
+`Idempotency-Key` on writes and the `{ "error": { code, message, details } }`
+envelope from `docs/api.md`; rate limiting on the public surface.
+
+## 5. Decisions
+
+1. **Console scope** — decided: the React console is in scope and built (C6).
+2. **Admin** — decided: an admin router on the same API with a separate
+   credential (C7), not a second app.
+3. **Widget** — open: embeddable JS widget vs customer-portal only (D2).
+4. **AI data tools** — open: how an integrator exposes their own read-only data
+   to the assistant. C4 shipped corpus-only grounding.
 5. **Shared `@chmaba/ui`** — vendored copy today; publish a package if drift hurts.
