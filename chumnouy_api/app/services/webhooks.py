@@ -244,14 +244,16 @@ async def replay_delivery(db: AsyncSession, delivery: WebhookDelivery) -> Webhoo
 
 
 async def run_worker(stop: asyncio.Event) -> None:
-    """Drain due deliveries on an interval until ``stop`` is set."""
+    """Drain due webhook deliveries and Notifyr hand-offs until ``stop`` is set."""
     from app.db import SessionLocal
+    from app.services import notifyr as notifyr_svc
 
     interval = max(1, settings.webhook_worker_interval_seconds)
     while not stop.is_set():
         try:
             async with SessionLocal() as session:
                 await process_due(session)
+                await notifyr_svc.process_due(session)
         except Exception:  # noqa: BLE001 - the worker must never die
             logger.exception("webhook worker iteration failed")
         try:

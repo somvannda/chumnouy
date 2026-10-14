@@ -116,15 +116,15 @@ async def create_portal_ticket(
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.created", data={"reference": reference}
     )
-    await db.commit()
-    await db.refresh(ticket)
-    await notifyr_svc.notify_ticket_event(
+    await notifyr_svc.enqueue(
         db,
         workspace=workspace,
         ticket=ticket,
         event=notifyr_svc.TICKET_CREATED,
         variables={"reference": reference},
     )
+    await db.commit()
+    await db.refresh(ticket)
     return await portal_ticket_detail(db, requester, ticket)
 
 
@@ -163,15 +163,15 @@ async def add_portal_message(
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.replied", data={"visibility": "public"}
     )
-    await db.commit()
-    await db.refresh(message)
-    await notifyr_svc.notify_ticket_event(
+    await notifyr_svc.enqueue(
         db,
         workspace=workspace,
         ticket=ticket,
         event=notifyr_svc.TICKET_REPLIED,
         variables={"visibility": "public"},
     )
+    await db.commit()
+    await db.refresh(message)
     grouped = attachments_svc.group_by_message(
         await attachments_svc.load_attachments(db, ticket.id)
     )

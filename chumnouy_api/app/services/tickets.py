@@ -187,16 +187,16 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.created", data={"reference": ticket.reference}
     )
-    await db.commit()
-    await db.refresh(ticket)
     # Hand off to Notifyr for human delivery (new ticket → the workspace's agents).
-    await notifyr_svc.notify_ticket_event(
+    await notifyr_svc.enqueue(
         db,
         workspace=ctx.workspace,
         ticket=ticket,
         event=notifyr_svc.TICKET_CREATED,
         variables={"reference": ticket.reference},
     )
+    await db.commit()
+    await db.refresh(ticket)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
@@ -325,13 +325,11 @@ async def add_message(
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.replied", data={"visibility": payload.visibility}
     )
-    await db.commit()
-    await db.refresh(message)
     if payload.visibility == "public":
         # Human hand-off: an agent reply notifies the requester; a requester
         # reply notifies the workspace's agents (recipient None → Notifyr).
         requester = await _requester_for(db, ticket)
-        await notifyr_svc.notify_ticket_event(
+        await notifyr_svc.enqueue(
             db,
             workspace=ctx.workspace,
             ticket=ticket,
@@ -339,6 +337,8 @@ async def add_message(
             recipient=requester.email if (agent and requester) else None,
             variables={"visibility": payload.visibility},
         )
+    await db.commit()
+    await db.refresh(message)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return message_read(message, grouped.get(message.id, []))
 

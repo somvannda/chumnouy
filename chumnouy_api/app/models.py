@@ -383,6 +383,35 @@ class IdempotencyKey(Base, TimestampMixin):
     response: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+# --- Notifyr outbox -----------------------------------------------------------
+# Human-facing delivery is Notifyr's job; we only queue the event and hand it off
+# from a worker so a ticket write never blocks on (or fails because of) Notifyr.
+
+
+class NotifyrEvent(Base, TimestampMixin):
+    """A queued hand-off to Notifyr, delivered with retry/backoff."""
+
+    __tablename__ = "notifyr_events"
+    __table_args__ = (Index("ix_notifyr_event_queue", "status", "next_attempt_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    ticket_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="SET NULL"), nullable=True
+    )
+    event: Mapped[str] = mapped_column(String(60))
+    recipient: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    response_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 # --- Knowledge base -----------------------------------------------------------
 # The per-workspace help corpus. The AI assistant is grounded on these articles.
 
