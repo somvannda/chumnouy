@@ -239,3 +239,10 @@ Chumnouy calls Notifyr's API (not exposed here) for human-facing delivery. The
 hand-off contract is: Chumnouy emits an event with `workspace`, `ticket_ref`,
 `recipient` and template variables; Notifyr owns transport, retries and
 preferences. Configured per workspace under `/v1/console/settings/notifications`.
+
+Implemented (`app/services/notifyr.py`): `POST {notifyr_api_url}/v1/events` with
+`Authorization: Bearer {notifyr_api_key}`, body `{ event, workspace, ticket,
+recipient, variables }`. Raised on ticket create (recipient `null` → Notifyr
+resolves the workspace's agents) and on public replies (requester email for an
+agent reply, `null` for a requester reply). Best-effort — failures are logged,
+never surfaced.

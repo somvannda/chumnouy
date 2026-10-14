@@ -6,8 +6,8 @@ Each task in §4 is sized to be started and finished in its own chat session.
 ## 1. Where things stand
 
 Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
-knowledge base, the AI assistant, the public requester surface, the agent console
-and the platform admin router are implemented and tested.
+knowledge base, the AI assistant, the public requester surface, the agent console,
+the platform admin router and the Notifyr hand-off are implemented and tested.
 
 | Area | State |
 |---|---|
@@ -24,10 +24,11 @@ and the platform admin router are implemented and tested.
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
 | Admin router: accounts, workspaces, usage, quota (separate platform credential) | Done |
+| Notifyr hand-off: ticket events raised to Notifyr (best-effort) | Done |
 | Migrations | `0001`…`0007` (`0007_requesters`) |
-| Tests | 57 API (in-memory SQLite) + 6 web (`node --test`) |
+| Tests | 62 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: Notifyr hand-off, Chmaba POS migration, embeddable widget.
+Not built yet: Chmaba POS migration, embeddable widget.
 
 ## 2. Run & verify locally
 
@@ -100,10 +101,10 @@ integrations & API-key management. Reuses `@chmaba/ui`. Web tests run under
 `/api/admin/*`: accounts, workspaces, usage, quota. Separate credential
 (`platform_role`), never reachable with a tenant key.
 
-### C8 — Notifyr hand-off
-Raise ticket events to the Notifyr API (new ticket → agents, reply → requester,
-SLA breach). Config already present (`notifyr_api_url`, `notifyr_api_key`).
-Branch: `feat/notifyr-integration`.
+### C8 — Notifyr hand-off ✅
+Ticket events are raised to the Notifyr API (new ticket → agents, public reply →
+requester / agents). Best-effort: a ticket write never fails because Notifyr is
+unreachable or unconfigured. Config: `notifyr_api_url`, `notifyr_api_key`.
 
 ### C9 — Chmaba POS migration
 Point POS support/help at Chumnouy; delete the in-app support backend once parity
