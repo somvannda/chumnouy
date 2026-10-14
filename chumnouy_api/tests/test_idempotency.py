@@ -62,3 +62,26 @@ async def test_without_a_key_every_call_creates_a_ticket(client):
     second = await client.post("/api/v1/tickets", json=_body(), headers={"X-Api-Key": key})
 
     assert first.json()["id"] != second.json()["id"]
+
+
+async def test_reply_is_idempotent(client):
+    headers, key = await _workspace(client, email="idem4@example.com")
+    ticket_id = (
+        await client.post("/api/v1/tickets", json=_body(), headers={"X-Api-Key": key})
+    ).json()["id"]
+
+    request_headers = {**headers, "Idempotency-Key": "reply-1"}
+    first = await client.post(
+        f"/api/v1/tickets/{ticket_id}/messages", json={"body": "on it"}, headers=request_headers
+    )
+    second = await client.post(
+        f"/api/v1/tickets/{ticket_id}/messages", json={"body": "on it"}, headers=request_headers
+    )
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 201
+    assert first.json()["id"] == second.json()["id"]
+
+    # The opening message plus exactly one reply.
+    detail = await client.get(f"/api/v1/tickets/{ticket_id}", headers=headers)
+    assert len(detail.json()["messages"]) == 2
