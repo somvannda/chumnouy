@@ -1,12 +1,12 @@
-"""Notifyr hand-off: signed-off payload, best-effort behaviour, ticket hooks."""
+"""Notifyr outbox: queue on ticket events, hand off from the worker, no-op unconfigured."""
 import json
-import uuid
-from types import SimpleNamespace
 
 import httpx
 import pytest
+from sqlalchemy import select
 
 from app.config import settings
+from app.models import NotifyrEvent
 from app.services import notifyr as svc
 
 pytestmark = pytest.mark.asyncio
@@ -38,17 +38,6 @@ def _configure(monkeypatch):
     monkeypatch.setattr(settings, "notifyr_api_key", "nkey_test")
 
 
-def _recorder(monkeypatch):
-    calls: list[dict] = []
-
-    async def fake_send(**kwargs):
-        calls.append(kwargs)
-        return True
-
-    monkeypatch.setattr(svc, "send_event", fake_send)
-    return calls
-
-
 def _ticket_body(email="dara@example.com"):
     return {
         "subject": "Card reader down",
@@ -57,89 +46,95 @@ def _ticket_body(email="dara@example.com"):
     }
 
 
-async def test_send_event_posts_the_expected_payload(monkeypatch):
+async def _rows(db_session):
+    db_session.expire_all()
+    return (await db_session.execute(select(NotifyrEvent))).scalars().all()
+
+
+async def test_unconfigured_enqueues_nothing(client, db_session, monkeypatch):
+    monkeypatch.setattr(settings, "notifyr_api_url", "")
+    monkeypatch.setattr(settings, "notifyr_api_key", "")
+    _, headers = await _signup(client, email="unset@example.com")
+    key = await _key(client, headers)
+
+    await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+    assert await _rows(db_session) == []
+
+
+async def test_new_ticket_is_queued_for_agents(client, db_session, monkeypatch):
     _configure(monkeypatch)
+    _, headers = await _signup(client, email="queue@example.com")
+    key = await _key(client, headers)
+
+    await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+
+    rows = await _rows(db_session)
+    assert len(rows) == 1
+    assert rows[0].event == "ticket.created"
+    assert rows[0].recipient is None  # Notifyr resolves the workspace's agents
+    assert rows[0].status == "pending"
+
+
+async def test_worker_hands_off_the_event(client, db_session, monkeypatch):
+    _configure(monkeypatch)
+    _, headers = await _signup(client, email="worker@example.com")
+    key = await _key(client, headers)
+    await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+
     captured: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         captured.append(request)
         return httpx.Response(202, text="accepted")
 
-    workspace = SimpleNamespace(id=uuid.uuid4(), slug="acme")
-    ticket = SimpleNamespace(
-        id=uuid.uuid4(), reference="CMY-1", subject="Hi", status="open", priority="normal"
-    )
-    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
-        ok = await svc.send_event(
-            event="ticket.created",
-            workspace=workspace,
-            ticket=ticket,
-            recipient="dara@example.com",
-            client=client,
-        )
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as mock:
+        sent = await svc.process_due(db_session, client=mock)
 
-    assert ok is True
+    assert sent == 1
     request = captured[0]
     assert str(request.url) == "https://notifyr.test/v1/events"
     assert request.headers["authorization"] == "Bearer nkey_test"
     body = json.loads(request.content)
     assert body["event"] == "ticket.created"
-    assert body["workspace"]["slug"] == "acme"
-    assert body["ticket"]["reference"] == "CMY-1"
-    assert body["recipient"] == "dara@example.com"
+    assert body["recipient"] is None
+    assert body["ticket"]["reference"].startswith("CMY-")
+
+    row = (await _rows(db_session))[0]
+    assert row.status == "delivered"
+    assert row.response_status == 202
 
 
-async def test_unconfigured_hand_off_is_a_noop(monkeypatch):
-    monkeypatch.setattr(settings, "notifyr_api_url", "")
-    monkeypatch.setattr(settings, "notifyr_api_key", "")
-    calls = _recorder(monkeypatch)
-    ticket = SimpleNamespace(requester_id=None)
-    workspace = SimpleNamespace(id=uuid.uuid4(), slug="acme")
-    assert await svc.notify_ticket_event(None, workspace=workspace, ticket=ticket, event="x") is False
-    assert calls == []
-
-
-async def test_new_ticket_notifies_agents(client, monkeypatch):
-    _, headers = await _signup(client, email="agent@example.com")
-    key = await _key(client, headers)
+async def test_agent_reply_targets_the_requester(client, db_session, monkeypatch):
     _configure(monkeypatch)
-    calls = _recorder(monkeypatch)
-
-    resp = await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
-    assert resp.status_code == 201, resp.text
-    assert len(calls) == 1
-    assert calls[0]["event"] == "ticket.created"
-    assert calls[0]["recipient"] is None  # Notifyr resolves the workspace's agents
-
-
-async def test_agent_reply_notifies_the_requester(client, monkeypatch):
-    _, headers = await _signup(client, email="agent2@example.com")
+    _, headers = await _signup(client, email="reply@example.com")
     key = await _key(client, headers)
-    _configure(monkeypatch)
-    calls = _recorder(monkeypatch)
-    ticket_id = (await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})).json()["id"]
-    calls.clear()
+    ticket_id = (
+        await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+    ).json()["id"]
 
     await client.post(
         f"/api/v1/tickets/{ticket_id}/messages",
         json={"body": "We are on it.", "visibility": "public"},
         headers=headers,
     )
-    assert [c["event"] for c in calls] == ["ticket.replied"]
-    assert calls[0]["recipient"] == "dara@example.com"
+
+    replies = [row for row in await _rows(db_session) if row.event == "ticket.replied"]
+    assert len(replies) == 1
+    assert replies[0].recipient == "dara@example.com"
 
 
-async def test_internal_notes_are_not_forwarded(client, monkeypatch):
-    _, headers = await _signup(client, email="agent3@example.com")
-    key = await _key(client, headers)
+async def test_internal_note_is_not_queued(client, db_session, monkeypatch):
     _configure(monkeypatch)
-    calls = _recorder(monkeypatch)
-    ticket_id = (await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})).json()["id"]
-    calls.clear()
+    _, headers = await _signup(client, email="internal@example.com")
+    key = await _key(client, headers)
+    ticket_id = (
+        await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+    ).json()["id"]
 
     await client.post(
         f"/api/v1/tickets/{ticket_id}/messages",
         json={"body": "Internal only.", "visibility": "internal"},
         headers=headers,
     )
-    assert calls == []
+
+    assert [row.event for row in await _rows(db_session)] == ["ticket.created"]
