@@ -73,5 +73,4 @@ platform-provided default so a trial workspace works out of the box.
 
 Port in the order of `docs/architecture.md` §10. Ports happen **after** tenancy +
 tickets core exist, so the ported code lands into the generalized model rather
-than a POS-shaped one. Keep the Chmaba implementation running until the POS
-migration (step 10) is verified.
+than a POS-shaped one.

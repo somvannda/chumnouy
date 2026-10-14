@@ -236,8 +236,6 @@ See `docs/api.md` for the concrete endpoint list.
 8. **Requesters + public/widget** — requester tokens, customer portal, embeddable
    widget.
 9. **Notifyr integration** — raise ticket events to Notifyr; per-workspace prefs.
-10. **Chmaba POS migration** — switch POS support to Chumnouy; delete the in-app
-    support backend once parity is verified.
 
 ## 11. Risks & open questions
 

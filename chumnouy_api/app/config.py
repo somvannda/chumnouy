@@ -41,16 +41,22 @@ class Settings(BaseSettings):
 
     # Outbound webhooks.
     webhook_timeout_seconds: int = 10
+    webhook_max_attempts: int = 5
+    webhook_worker_enabled: bool = False
+    webhook_worker_interval_seconds: int = 15
+
+    # Public-surface protection: in-process sliding window, per client IP.
+    public_rate_limit_per_minute: int = 120
 
     # Ticket attachments. Files are content-addressed under
     # <media_root>/workspaces/<workspace_id>/… and served from <media_url_prefix>.
-    media_root: str = "chumnouy_api/media"
+    media_root: str = "media"
     media_url_prefix: str = "/media"
     max_upload_bytes: int = 5_000_000
     max_attachments_per_message: int = 5
 
     model_config = SettingsConfigDict(
-        env_file="chumnouy_api/.env", env_file_encoding="utf-8", extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
 

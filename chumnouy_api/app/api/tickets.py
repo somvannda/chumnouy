@@ -7,7 +7,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,6 +27,7 @@ from app.schemas import (
     TicketUpdate,
 )
 from app.services import attachments as attachments_svc
+from app.services import idempotency as idempotency_svc
 from app.services import tickets as svc
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
@@ -44,13 +46,29 @@ async def _get_ticket(db: AsyncSession, ctx: TenantContext, ticket_id: UUID) -> 
 @router.post("", response_model=TicketDetailRead, status_code=status.HTTP_201_CREATED)
 async def create_ticket(
     payload: TicketCreate,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ctx: TenantContext = Depends(_write),
     db: AsyncSession = Depends(get_db),
 ) -> TicketDetailRead:
+    # A retry with the same key returns the original response, not a new ticket.
+    if idempotency_key:
+        stored = await idempotency_svc.get_stored(db, ctx.workspace.id, idempotency_key)
+        if stored is not None:
+            return JSONResponse(content=stored.response, status_code=stored.status_code)
     try:
-        return await svc.create_ticket(db, ctx, payload)
+        result = await svc.create_ticket(db, ctx, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    if idempotency_key:
+        await idempotency_svc.store(
+            db,
+            workspace_id=ctx.workspace.id,
+            key=idempotency_key,
+            endpoint="tickets.create",
+            status_code=status.HTTP_201_CREATED,
+            response=result.model_dump(mode="json"),
+        )
+    return result
 
 
 @router.get("", response_model=TicketListRead)
@@ -103,14 +121,29 @@ async def update_ticket(
 async def add_message(
     ticket_id: UUID,
     payload: TicketMessageCreate,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ctx: TenantContext = Depends(_write),
     db: AsyncSession = Depends(get_db),
 ) -> TicketMessageRead:
     ticket = await _get_ticket(db, ctx, ticket_id)
+    if idempotency_key:
+        stored = await idempotency_svc.get_stored(db, ctx.workspace.id, idempotency_key)
+        if stored is not None:
+            return JSONResponse(content=stored.response, status_code=stored.status_code)
     try:
-        return await svc.add_message(db, ctx, ticket, payload)
+        result = await svc.add_message(db, ctx, ticket, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    if idempotency_key:
+        await idempotency_svc.store(
+            db,
+            workspace_id=ctx.workspace.id,
+            key=idempotency_key,
+            endpoint="tickets.reply",
+            status_code=status.HTTP_201_CREATED,
+            response=result.model_dump(mode="json"),
+        )
+    return result
 
 
 @router.post(

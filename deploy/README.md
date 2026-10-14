@@ -49,10 +49,19 @@ alembic upgrade head      # 0001_tenancy -> 0002_tickets -> 0003_attachments
 Ticket attachments are written by the API to `MEDIA_ROOT` (content-addressed
 under `workspaces/<workspace_id>/…`) and served from `MEDIA_URL_PREFIX`:
 
-- Mount `MEDIA_ROOT` (`chumnouy_api/media`) on a **persistent volume** — the
-  files are the durable record behind each attachment URL.
+- Mount `MEDIA_ROOT` (`media`, relative to the API working directory) on a
+  **persistent volume** — the files are the durable record behind each attachment
+  URL.
 - Serve the prefix through the API (FastAPI `StaticFiles`) or, preferably, a
   reverse proxy/CDN in front of the media directory; keep `MEDIA_URL_PREFIX` and
   the proxy route identical.
 - Back up the media tree together with the database: an attachment row is only
   useful if its file is present.
+
+## Webhook delivery
+
+Outbound webhooks are signed and retried (see `docs/api.md` §7). Either enable
+the in-process worker (`WEBHOOK_WORKER_ENABLED=true`) or run a dedicated
+worker/cron that drains due deliveries. The same worker also drains the Notifyr
+hand-off outbox. Run only **one** drainer per database so deliveries are not sent
+twice.

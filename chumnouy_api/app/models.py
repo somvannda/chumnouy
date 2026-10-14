@@ -170,6 +170,14 @@ class Requester(Base, TimestampMixin):
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
     metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    # Portal token: an opaque credential the integrator hands to their end user
+    # so the requester can use the public surface without a console account.
+    # Only the SHA-256 digest is stored; the plaintext is returned once.
+    portal_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
+    portal_token_prefix: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    portal_token_issued_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class Ticket(Base, TimestampMixin):
@@ -282,6 +290,232 @@ class TicketAttachment(Base):
     byte_size: Mapped[int] = mapped_column(Integer, default=0)
     original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# --- Webhooks -----------------------------------------------------------------
+# A workspace registers URLs; ticket events fan out to one delivery row per
+# webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.
+
+
+class Webhook(Base, TimestampMixin):
+    """A workspace-registered HTTPS endpoint that receives ticket events.
+
+    ``secret`` is the HMAC signing key, returned to the caller exactly once at
+    creation and never exposed again by a read model.
+    """
+
+    __tablename__ = "webhooks"
+    __table_args__ = (Index("ix_webhook_workspace_active", "workspace_id", "is_active"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    url: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    secret: Mapped[str] = mapped_column(String(64))
+    events: Mapped[list] = mapped_column(JSON, default=list)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+
+class WebhookDelivery(Base, TimestampMixin):
+    """One attempt ledger: a queued event for a webhook, sent and retried.
+
+    Rows start ``pending`` and are drained by the delivery worker, which retries
+    with backoff until ``delivered`` or ``failed``. ``event_id`` is the stable id
+    sent as ``X-Chumnouy-Delivery`` so a receiver can de-duplicate.
+    """
+
+    __tablename__ = "webhook_deliveries"
+    __table_args__ = (
+        Index("ix_webhook_delivery_webhook_created", "webhook_id", "created_at"),
+        Index("ix_webhook_delivery_queue", "status", "next_attempt_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    webhook_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("webhooks.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    event: Mapped[str] = mapped_column(String(60))
+    event_id: Mapped[str] = mapped_column(String(36))
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    response_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    response_body: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+# --- Idempotency --------------------------------------------------------------
+
+
+class IdempotencyKey(Base, TimestampMixin):
+    """A stored write result so a retried request returns the original response.
+
+    Keyed per workspace by the client-supplied ``Idempotency-Key`` header; the
+    response body is replayed verbatim on a repeat.
+    """
+
+    __tablename__ = "idempotency_keys"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "key", name="uq_idempotency_workspace_key"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    key: Mapped[str] = mapped_column(String(255))
+    endpoint: Mapped[str] = mapped_column(String(80))
+    status_code: Mapped[int] = mapped_column(Integer)
+    response: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+# --- Notifyr outbox -----------------------------------------------------------
+# Human-facing delivery is Notifyr's job; we only queue the event and hand it off
+# from a worker so a ticket write never blocks on (or fails because of) Notifyr.
+
+
+class NotifyrEvent(Base, TimestampMixin):
+    """A queued hand-off to Notifyr, delivered with retry/backoff."""
+
+    __tablename__ = "notifyr_events"
+    __table_args__ = (Index("ix_notifyr_event_queue", "status", "next_attempt_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    ticket_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="SET NULL"), nullable=True
+    )
+    event: Mapped[str] = mapped_column(String(60))
+    recipient: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    response_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+# --- Knowledge base -----------------------------------------------------------
+# The per-workspace help corpus. The AI assistant is grounded on these articles.
+
+
+class KnowledgeArticle(Base, TimestampMixin):
+    """A workspace-scoped help article.
+
+    ``slug`` is unique per workspace + ``locale``. ``section`` groups articles;
+    ``verticals``/``roles`` are optional targeting hints for retrieval. Articles
+    are soft-deleted via ``is_active`` and can be restored.
+    """
+
+    __tablename__ = "knowledge_articles"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "slug", "locale", name="uq_knowledge_workspace_slug_locale"
+        ),
+        Index("ix_knowledge_workspace_section", "workspace_id", "section"),
+        Index("ix_knowledge_workspace_active", "workspace_id", "is_active"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE")
+    )
+    slug: Mapped[str] = mapped_column(String(160))
+    title: Mapped[str] = mapped_column(String(255))
+    summary: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    body: Mapped[str] = mapped_column(Text)
+    section: Mapped[str] = mapped_column(String(80), default="general")
+    locale: Mapped[str] = mapped_column(String(5), default="en")
+    verticals: Mapped[list] = mapped_column(JSON, default=list)
+    roles: Mapped[list] = mapped_column(JSON, default=list)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+
+# --- AI assistant -------------------------------------------------------------
+# Conversations are grounded in the workspace knowledge corpus; every answer can
+# be rated. Provider credentials live in ``workspace.settings`` (services/ai.py).
+
+
+class AssistantConversation(Base, TimestampMixin):
+    """A rolling assistant thread, scoped to a workspace and its actor."""
+
+    __tablename__ = "assistant_conversations"
+    __table_args__ = (
+        Index("ix_assistant_conversation_workspace_updated", "workspace_id", "updated_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    integration_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("integrations.id", ondelete="SET NULL"), nullable=True
+    )
+    title: Mapped[str] = mapped_column(String(120))
+    locale: Mapped[str] = mapped_column(String(5), default="en")
+
+
+class AssistantMessage(Base):
+    """One turn in an assistant conversation (user or assistant)."""
+
+    __tablename__ = "assistant_messages"
+    __table_args__ = (
+        Index("ix_assistant_message_conversation_created", "conversation_id", "created_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("assistant_conversations.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    role: Mapped[str] = mapped_column(String(20))
+    content: Mapped[str] = mapped_column(Text)
+    citations: Mapped[list] = mapped_column(JSON, default=list)
+    usage: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AssistantFeedback(Base):
+    """A rating (up/down) on one assistant answer."""
+
+    __tablename__ = "assistant_feedback"
+    __table_args__ = (Index("ix_assistant_feedback_message", "message_id"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    message_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("assistant_messages.id", ondelete="CASCADE")
+    )
+    rating: Mapped[str] = mapped_column(String(10))
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )

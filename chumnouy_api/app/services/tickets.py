@@ -26,6 +26,8 @@ from app.schemas import (
     TicketUpdate,
 )
 from app.services import attachments as attachments_svc
+from app.services import notifyr as notifyr_svc
+from app.services import webhooks as webhooks_svc
 
 REFERENCE_PREFIX = "CMY"
 OPEN_STATUSES = ("open", "pending")
@@ -60,7 +62,7 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
     )
 
 
-def _message_read(
+def message_read(
     message: TicketMessage, attachments: list[AttachmentRead] | None = None
 ) -> TicketMessageRead:
     return TicketMessageRead(
@@ -130,7 +132,7 @@ async def upsert_requester(
     return requester
 
 
-async def _next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, str]:
+async def next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, str]:
     current = (
         await db.execute(select(func.max(Ticket.number)).where(Ticket.workspace_id == workspace_id))
     ).scalar()
@@ -141,7 +143,7 @@ async def _next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, st
 async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCreate) -> TicketDetailRead:
     requester = await upsert_requester(db, ctx.workspace.id, payload.requester)
     await db.flush()
-    number, reference = await _next_reference(db, ctx.workspace.id)
+    number, reference = await next_reference(db, ctx.workspace.id)
     ticket = Ticket(
         workspace_id=ctx.workspace.id,
         number=number,
@@ -182,12 +184,23 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         actor_type=ctx.actor_type,
         actor_id=ctx.integration.id if ctx.integration else None,
     )
+    await webhooks_svc.enqueue_event(
+        db, ticket=ticket, event="ticket.created", data={"reference": ticket.reference}
+    )
+    # Hand off to Notifyr for human delivery (new ticket → the workspace's agents).
+    await notifyr_svc.enqueue(
+        db,
+        workspace=ctx.workspace,
+        ticket=ticket,
+        event=notifyr_svc.TICKET_CREATED,
+        variables={"reference": ticket.reference},
+    )
     await db.commit()
     await db.refresh(ticket)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(message, grouped.get(message.id, []))],
+        messages=[message_read(message, grouped.get(message.id, []))],
         attachments=grouped.get(None, []),
     )
 
@@ -220,7 +233,7 @@ async def ticket_detail(db: AsyncSession, ticket: Ticket) -> TicketDetailRead:
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(m, grouped.get(m.id, [])) for m in messages],
+        messages=[message_read(m, grouped.get(m.id, [])) for m in messages],
         attachments=grouped.get(None, []),
     )
 
@@ -309,15 +322,32 @@ async def add_message(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data={"visibility": payload.visibility},
     )
+    await webhooks_svc.enqueue_event(
+        db, ticket=ticket, event="ticket.replied", data={"visibility": payload.visibility}
+    )
+    if payload.visibility == "public":
+        # Human hand-off: an agent reply notifies the requester; a requester
+        # reply notifies the workspace's agents (recipient None → Notifyr).
+        requester = await _requester_for(db, ticket)
+        await notifyr_svc.enqueue(
+            db,
+            workspace=ctx.workspace,
+            ticket=ticket,
+            event=notifyr_svc.TICKET_REPLIED,
+            recipient=requester.email if (agent and requester) else None,
+            variables={"visibility": payload.visibility},
+        )
     await db.commit()
     await db.refresh(message)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
-    return _message_read(message, grouped.get(message.id, []))
+    return message_read(message, grouped.get(message.id, []))
 
 
 async def apply_update(
     db: AsyncSession, ctx: TenantContext, ticket: Ticket, payload: TicketUpdate
 ) -> TicketRead:
+    previous_status = ticket.status
+    previous_assignee = ticket.assignee_user_id
     if payload.subject is not None:
         ticket.subject = payload.subject.strip()
     if payload.priority is not None:
@@ -340,6 +370,20 @@ async def apply_update(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data=payload.model_dump(exclude_none=True),
     )
+    if payload.status is not None and ticket.status != previous_status:
+        await webhooks_svc.enqueue_event(
+            db,
+            ticket=ticket,
+            event="ticket.status_changed",
+            data={"from": previous_status, "to": ticket.status},
+        )
+    if payload.assignee_user_id is not None and ticket.assignee_user_id != previous_assignee:
+        await webhooks_svc.enqueue_event(
+            db,
+            ticket=ticket,
+            event="ticket.assigned",
+            data={"assignee_user_id": str(ticket.assignee_user_id)},
+        )
     await db.commit()
     await db.refresh(ticket)
     return ticket_read(ticket, await _requester_for(db, ticket))
@@ -357,6 +401,7 @@ async def set_status(
         actor_type=ctx.actor_type,
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
     )
+    await webhooks_svc.enqueue_event(db, ticket=ticket, event=event)
     await db.commit()
     await db.refresh(ticket)
     return ticket_read(ticket, await _requester_for(db, ticket))

@@ -33,8 +33,9 @@ apps/
   web/               Agent console + workspace admin (React + Vite)
 packages/
   ui/                @chmaba/ui — shared design tokens + Tailwind preset
+  widget/            Embeddable support launcher (public requester surface)
   api-client/        TypeScript client generated from the committed OpenAPI spec
-docs/                Architecture, ADRs, API contract, reuse/migration notes
+docs/                Architecture, ADRs, API contract, reuse notes
 deploy/              docker-compose + deployment notes
 ```
 
@@ -55,5 +56,7 @@ Tailwind (react-router, lucide-react)** on the frontend, sharing the
 
 ## Status
 
-In progress. Tenancy, API-key auth, the ticket domain and attachments are
-implemented and tested. See [`docs/handoff.md`](docs/handoff.md) for the roadmap.
+In progress. Tenancy, API-key auth, the ticket domain, attachments, webhooks, the
+knowledge base, the AI assistant, the public requester surface and the agent
+console are implemented and tested. See [`docs/handoff.md`](docs/handoff.md) for
+the roadmap.

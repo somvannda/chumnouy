@@ -11,9 +11,11 @@ Base URL: `https://api.chumnouy.chmaba.com/v1` (dev: `http://127.0.0.1:8100/v1`)
 - Machine auth: `Authorization: Bearer chm_live_…` (or `X-Api-Key`).
 - Console auth: `Authorization: Bearer <jwt>`.
 - Writes accept `Idempotency-Key: <uuid>`; a repeat returns the original result.
+  Implemented for ticket creation and replies.
 - Pagination: `?limit=&cursor=`; response carries `{ "data": [...], "next_cursor": "…" }`.
 - Errors: `{ "error": { "code": "…", "message": "…", "details": {…} } }` with a
-  proper HTTP status. `429` includes `Retry-After`.
+  proper HTTP status. `429` includes `Retry-After`. The public surface is rate
+  limited per client IP.
 - Every resource includes `id` (UUID) + `created_at`; tickets also carry
   `reference` (`CMY-1042`).
 
@@ -91,6 +93,10 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 | `GET` | `/v1/requesters` | List/search by external id, email, name |
 | `GET` | `/v1/requesters/{id}` | Detail + their tickets |
 | `PATCH` | `/v1/requesters/{id}` | Update name/email/phone/metadata |
+| `POST` | `/v1/requesters/{id}/portal-token` | Issue/rotate the requester's public-surface token (shown once) |
+
+Scopes: `requesters:read`, `requesters:write`. A requester is created implicitly
+when a ticket is opened with a new `external_id`.
 
 ## 4. Attachments
 
@@ -113,8 +119,15 @@ land on the message).
 |---|---|---|
 | `GET` | `/v1/knowledge/articles` | List (filter: `section`, `q`, `locale`, `active`) |
 | `POST` | `/v1/knowledge/articles` | Create |
-| `PATCH` | `/v1/knowledge/articles/{id}` | Update / deactivate |
+| `GET` | `/v1/knowledge/articles/{id}` | Detail |
+| `PATCH` | `/v1/knowledge/articles/{id}` | Update / deactivate (`is_active: false`) |
 | `POST` | `/v1/knowledge/articles/{id}/restore` | Reactivate |
+
+Articles are workspace-scoped and soft-deleted via `is_active`. `slug` is derived
+from the title when omitted and de-duplicated per workspace + `locale`
+(`en`/`km`); `verticals`/`roles` are optional targeting hints for retrieval. A new
+workspace is seeded with a small generic default corpus. Scopes:
+`knowledge:read`, `knowledge:write`.
 
 ## 6. AI assistant
 
@@ -131,13 +144,19 @@ Request body (`/assistant/chat`):
 ```json
 {
   "question": "How do I refund an order?",
+  "conversation_id": null,
   "history": [{ "role": "user", "content": "…" }],
   "locale": "en",
   "context": { "vertical": "electronics", "role": "owner" }
 }
 ```
 
-Stream events: `token`, `citation`, `tool`, `done`, `error`.
+Stream events: `citation`, `token`, `done`, `error`. Scope: `assistant:use`.
+Answers are grounded in the workspace knowledge corpus (retrieval by locale and
+optional vertical/role); each stream starts with a `citation` event listing the
+articles used. The provider/key is configured per workspace (`workspace.settings`:
+`ai_provider`, `ai_api_key`, `ai_model`, `ai_base_url`), falling back to the
+`AI_*` environment variables; an unconfigured workspace returns `400`.
 
 ## 7. Webhooks
 
@@ -151,7 +170,7 @@ Stream events: `token`, `citation`, `tool`, `done`, `error`.
 | `POST` | `/v1/webhooks/deliveries/{id}/replay` | Replay a delivery |
 
 Events: `ticket.created`, `ticket.replied`, `ticket.status_changed`,
-`ticket.assigned`, `ticket.resolved`, `assistant.feedback`.
+`ticket.assigned`, `ticket.resolved`, `ticket.reopened`.
 
 Delivery headers:
 
@@ -162,6 +181,12 @@ X-Chumnouy-Timestamp: 1760432400
 X-Chumnouy-Signature: sha256=<hmac(secret, timestamp + "." + body)>
 ```
 
+The signing secret is returned once at registration and never again. A delivery
+retries with backoff (10s → 60s → 5m → 30m, then `failed`; `WEBHOOK_MAX_ATTEMPTS`,
+default 5) and can be re-queued with the replay endpoint. A background worker
+drains due deliveries when `WEBHOOK_WORKER_ENABLED=true`; otherwise run an
+external process that drives the worker loop.
+
 ## 8. Console-only (JWT)
 
 | Method | Path | Purpose |
@@ -170,6 +195,11 @@ X-Chumnouy-Signature: sha256=<hmac(secret, timestamp + "." + body)>
 | `GET` | `/v1/console/inbox` | Saved views: mine, unassigned, open, overdue |
 | `GET` | `/v1/console/overview` | Counts, first-response time, SLA, volume by integration |
 | `POST` | `/v1/console/bulk` | Bulk assign/status/tag on a ticket id list |
+| `GET` | `/v1/console/settings` | Current workspace settings (AI + notifications) |
+| `PATCH` | `/v1/console/settings/ai` | Set AI provider/model/base_url/api_key (secret write-only) |
+| `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |
+
+Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 
 ## 9. Public (requester token)
 
@@ -180,11 +210,28 @@ X-Chumnouy-Signature: sha256=<hmac(secret, timestamp + "." + body)>
 | `GET` | `/v1/public/tickets/{id}` | My ticket + public messages |
 | `POST` | `/v1/public/tickets/{id}/messages` | Reply |
 
+Auth: a requester portal token (`Authorization: Bearer rqt_…` or
+`X-Requester-Token`), issued via `/v1/requesters/{id}/portal-token`. Only public
+messages are ever returned — internal notes and the requester's own scope are
+enforced server-side, so a token can never read another requester's ticket.
+
+`packages/widget/` ships a dependency-free embeddable launcher over these
+endpoints (list, open, reply) for integrators who want the portal without
+building UI.
+
 ## 10. Admin (platform operator)
 
 `/api/admin/*` — accounts, workspaces, usage, quota, abuse, impersonation. Separate
-router and credential, never reachable with a tenant API key. Mirrors Chmaba's
-`admin.py` split.
+router and credential (a console user whose `platform_role` is `admin`/`super_admin`),
+never reachable with a tenant API key. Mirrors Chmaba's `admin.py` split.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/admin/accounts` | Accounts + workspace counts |
+| `GET` | `/admin/workspaces` | List/search, filter `active` |
+| `GET` | `/admin/workspaces/{id}` | Detail: counts + quota |
+| `PATCH` | `/admin/workspaces/{id}` | Enable/disable, set quota |
+| `GET` | `/admin/usage` | Platform-wide counts |
 
 ## 11. Auth (console users)
 
@@ -203,3 +250,11 @@ Chumnouy calls Notifyr's API (not exposed here) for human-facing delivery. The
 hand-off contract is: Chumnouy emits an event with `workspace`, `ticket_ref`,
 `recipient` and template variables; Notifyr owns transport, retries and
 preferences. Configured per workspace under `/v1/console/settings/notifications`.
+
+Implemented (`app/services/notifyr.py`): `POST {notifyr_api_url}/v1/events` with
+`Authorization: Bearer {notifyr_api_key}`, body `{ event, workspace, ticket,
+recipient, variables }`. Raised on ticket create (recipient `null` → Notifyr
+resolves the workspace's agents) and on public replies (requester email for an
+agent reply, `null` for a requester reply). Events are **queued**
+(`notifyr_events`) inside the ticket transaction and handed off by the worker with
+retry/backoff; an unconfigured workspace enqueues nothing.

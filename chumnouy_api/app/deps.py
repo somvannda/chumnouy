@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db import get_db
-from app.models import ApiKey, Integration, Membership, User, Workspace, utcnow
+from app.models import ApiKey, Integration, Membership, Requester, User, Workspace, utcnow
 from app.security import decode_token, hash_api_key
 
 bearer = HTTPBearer(auto_error=False)
@@ -269,6 +269,41 @@ def require_tenant_scopes(*required: str):
         return ctx
 
     return dependency
+
+
+# --- Requester (portal token) -------------------------------------------------
+
+
+@dataclass
+class RequesterContext:
+    workspace: Workspace
+    requester: Requester
+
+
+async def get_requester_context(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
+    x_requester_token: str | None = Header(default=None, alias="X-Requester-Token"),
+    db: AsyncSession = Depends(get_db),
+) -> RequesterContext:
+    """Resolve an external requester from a portal token (Bearer or header).
+
+    The token is looked up by its SHA-256 digest, so the plaintext is never
+    stored. A requester only ever reaches its own workspace and tickets.
+    """
+    raw = x_requester_token or (credentials.credentials if credentials is not None else None)
+    if not raw:
+        raise _UNAUTHORIZED
+    requester = (
+        await db.execute(select(Requester).where(Requester.portal_token_hash == hash_api_key(raw)))
+    ).scalar_one_or_none()
+    if requester is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid requester token")
+    workspace = (
+        await db.execute(select(Workspace).where(Workspace.id == requester.workspace_id))
+    ).scalar_one_or_none()
+    if workspace is None or not workspace.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Workspace is inactive")
+    return RequesterContext(workspace=workspace, requester=requester)
 
 
 # --- Platform operator --------------------------------------------------------
