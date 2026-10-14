@@ -126,6 +126,8 @@ portal token. Branch: `feat/widget`.
 ### D3 — Console depth
 Knowledge editor, assistant page, requesters view and webhook management in the
 agent console (C6 covered auth / inbox / ticket view / integrations only).
+The **Settings screen** (AI + notifications) now ships, closing the D1 loop; the
+knowledge/assistant/requesters/webhooks screens remain.
 
 ### D4 — Platform admin console
 Console UI over `/api/admin/*` (accounts, workspaces, usage, quota).
