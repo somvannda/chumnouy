@@ -22,14 +22,21 @@ TICKET_CREATED = "ticket.created"
 TICKET_REPLIED = "ticket.replied"
 
 
-def is_configured() -> bool:
-    return bool(
-        (settings.notifyr_api_url or "").strip() and (settings.notifyr_api_key or "").strip()
-    )
+def load_notifyr_settings(workspace: Workspace) -> tuple[str, str]:
+    """Effective Notifyr url + key: a workspace override, else the env defaults."""
+    stored = getattr(workspace, "settings", None) or {}
+    url = (stored.get("notifyr_api_url") or settings.notifyr_api_url or "").strip()
+    key = (stored.get("notifyr_api_key") or settings.notifyr_api_key or "").strip()
+    return url, key
 
 
-def _endpoint() -> str:
-    return f"{(settings.notifyr_api_url or '').rstrip('/')}/v1/events"
+def is_configured(workspace: Workspace) -> bool:
+    url, key = load_notifyr_settings(workspace)
+    return bool(url and key)
+
+
+def _endpoint(url: str) -> str:
+    return f"{url.rstrip('/')}/v1/events"
 
 
 def _payload(
@@ -60,17 +67,20 @@ async def send_event(
     client: httpx.AsyncClient | None = None,
 ) -> bool:
     """POST one event to Notifyr. Returns whether it was accepted. Never raises."""
-    if not is_configured():
+    url, key = load_notifyr_settings(workspace)
+    if not (url and key):
         return False
     headers = {
-        "Authorization": f"Bearer {settings.notifyr_api_key}",
+        "Authorization": f"Bearer {key}",
         "content-type": "application/json",
     }
     owns_client = client is None
     client = client or httpx.AsyncClient(timeout=settings.webhook_timeout_seconds)
     try:
         response = await client.post(
-            _endpoint(), headers=headers, json=_payload(event, workspace, ticket, recipient, variables)
+            _endpoint(url),
+            headers=headers,
+            json=_payload(event, workspace, ticket, recipient, variables),
         )
         if response.status_code >= 400:
             logger.warning("Notifyr rejected %s: HTTP %s", event, response.status_code)
@@ -101,7 +111,7 @@ async def notify_ticket_event(
     workspace's agent recipients.
     """
     try:
-        if not is_configured():
+        if not is_configured(workspace):
             return False
         return await send_event(
             event=event,

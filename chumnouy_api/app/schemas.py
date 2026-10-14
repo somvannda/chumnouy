@@ -420,3 +420,36 @@ class AdminUsageRead(BaseModel):
     integrations: int
     knowledge_articles: int
     webhook_deliveries: int
+
+
+# --- Workspace settings (console) ---------------------------------------------
+
+
+class AISettingsRead(BaseModel):
+    provider: str | None = None
+    model: str | None = None
+    base_url: str | None = None
+    api_key_set: bool
+    providers: list[dict] = Field(default_factory=list)
+
+
+class AISettingsUpdate(BaseModel):
+    provider: Literal["openai", "deepseek", "anthropic"] | None = None
+    model: str | None = Field(default=None, max_length=120)
+    base_url: str | None = Field(default=None, max_length=300)
+    api_key: str | None = Field(default=None, max_length=400)
+
+
+class NotificationSettingsRead(BaseModel):
+    notifyr_api_url: str | None = None
+    notifyr_api_key_set: bool
+
+
+class NotificationSettingsUpdate(BaseModel):
+    notifyr_api_url: str | None = Field(default=None, max_length=300)
+    notifyr_api_key: str | None = Field(default=None, max_length=400)
+
+
+class WorkspaceSettingsRead(BaseModel):
+    ai: AISettingsRead
+    notifications: NotificationSettingsRead
