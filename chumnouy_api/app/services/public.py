@@ -21,6 +21,7 @@ from app.schemas import (
     TicketMessageRead,
 )
 from app.services import attachments as attachments_svc
+from app.services import notifyr as notifyr_svc
 from app.services import tickets as tickets_svc
 from app.services import webhooks as webhooks_svc
 
@@ -117,6 +118,13 @@ async def create_portal_ticket(
     )
     await db.commit()
     await db.refresh(ticket)
+    await notifyr_svc.notify_ticket_event(
+        db,
+        workspace=workspace,
+        ticket=ticket,
+        event=notifyr_svc.TICKET_CREATED,
+        variables={"reference": reference},
+    )
     return await portal_ticket_detail(db, requester, ticket)
 
 
@@ -157,6 +165,13 @@ async def add_portal_message(
     )
     await db.commit()
     await db.refresh(message)
+    await notifyr_svc.notify_ticket_event(
+        db,
+        workspace=workspace,
+        ticket=ticket,
+        event=notifyr_svc.TICKET_REPLIED,
+        variables={"visibility": "public"},
+    )
     grouped = attachments_svc.group_by_message(
         await attachments_svc.load_attachments(db, ticket.id)
     )
