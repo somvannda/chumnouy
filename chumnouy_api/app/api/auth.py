@@ -14,6 +14,7 @@ from app.deps import get_current_user
 from app.models import Account, Membership, User, Workspace
 from app.schemas import AuthRead, LoginRequest, MeRead, SignupRequest, UserRead, WorkspaceRead
 from app.security import create_access_token, hash_password, slugify, verify_password
+from app.services import knowledge as knowledge_svc
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -79,6 +80,8 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)) -> 
     await db.flush()
 
     db.add(Membership(workspace_id=workspace.id, user_id=user.id, role="owner"))
+    # Every workspace starts with a seeded help corpus (docs/handoff.md C3).
+    await knowledge_svc.seed_defaults(db, workspace.id)
     await db.commit()
     await db.refresh(user)
     await db.refresh(workspace)

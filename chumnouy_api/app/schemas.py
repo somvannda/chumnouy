@@ -235,3 +235,47 @@ class WebhookDeliveryRead(BaseModel):
     error: str | None = None
     created_at: datetime
     delivered_at: datetime | None = None
+
+
+# --- Knowledge base -----------------------------------------------------------
+
+
+class KnowledgeArticleCreate(BaseModel):
+    slug: str | None = Field(default=None, max_length=160)
+    title: str = Field(min_length=1, max_length=255)
+    summary: str | None = Field(default=None, max_length=500)
+    body: str = Field(min_length=1)
+    section: str = Field(default="general", max_length=80)
+    locale: Literal["en", "km"] = "en"
+    verticals: list[str] = Field(default_factory=list)
+    roles: list[str] = Field(default_factory=list)
+    position: int = 0
+    is_active: bool = True
+
+
+class KnowledgeArticleUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    summary: str | None = Field(default=None, max_length=500)
+    body: str | None = Field(default=None, min_length=1)
+    section: str | None = Field(default=None, max_length=80)
+    locale: Literal["en", "km"] | None = None
+    verticals: list[str] | None = None
+    roles: list[str] | None = None
+    position: int | None = None
+    is_active: bool | None = None
+
+
+class KnowledgeArticleRead(BaseModel):
+    id: UUID
+    slug: str
+    title: str
+    summary: str | None = None
+    body: str
+    section: str
+    locale: str
+    verticals: list[str] = Field(default_factory=list)
+    roles: list[str] = Field(default_factory=list)
+    position: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime

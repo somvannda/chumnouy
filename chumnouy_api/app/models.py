@@ -348,3 +348,43 @@ class WebhookDelivery(Base, TimestampMixin):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+# --- Knowledge base -----------------------------------------------------------
+# The per-workspace help corpus. The AI assistant is grounded on these articles.
+
+
+class KnowledgeArticle(Base, TimestampMixin):
+    """A workspace-scoped help article.
+
+    ``slug`` is unique per workspace + ``locale``. ``section`` groups articles;
+    ``verticals``/``roles`` are optional targeting hints for retrieval. Articles
+    are soft-deleted via ``is_active`` and can be restored.
+    """
+
+    __tablename__ = "knowledge_articles"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "slug", "locale", name="uq_knowledge_workspace_slug_locale"
+        ),
+        Index("ix_knowledge_workspace_section", "workspace_id", "section"),
+        Index("ix_knowledge_workspace_active", "workspace_id", "is_active"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE")
+    )
+    slug: Mapped[str] = mapped_column(String(160))
+    title: Mapped[str] = mapped_column(String(255))
+    summary: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    body: Mapped[str] = mapped_column(Text)
+    section: Mapped[str] = mapped_column(String(80), default="general")
+    locale: Mapped[str] = mapped_column(String(5), default="en")
+    verticals: Mapped[list] = mapped_column(JSON, default=list)
+    roles: Mapped[list] = mapped_column(JSON, default=list)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
