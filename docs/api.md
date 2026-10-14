@@ -91,6 +91,10 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 | `GET` | `/v1/requesters` | List/search by external id, email, name |
 | `GET` | `/v1/requesters/{id}` | Detail + their tickets |
 | `PATCH` | `/v1/requesters/{id}` | Update name/email/phone/metadata |
+| `POST` | `/v1/requesters/{id}/portal-token` | Issue/rotate the requester's public-surface token (shown once) |
+
+Scopes: `requesters:read`, `requesters:write`. A requester is created implicitly
+when a ticket is opened with a new `external_id`.
 
 ## 4. Attachments
 
@@ -198,6 +202,11 @@ external process that drives the worker loop.
 | `GET` | `/v1/public/tickets` | My tickets |
 | `GET` | `/v1/public/tickets/{id}` | My ticket + public messages |
 | `POST` | `/v1/public/tickets/{id}/messages` | Reply |
+
+Auth: a requester portal token (`Authorization: Bearer rqt_…` or
+`X-Requester-Token`), issued via `/v1/requesters/{id}/portal-token`. Only public
+messages are ever returned — internal notes and the requester's own scope are
+enforced server-side, so a token can never read another requester's ticket.
 
 ## 10. Admin (platform operator)
 

@@ -6,7 +6,8 @@ Each task in §4 is sized to be started and finished in its own chat session.
 ## 1. Where things stand
 
 Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
-knowledge base and the AI assistant are implemented and tested.
+knowledge base, the AI assistant and the public requester surface are implemented
+and tested.
 
 | Area | State |
 |---|---|
@@ -21,11 +22,12 @@ knowledge base and the AI assistant are implemented and tested.
 | Webhooks: registrations, signed delivery, retry/backoff, delivery log + replay | Done |
 | Knowledge: workspace articles, sections/locales, seeded default corpus | Done |
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
-| Migrations | `0001`…`0006` (`0006_assistant`) |
-| Tests | 49 passing (in-memory SQLite) |
+| Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
+| Migrations | `0001`…`0007` (`0007_requesters`) |
+| Tests | 54 passing (in-memory SQLite) |
 
-Not built yet: public/requester surface, console UI, admin router, Notifyr
-hand-off, Chmaba POS migration.
+Not built yet: console UI, admin router, Notifyr hand-off, Chmaba POS migration,
+embeddable widget.
 
 ## 2. Run & verify locally
 
@@ -34,7 +36,7 @@ hand-off, Chmaba POS migration.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 49 passing
+python -m pytest                       # 54 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -84,9 +86,10 @@ env fallback), retrieval over the knowledge corpus, streaming
 `POST /v1/assistant/chat`, conversations, `feedback`, agent draft endpoints.
 Migration `0006_assistant`.
 
-### C5 — Requesters + public surface
-`requesters` CRUD (already modelled), requester tokens, customer portal endpoints
-(`/v1/public/tickets`), embeddable widget later. Branch: `feat/public-portal`.
+### C5 — Requesters + public surface ✅
+`requesters` CRUD (already modelled), requester portal tokens, customer portal
+endpoints (`/v1/public/tickets`) returning public messages only. Embeddable
+widget still to come. Migration `0007_requesters`.
 
 ### C6 — Console UI
 Signup/login screens, inbox (saved views), ticket view with thread + composer,
