@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Inbox, KeyRound, LifeBuoy, LogOut, Moon, Sun } from "lucide-react";
+import { Inbox, KeyRound, LifeBuoy, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials } from "../lib/format";
 import { Avatar, Button, useTheme } from "./ui";
@@ -7,6 +7,7 @@ import { Avatar, Button, useTheme } from "./ui";
 const NAV = [
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Layout() {

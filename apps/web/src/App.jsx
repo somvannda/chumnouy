@@ -6,6 +6,7 @@ import Integrations from "./pages/Integrations";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import TicketView from "./pages/TicketView";
+import Settings from "./pages/Settings";
 
 function RequireAuth({ children }) {
   const { token } = useAuth();
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/tickets/:id" element={<TicketView />} />
         <Route path="/integrations" element={<Integrations />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

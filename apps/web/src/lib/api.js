@@ -58,4 +58,11 @@ export const api = {
     request(`/integrations/${integrationId}/keys`, { method: "POST", token, body }),
   revokeKey: (token, keyId) =>
     request(`/integrations/keys/${keyId}/revoke`, { method: "POST", token }),
+
+  // Console settings
+  getSettings: (token) => request("/console/settings", { token }),
+  updateAISettings: (token, body) =>
+    request("/console/settings/ai", { method: "PATCH", token, body }),
+  updateNotificationSettings: (token, body) =>
+    request("/console/settings/notifications", { method: "PATCH", token, body }),
 };
