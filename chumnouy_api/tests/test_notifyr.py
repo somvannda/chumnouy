@@ -138,3 +138,41 @@ async def test_internal_note_is_not_queued(client, db_session, monkeypatch):
     )
 
     assert [row.event for row in await _rows(db_session)] == ["ticket.created"]
+
+
+async def test_failed_hand_off_schedules_a_retry(client, db_session, monkeypatch):
+    _configure(monkeypatch)
+    _, headers = await _signup(client, email="retry@example.com")
+    key = await _key(client, headers)
+    await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, text="boom")
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as mock:
+        await svc.process_due(db_session, client=mock)
+
+    row = (await _rows(db_session))[0]
+    assert row.status == "pending"
+    assert row.attempts == 1
+    assert row.response_status == 500
+    assert row.next_attempt_at is not None
+
+
+async def test_terminal_failure_after_max_attempts(client, db_session, monkeypatch):
+    _configure(monkeypatch)
+    monkeypatch.setattr(settings, "webhook_max_attempts", 1)
+    _, headers = await _signup(client, email="fail@example.com")
+    key = await _key(client, headers)
+    await client.post("/api/v1/tickets", json=_ticket_body(), headers={"X-Api-Key": key})
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, text="boom")
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as mock:
+        await svc.process_due(db_session, client=mock)
+
+    row = (await _rows(db_session))[0]
+    assert row.status == "failed"
+    assert row.attempts == 1
+    assert row.next_attempt_at is None
