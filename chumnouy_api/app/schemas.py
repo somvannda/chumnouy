@@ -374,3 +374,49 @@ class PublicTicketCreate(BaseModel):
 class PublicTicketMessageCreate(BaseModel):
     body: str = Field(min_length=1)
     attachment_ids: list[UUID] = Field(default_factory=list)
+
+
+# --- Platform admin -----------------------------------------------------------
+
+
+class AdminAccountRead(BaseModel):
+    id: UUID
+    name: str
+    slug: str
+    status: str
+    workspace_count: int
+    created_at: datetime
+
+
+class AdminWorkspaceSummary(BaseModel):
+    id: UUID
+    account_id: UUID
+    name: str
+    slug: str
+    is_active: bool
+    ticket_count: int
+    created_at: datetime
+
+
+class AdminWorkspaceDetail(AdminWorkspaceSummary):
+    member_count: int
+    integration_count: int
+    knowledge_article_count: int
+    quota: dict = Field(default_factory=dict)
+
+
+class AdminWorkspaceUpdate(BaseModel):
+    is_active: bool | None = None
+    quota: dict | None = None
+
+
+class AdminUsageRead(BaseModel):
+    accounts: int
+    workspaces: int
+    active_workspaces: int
+    tickets: int
+    open_tickets: int
+    requesters: int
+    integrations: int
+    knowledge_articles: int
+    webhook_deliveries: int
