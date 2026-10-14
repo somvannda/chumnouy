@@ -62,5 +62,6 @@ under `workspaces/<workspace_id>/…`) and served from `MEDIA_URL_PREFIX`:
 
 Outbound webhooks are signed and retried (see `docs/api.md` §7). Either enable
 the in-process worker (`WEBHOOK_WORKER_ENABLED=true`) or run a dedicated
-worker/cron that drains due deliveries. Run only **one** drainer per database so
-deliveries are not sent twice.
+worker/cron that drains due deliveries. The same worker also drains the Notifyr
+hand-off outbox. Run only **one** drainer per database so deliveries are not sent
+twice.

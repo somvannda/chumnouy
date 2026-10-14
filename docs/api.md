@@ -251,5 +251,6 @@ Implemented (`app/services/notifyr.py`): `POST {notifyr_api_url}/v1/events` with
 `Authorization: Bearer {notifyr_api_key}`, body `{ event, workspace, ticket,
 recipient, variables }`. Raised on ticket create (recipient `null` → Notifyr
 resolves the workspace's agents) and on public replies (requester email for an
-agent reply, `null` for a requester reply). Best-effort — failures are logged,
-never surfaced.
+agent reply, `null` for a requester reply). Events are **queued**
+(`notifyr_events`) inside the ticket transaction and handed off by the worker with
+retry/backoff; an unconfigured workspace enqueues nothing.

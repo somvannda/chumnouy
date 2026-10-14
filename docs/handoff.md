@@ -25,12 +25,12 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
 | Admin router: accounts, workspaces, usage, quota (separate platform credential) | Done |
 | Admin console: platform usage/accounts/workspaces, quota (platform admins) | Done |
-| Notifyr hand-off: ticket events raised to Notifyr (best-effort) | Done |
+| Notifyr hand-off: ticket events queued + delivered with retry/backoff | Done |
 | Workspace settings: per-workspace AI provider + Notifyr override (console) | Done |
 | Idempotency: ticket creation and replies honour `Idempotency-Key` | Done |
 | Public surface: per-IP rate limiting (429 + `Retry-After`) | Done |
 | Errors: uniform `{error:{code,message,details}}` envelope | Done |
-| Migrations | `0001`…`0008` (`0008_idempotency`) |
+| Migrations | `0001`…`0009` (`0009_notifyr`) |
 | Tests | 76 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Not built yet: embeddable widget.
@@ -109,9 +109,11 @@ integrations & API-key management. Reuses `@chmaba/ui`. Web tests run under
 (`platform_role`), never reachable with a tenant key.
 
 ### C8 — Notifyr hand-off ✅
-Ticket events are raised to the Notifyr API (new ticket → agents, public reply →
-requester / agents). Best-effort: a ticket write never fails because Notifyr is
-unreachable or unconfigured. Config: `notifyr_api_url`, `notifyr_api_key`.
+Ticket events are queued (`notifyr_events`) inside the ticket transaction and
+handed off to Notifyr by the worker with retry/backoff (new ticket → agents,
+public reply → requester / agents). A ticket write never blocks on, or fails
+because of, Notifyr. Config: `notifyr_api_url`, `notifyr_api_key` (per workspace
+or env). Migration `0009_notifyr`.
 
 ### D1 — Workspace settings surface ✅
 Console endpoints under `/v1/console/settings` to configure a workspace without
