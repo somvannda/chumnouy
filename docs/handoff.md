@@ -5,7 +5,8 @@ Each task in §4 is sized to be started and finished in its own chat session.
 
 ## 1. Where things stand
 
-Status: tenancy, API-key auth and the ticket domain are implemented and tested.
+Status: tenancy, API-key auth, the ticket domain and attachments are implemented
+and tested.
 
 | Area | State |
 |---|---|
@@ -16,11 +17,12 @@ Status: tenancy, API-key auth and the ticket domain are implemented and tested.
 | Console auth: signup / login / me | Done |
 | Machine auth: scoped API keys (test/live) + `whoami` | Done |
 | Tickets: create / list / get / update / reply / resolve / reopen / events | Done |
-| Migrations | `0001_tenancy`, `0002_tickets` |
-| Tests | 19 passing (in-memory SQLite) |
+| Attachments: staged upload + claim, content-addressed media store | Done |
+| Migrations | `0001_tenancy`, `0002_tickets`, `0003_attachments` |
+| Tests | 29 passing (in-memory SQLite) |
 
-Not built yet: attachments, webhooks, knowledge, AI assistant, public/requester
-surface, console UI, admin router, Notifyr hand-off, Chmaba POS migration.
+Not built yet: webhooks, knowledge, AI assistant, public/requester surface,
+console UI, admin router, Notifyr hand-off, Chmaba POS migration.
 
 ## 2. Run & verify locally
 
@@ -29,7 +31,7 @@ surface, console UI, admin router, Notifyr hand-off, Chmaba POS migration.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 19 passing
+python -m pytest                       # 29 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -55,11 +57,12 @@ cd apps\web; npm install; npm run dev    # http://localhost:8101
 
 ## 4. Task backlog (one session each)
 
-### C1 — Attachments
+### C1 — Attachments ✅
 Staged upload + claim (port `bind_attachments` / `ticket_detail_read` from
 Chmaba POS). `POST /v1/uploads` → unowned `ticket_attachments`; claim via
-`POST /v1/tickets/{id}/attachments`. Local media store + a `media` URL prefix.
-Branch: `feat/attachments`. Migration `0003_attachments`.
+`POST /v1/tickets/{id}/attachments` or the `attachment_ids` field on ticket
+create / reply. Local content-addressed media store under `MEDIA_ROOT`, served
+from `MEDIA_URL_PREFIX`. Migration `0003_attachments`.
 
 ### C2 — Webhooks
 `webhooks` + `webhook_deliveries`, HMAC-signed delivery with replay protection,

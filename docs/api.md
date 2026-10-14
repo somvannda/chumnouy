@@ -61,6 +61,7 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
   "priority": "normal",
   "tags": ["hardware"],
   "metadata": { "store_id": "store_7", "order_ref": "ORD-2231" },
+  "attachment_ids": ["…"],
   "source": { "integration": "chmaba-pos" }
 }
 ```
@@ -78,6 +79,7 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
   "requester": { "id": "…", "external_id": "cust_88213", "name": "Sok Dara" },
   "tags": ["hardware"],
   "metadata": { "store_id": "store_7" },
+  "attachments": [],
   "created_at": "2026-10-14T09:12:00Z"
 }
 ```
@@ -100,7 +102,10 @@ Staged upload then claim (ported from Chmaba):
 | `POST` | `/v1/tickets/{id}/attachments` | Claim staged uploads: `{ "attachment_ids": [...] }` |
 
 Rules: only the caller's own, still-unowned rows can be claimed; foreign or
-already-claimed ids are rejected with `400`.
+already-claimed ids are rejected with `400`. Images only, 5 MB max, at most 5
+per message. Ticket create and reply accept an `attachment_ids` list that claims
+staged uploads in the same request (opening files land on the ticket; reply files
+land on the message).
 
 ## 5. Knowledge (help corpus)
 
