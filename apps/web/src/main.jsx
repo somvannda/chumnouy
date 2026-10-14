@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ThemeProvider } from "./components/ui";
+import { AuthProvider } from "./context/auth";
 import "./styles.css";
 
 class AppErrorBoundary extends React.Component {
@@ -41,7 +42,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <AppErrorBoundary>
       <ThemeProvider>
         <BrowserRouter>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
     </AppErrorBoundary>
