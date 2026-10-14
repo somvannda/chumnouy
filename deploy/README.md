@@ -49,8 +49,9 @@ alembic upgrade head      # 0001_tenancy -> 0002_tickets -> 0003_attachments
 Ticket attachments are written by the API to `MEDIA_ROOT` (content-addressed
 under `workspaces/<workspace_id>/…`) and served from `MEDIA_URL_PREFIX`:
 
-- Mount `MEDIA_ROOT` (`chumnouy_api/media`) on a **persistent volume** — the
-  files are the durable record behind each attachment URL.
+- Mount `MEDIA_ROOT` (`media`, relative to the API working directory) on a
+  **persistent volume** — the files are the durable record behind each attachment
+  URL.
 - Serve the prefix through the API (FastAPI `StaticFiles`) or, preferably, a
   reverse proxy/CDN in front of the media directory; keep `MEDIA_URL_PREFIX` and
   the proxy route identical.
