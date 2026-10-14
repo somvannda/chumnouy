@@ -358,6 +358,31 @@ class WebhookDelivery(Base, TimestampMixin):
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+# --- Idempotency --------------------------------------------------------------
+
+
+class IdempotencyKey(Base, TimestampMixin):
+    """A stored write result so a retried request returns the original response.
+
+    Keyed per workspace by the client-supplied ``Idempotency-Key`` header; the
+    response body is replayed verbatim on a repeat.
+    """
+
+    __tablename__ = "idempotency_keys"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "key", name="uq_idempotency_workspace_key"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    key: Mapped[str] = mapped_column(String(255))
+    endpoint: Mapped[str] = mapped_column(String(80))
+    status_code: Mapped[int] = mapped_column(Integer)
+    response: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 # --- Knowledge base -----------------------------------------------------------
 # The per-workspace help corpus. The AI assistant is grounded on these articles.
 
