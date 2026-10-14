@@ -6,8 +6,9 @@ Each task in §4 is sized to be started and finished in its own chat session.
 ## 1. Where things stand
 
 Status: tenancy, API-key auth, the ticket domain, attachments, webhooks, the
-knowledge base, the AI assistant, the public requester surface, the agent console,
-the platform admin router and the Notifyr hand-off are implemented and tested.
+knowledge base, the AI assistant, the public requester surface (with an embeddable
+widget), the agent console, the platform admin router and the Notifyr hand-off are
+implemented and tested.
 
 | Area | State |
 |---|---|
@@ -30,10 +31,11 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Idempotency: ticket creation and replies honour `Idempotency-Key` | Done |
 | Public surface: per-IP rate limiting (429 + `Retry-After`) | Done |
 | Errors: uniform `{error:{code,message,details}}` envelope | Done |
+| Embeddable widget: dependency-free launcher over the public surface | Done |
 | Migrations | `0001`…`0009` (`0009_notifyr`) |
 | Tests | 78 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
-Not built yet: embeddable widget.
+Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
 ## 2. Run & verify locally
 
@@ -146,7 +148,8 @@ the **uniform `{ "error": { code, message, details } }` envelope** all ship.
 1. **Console scope** — decided: the React console is in scope and built (C6).
 2. **Admin** — decided: an admin router on the same API with a separate
    credential (C7), not a second app.
-3. **Widget** — open: embeddable JS widget vs customer-portal only (D2).
+3. **Widget** — shipped (`packages/widget`, D2) as an optional launcher; the
+   customer portal remains available for integrators who prefer their own UI.
 4. **AI data tools** — open: how an integrator exposes their own read-only data
    to the assistant. C4 shipped corpus-only grounding.
 5. **Shared `@chmaba/ui`** — vendored copy today; publish a package if drift hurts.
