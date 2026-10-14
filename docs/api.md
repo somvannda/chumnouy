@@ -113,8 +113,15 @@ land on the message).
 |---|---|---|
 | `GET` | `/v1/knowledge/articles` | List (filter: `section`, `q`, `locale`, `active`) |
 | `POST` | `/v1/knowledge/articles` | Create |
-| `PATCH` | `/v1/knowledge/articles/{id}` | Update / deactivate |
+| `GET` | `/v1/knowledge/articles/{id}` | Detail |
+| `PATCH` | `/v1/knowledge/articles/{id}` | Update / deactivate (`is_active: false`) |
 | `POST` | `/v1/knowledge/articles/{id}/restore` | Reactivate |
+
+Articles are workspace-scoped and soft-deleted via `is_active`. `slug` is derived
+from the title when omitted and de-duplicated per workspace + `locale`
+(`en`/`km`); `verticals`/`roles` are optional targeting hints for retrieval. A new
+workspace is seeded with a small generic default corpus. Scopes:
+`knowledge:read`, `knowledge:write`.
 
 ## 6. AI assistant
 
