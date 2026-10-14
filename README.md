@@ -51,7 +51,9 @@ Tailwind (react-router, lucide-react)** on the frontend, sharing the
 - `docs/api.md` — the v1 API contract (machine + console surfaces)
 - `docs/reuse-from-chmaba.md` — exactly what to lift from Chmaba POS and how
 - `docs/tenancy.md` — account / workspace / integration isolation model
+- `docs/handoff.md` — current state, local run/verify steps, and the task backlog
 
 ## Status
 
-Greenfield. Documentation first; no application code yet.
+In progress. Tenancy, API-key auth and the ticket domain are implemented and
+tested. See [`docs/handoff.md`](docs/handoff.md) for the roadmap.
