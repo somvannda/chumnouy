@@ -56,3 +56,10 @@ under `workspaces/<workspace_id>/…`) and served from `MEDIA_URL_PREFIX`:
   the proxy route identical.
 - Back up the media tree together with the database: an attachment row is only
   useful if its file is present.
+
+## Webhook delivery
+
+Outbound webhooks are signed and retried (see `docs/api.md` §7). Either enable
+the in-process worker (`WEBHOOK_WORKER_ENABLED=true`) or run a dedicated
+worker/cron that drains due deliveries. Run only **one** drainer per database so
+deliveries are not sent twice.

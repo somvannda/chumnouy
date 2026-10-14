@@ -151,7 +151,7 @@ Stream events: `token`, `citation`, `tool`, `done`, `error`.
 | `POST` | `/v1/webhooks/deliveries/{id}/replay` | Replay a delivery |
 
 Events: `ticket.created`, `ticket.replied`, `ticket.status_changed`,
-`ticket.assigned`, `ticket.resolved`, `assistant.feedback`.
+`ticket.assigned`, `ticket.resolved`, `ticket.reopened`.
 
 Delivery headers:
 
@@ -161,6 +161,12 @@ X-Chumnouy-Delivery: <uuid>
 X-Chumnouy-Timestamp: 1760432400
 X-Chumnouy-Signature: sha256=<hmac(secret, timestamp + "." + body)>
 ```
+
+The signing secret is returned once at registration and never again. A delivery
+retries with backoff (10s → 60s → 5m → 30m, then `failed`; `WEBHOOK_MAX_ATTEMPTS`,
+default 5) and can be re-queued with the replay endpoint. A background worker
+drains due deliveries when `WEBHOOK_WORKER_ENABLED=true`; otherwise run an
+external process that drives the worker loop.
 
 ## 8. Console-only (JWT)
 
