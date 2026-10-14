@@ -56,6 +56,8 @@ cd apps\web; npm install; npm test; npm run build; npm run dev   # http://localh
 - Branch per unit of work off `main`: `feat/…`, `fix/…`, `docs/…`, `chore/…`.
 - Conventional Commits. CI gate = green.
 - Any endpoint change: regenerate and commit `chumnouy_api/openapi.json`.
+- Run the app, alembic and pytest from `chumnouy_api`; `.env` and `MEDIA_ROOT`
+  resolve from that directory.
 - Alembic: chain `down_revision` to the single head (`alembic heads` = one).
 - New JSON columns: the ORM attribute must not be named `metadata` (SQLAlchemy
   reserves it) — use `metadata_json` with `mapped_column("metadata", JSON)` and
