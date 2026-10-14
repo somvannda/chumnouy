@@ -170,6 +170,14 @@ class Requester(Base, TimestampMixin):
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
     metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    # Portal token: an opaque credential the integrator hands to their end user
+    # so the requester can use the public surface without a console account.
+    # Only the SHA-256 digest is stored; the plaintext is returned once.
+    portal_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
+    portal_token_prefix: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    portal_token_issued_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class Ticket(Base, TimestampMixin):

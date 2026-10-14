@@ -10,6 +10,8 @@ from app.api.assistant import router as assistant_router
 from app.api.auth import router as auth_router
 from app.api.integrations import router as integrations_router
 from app.api.knowledge import router as knowledge_router
+from app.api.public import router as public_router
+from app.api.requesters import router as requesters_router
 from app.api.tickets import router as tickets_router
 from app.api.uploads import router as uploads_router
 from app.api.v1 import router as v1_router
@@ -66,6 +68,8 @@ app.include_router(uploads_router, prefix="/api/v1")
 app.include_router(webhooks_router, prefix="/api/v1")
 app.include_router(knowledge_router, prefix="/api/v1")
 app.include_router(assistant_router, prefix="/api/v1")
+app.include_router(requesters_router, prefix="/api/v1")
+app.include_router(public_router, prefix="/api/v1")
 
 # Attachment files are stored content-addressed under the media root and served
 # from the public media prefix (see app/media.py).

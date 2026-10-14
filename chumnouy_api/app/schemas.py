@@ -341,3 +341,36 @@ class AgentDraftRead(BaseModel):
     draft: str
     provider: str | None = None
     model: str | None = None
+
+
+# --- Requesters & public surface ----------------------------------------------
+
+
+class RequesterUpdate(BaseModel):
+    name: str | None = Field(default=None, max_length=160)
+    email: EmailStr | None = None
+    phone: str | None = Field(default=None, max_length=40)
+    metadata: dict | None = None
+
+
+class RequesterPortalToken(BaseModel):
+    """Returned once, when a portal token is issued. Never retrievable again."""
+
+    token: str
+    token_prefix: str
+
+
+class RequesterDetail(RequesterRead):
+    tickets: list[TicketRead] = Field(default_factory=list)
+
+
+class PublicTicketCreate(BaseModel):
+    subject: str = Field(min_length=1, max_length=255)
+    message: str = Field(min_length=1)
+    priority: Literal["low", "normal", "high", "urgent"] = "normal"
+    attachment_ids: list[UUID] = Field(default_factory=list)
+
+
+class PublicTicketMessageCreate(BaseModel):
+    body: str = Field(min_length=1)
+    attachment_ids: list[UUID] = Field(default_factory=list)
