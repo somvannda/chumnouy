@@ -25,12 +25,13 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Requesters & public surface: CRUD, portal tokens, requester-token tickets | Done |
 | Admin router: accounts, workspaces, usage, quota (separate platform credential) | Done |
 | Notifyr hand-off: ticket events raised to Notifyr (best-effort) | Done |
+| Workspace settings: per-workspace AI provider + Notifyr override (console) | Done |
 | Migrations | `0001`…`0007` (`0007_requesters`) |
-| Tests | 62 API (in-memory SQLite) + 6 web (`node --test`) |
+| Tests | 66 API (in-memory SQLite) + 6 web (`node --test`) |
 
-Not built yet: workspace settings surface, embeddable widget, deeper console
-screens (knowledge/assistant/requesters/webhooks), platform admin console, API
-hardening (idempotency + error envelope).
+Not built yet: embeddable widget, deeper console screens
+(knowledge/assistant/requesters/webhooks), platform admin console, API hardening
+(idempotency + error envelope).
 
 > **Out of scope here:** the Chmaba POS support/help cutover. That migration is
 > owned by the Chmaba POS project — Chumnouy only provides the API it migrates
@@ -43,7 +44,7 @@ hardening (idempotency + error envelope).
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 62 passing
+python -m pytest                       # 66 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -112,11 +113,11 @@ Ticket events are raised to the Notifyr API (new ticket → agents, public reply
 requester / agents). Best-effort: a ticket write never fails because Notifyr is
 unreachable or unconfigured. Config: `notifyr_api_url`, `notifyr_api_key`.
 
-### D1 — Workspace settings surface
-Console endpoints to configure a workspace without direct DB writes: the AI
-provider (`ai_provider` / `ai_model` / `ai_base_url` / `ai_api_key`) and the
-Notifyr hand-off override, stored in `workspace.settings`. Unblocks the assistant
-end-to-end. Branch: `feat/workspace-settings`.
+### D1 — Workspace settings surface ✅
+Console endpoints under `/v1/console/settings` to configure a workspace without
+direct DB writes: the AI provider (`ai_provider` / `ai_model` / `ai_base_url` /
+`ai_api_key`) and the Notifyr override, stored in `workspace.settings`. Secrets
+are write-only. Unblocks the assistant end-to-end.
 
 ### D2 — Embeddable widget
 A small embeddable JS widget for the public surface (C5), backed by a requester
