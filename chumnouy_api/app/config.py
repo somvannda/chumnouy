@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     webhook_worker_enabled: bool = False
     webhook_worker_interval_seconds: int = 15
 
+    # Public-surface protection: in-process sliding window, per client IP.
+    public_rate_limit_per_minute: int = 120
+
     # Ticket attachments. Files are content-addressed under
     # <media_root>/workspaces/<workspace_id>/… and served from <media_url_prefix>.
     media_root: str = "chumnouy_api/media"
