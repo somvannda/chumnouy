@@ -31,7 +31,7 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Public surface: per-IP rate limiting (429 + `Retry-After`) | Done |
 | Errors: uniform `{error:{code,message,details}}` envelope | Done |
 | Migrations | `0001`…`0008` (`0008_idempotency`) |
-| Tests | 75 API (in-memory SQLite) + 7 web (`node --test`) |
+| Tests | 76 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Not built yet: embeddable widget.
 
@@ -42,7 +42,7 @@ Not built yet: embeddable widget.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 75 passing
+python -m pytest                       # 76 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
