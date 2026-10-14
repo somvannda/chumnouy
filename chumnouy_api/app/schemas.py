@@ -279,3 +279,65 @@ class KnowledgeArticleRead(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+
+# --- AI assistant -------------------------------------------------------------
+
+
+class AssistantChatRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=1000)
+    conversation_id: UUID | None = None
+    history: list[dict] = Field(default_factory=list)
+    locale: Literal["en", "km"] = "en"
+    context: dict = Field(default_factory=dict)
+
+
+class AssistantCitation(BaseModel):
+    id: UUID
+    title: str
+    slug: str
+
+
+class AssistantMessageRead(BaseModel):
+    id: UUID
+    role: str
+    content: str
+    citations: list[AssistantCitation] = Field(default_factory=list)
+    created_at: datetime
+
+
+class AssistantConversationRead(BaseModel):
+    id: UUID
+    title: str
+    locale: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class AssistantConversationDetail(AssistantConversationRead):
+    messages: list[AssistantMessageRead] = Field(default_factory=list)
+
+
+class AssistantFeedbackCreate(BaseModel):
+    message_id: UUID
+    rating: Literal["up", "down"]
+    comment: str | None = Field(default=None, max_length=2000)
+
+
+class AssistantFeedbackRead(BaseModel):
+    id: UUID
+    message_id: UUID
+    rating: str
+    comment: str | None = None
+    created_at: datetime
+
+
+class AgentDraftRequest(BaseModel):
+    instruction: str | None = Field(default=None, max_length=1000)
+    tone: str | None = Field(default=None, max_length=40)
+
+
+class AgentDraftRead(BaseModel):
+    draft: str
+    provider: str | None = None
+    model: str | None = None

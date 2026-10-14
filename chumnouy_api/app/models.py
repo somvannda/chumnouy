@@ -388,3 +388,73 @@ class KnowledgeArticle(Base, TimestampMixin):
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+
+
+# --- AI assistant -------------------------------------------------------------
+# Conversations are grounded in the workspace knowledge corpus; every answer can
+# be rated. Provider credentials live in ``workspace.settings`` (services/ai.py).
+
+
+class AssistantConversation(Base, TimestampMixin):
+    """A rolling assistant thread, scoped to a workspace and its actor."""
+
+    __tablename__ = "assistant_conversations"
+    __table_args__ = (
+        Index("ix_assistant_conversation_workspace_updated", "workspace_id", "updated_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    integration_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("integrations.id", ondelete="SET NULL"), nullable=True
+    )
+    title: Mapped[str] = mapped_column(String(120))
+    locale: Mapped[str] = mapped_column(String(5), default="en")
+
+
+class AssistantMessage(Base):
+    """One turn in an assistant conversation (user or assistant)."""
+
+    __tablename__ = "assistant_messages"
+    __table_args__ = (
+        Index("ix_assistant_message_conversation_created", "conversation_id", "created_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("assistant_conversations.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    role: Mapped[str] = mapped_column(String(20))
+    content: Mapped[str] = mapped_column(Text)
+    citations: Mapped[list] = mapped_column(JSON, default=list)
+    usage: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AssistantFeedback(Base):
+    """A rating (up/down) on one assistant answer."""
+
+    __tablename__ = "assistant_feedback"
+    __table_args__ = (Index("ix_assistant_feedback_message", "message_id"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    message_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("assistant_messages.id", ondelete="CASCADE")
+    )
+    rating: Mapped[str] = mapped_column(String(10))
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
