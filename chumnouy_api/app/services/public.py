@@ -69,7 +69,7 @@ async def portal_ticket_detail(
     )
     return TicketDetailRead(
         **tickets_svc.ticket_read(ticket, requester).model_dump(),
-        messages=[tickets_svc._message_read(m, grouped.get(m.id, [])) for m in messages],
+        messages=[tickets_svc.message_read(m, grouped.get(m.id, [])) for m in messages],
         attachments=grouped.get(None, []),
     )
 
@@ -80,7 +80,7 @@ async def create_portal_ticket(
     requester: Requester,
     payload: PublicTicketCreate,
 ) -> TicketDetailRead:
-    number, reference = await tickets_svc._next_reference(db, workspace.id)
+    number, reference = await tickets_svc.next_reference(db, workspace.id)
     ticket = Ticket(
         workspace_id=workspace.id,
         number=number,
@@ -175,4 +175,4 @@ async def add_portal_message(
     grouped = attachments_svc.group_by_message(
         await attachments_svc.load_attachments(db, ticket.id)
     )
-    return tickets_svc._message_read(message, grouped.get(message.id, []))
+    return tickets_svc.message_read(message, grouped.get(message.id, []))

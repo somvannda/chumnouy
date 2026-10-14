@@ -62,7 +62,7 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
     )
 
 
-def _message_read(
+def message_read(
     message: TicketMessage, attachments: list[AttachmentRead] | None = None
 ) -> TicketMessageRead:
     return TicketMessageRead(
@@ -132,7 +132,7 @@ async def upsert_requester(
     return requester
 
 
-async def _next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, str]:
+async def next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, str]:
     current = (
         await db.execute(select(func.max(Ticket.number)).where(Ticket.workspace_id == workspace_id))
     ).scalar()
@@ -143,7 +143,7 @@ async def _next_reference(db: AsyncSession, workspace_id: UUID) -> tuple[int, st
 async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCreate) -> TicketDetailRead:
     requester = await upsert_requester(db, ctx.workspace.id, payload.requester)
     await db.flush()
-    number, reference = await _next_reference(db, ctx.workspace.id)
+    number, reference = await next_reference(db, ctx.workspace.id)
     ticket = Ticket(
         workspace_id=ctx.workspace.id,
         number=number,
@@ -200,7 +200,7 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(message, grouped.get(message.id, []))],
+        messages=[message_read(message, grouped.get(message.id, []))],
         attachments=grouped.get(None, []),
     )
 
@@ -233,7 +233,7 @@ async def ticket_detail(db: AsyncSession, ticket: Ticket) -> TicketDetailRead:
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
     return TicketDetailRead(
         **ticket_read(ticket, requester).model_dump(),
-        messages=[_message_read(m, grouped.get(m.id, [])) for m in messages],
+        messages=[message_read(m, grouped.get(m.id, [])) for m in messages],
         attachments=grouped.get(None, []),
     )
 
@@ -340,7 +340,7 @@ async def add_message(
             variables={"visibility": payload.visibility},
         )
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
-    return _message_read(message, grouped.get(message.id, []))
+    return message_read(message, grouped.get(message.id, []))
 
 
 async def apply_update(
