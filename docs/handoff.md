@@ -29,14 +29,11 @@ the platform admin router and the Notifyr hand-off are implemented and tested.
 | Workspace settings: per-workspace AI provider + Notifyr override (console) | Done |
 | Idempotency: ticket creation honours `Idempotency-Key` | Done |
 | Public surface: per-IP rate limiting (429 + `Retry-After`) | Done |
+| Errors: uniform `{error:{code,message,details}}` envelope | Done |
 | Migrations | `0001`…`0008` (`0008_idempotency`) |
-| Tests | 71 API (in-memory SQLite) + 7 web (`node --test`) |
+| Tests | 74 API (in-memory SQLite) + 7 web (`node --test`) |
 
-Not built yet: embeddable widget; the `{error:{code,message,details}}` envelope.
-
-> **Out of scope here:** the Chmaba POS support/help cutover. That migration is
-> owned by the Chmaba POS project — Chumnouy only provides the API it migrates
-> onto, and ships no POS-side code or cutover runbook.
+Not built yet: embeddable widget.
 
 ## 2. Run & verify locally
 
@@ -45,7 +42,7 @@ Not built yet: embeddable widget; the `{error:{code,message,details}}` envelope.
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 71 passing
+python -m pytest                       # 74 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 uvicorn app.main:app --reload --port 8100
@@ -134,11 +131,10 @@ Console UI over `/api/admin/*`: usage cards, accounts, workspaces with
 enable/disable and quota. Shown only to platform admins
 (`UserRead.platform_role`) behind a route guard.
 
-### D5 — API hardening
-**Idempotent ticket creation** (`Idempotency-Key`, migration `0008_idempotency`)
-and **public-surface rate limiting** (per-IP sliding window, 429 +
-`Retry-After`) shipped. Still open: the `{ "error": { code, message, details } }`
-envelope from `docs/api.md` (breaking — scope across API + console + tests).
+### D5 — API hardening ✅
+**Idempotent ticket creation** (`Idempotency-Key`, migration `0008_idempotency`),
+**public-surface rate limiting** (per-IP sliding window, 429 + `Retry-After`) and
+the **uniform `{ "error": { code, message, details } }` envelope** all ship.
 
 ## 5. Decisions
 

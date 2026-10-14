@@ -34,7 +34,7 @@ apps/
 packages/
   ui/                @chmaba/ui — shared design tokens + Tailwind preset
   api-client/        TypeScript client generated from the committed OpenAPI spec
-docs/                Architecture, ADRs, API contract, reuse/migration notes
+docs/                Architecture, ADRs, API contract, reuse notes
 deploy/              docker-compose + deployment notes
 ```
 

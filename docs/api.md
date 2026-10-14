@@ -14,9 +14,8 @@ Base URL: `https://api.chumnouy.chmaba.com/v1` (dev: `http://127.0.0.1:8100/v1`)
   Implemented for ticket creation (`POST /v1/tickets`).
 - Pagination: `?limit=&cursor=`; response carries `{ "data": [...], "next_cursor": "…" }`.
 - Errors: `{ "error": { "code": "…", "message": "…", "details": {…} } }` with a
-  proper HTTP status. `429` includes `Retry-After`. (The envelope is the target
-  shape; responses are still `{ "detail": … }` today.) The public surface is
-  rate limited per client IP.
+  proper HTTP status. `429` includes `Retry-After`. The public surface is rate
+  limited per client IP.
 - Every resource includes `id` (UUID) + `created_at`; tickets also carry
   `reference` (`CMY-1042`).
 
