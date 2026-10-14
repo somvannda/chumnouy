@@ -33,7 +33,7 @@ implemented and tested.
 | Errors: uniform `{error:{code,message,details}}` envelope | Done |
 | Embeddable widget: dependency-free launcher over the public surface | Done |
 | Migrations | `0001`…`0009` (`0009_notifyr`) |
-| Tests | 78 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Tests | 80 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -44,7 +44,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 78 passing
+python -m pytest                       # 80 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
