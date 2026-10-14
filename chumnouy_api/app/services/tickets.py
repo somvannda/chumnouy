@@ -26,6 +26,7 @@ from app.schemas import (
     TicketUpdate,
 )
 from app.services import attachments as attachments_svc
+from app.services import webhooks as webhooks_svc
 
 REFERENCE_PREFIX = "CMY"
 OPEN_STATUSES = ("open", "pending")
@@ -182,6 +183,9 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         actor_type=ctx.actor_type,
         actor_id=ctx.integration.id if ctx.integration else None,
     )
+    await webhooks_svc.enqueue_event(
+        db, ticket=ticket, event="ticket.created", data={"reference": ticket.reference}
+    )
     await db.commit()
     await db.refresh(ticket)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
@@ -309,6 +313,9 @@ async def add_message(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data={"visibility": payload.visibility},
     )
+    await webhooks_svc.enqueue_event(
+        db, ticket=ticket, event="ticket.replied", data={"visibility": payload.visibility}
+    )
     await db.commit()
     await db.refresh(message)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))
@@ -318,6 +325,8 @@ async def add_message(
 async def apply_update(
     db: AsyncSession, ctx: TenantContext, ticket: Ticket, payload: TicketUpdate
 ) -> TicketRead:
+    previous_status = ticket.status
+    previous_assignee = ticket.assignee_user_id
     if payload.subject is not None:
         ticket.subject = payload.subject.strip()
     if payload.priority is not None:
@@ -340,6 +349,20 @@ async def apply_update(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data=payload.model_dump(exclude_none=True),
     )
+    if payload.status is not None and ticket.status != previous_status:
+        await webhooks_svc.enqueue_event(
+            db,
+            ticket=ticket,
+            event="ticket.status_changed",
+            data={"from": previous_status, "to": ticket.status},
+        )
+    if payload.assignee_user_id is not None and ticket.assignee_user_id != previous_assignee:
+        await webhooks_svc.enqueue_event(
+            db,
+            ticket=ticket,
+            event="ticket.assigned",
+            data={"assignee_user_id": str(ticket.assignee_user_id)},
+        )
     await db.commit()
     await db.refresh(ticket)
     return ticket_read(ticket, await _requester_for(db, ticket))
@@ -357,6 +380,7 @@ async def set_status(
         actor_type=ctx.actor_type,
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
     )
+    await webhooks_svc.enqueue_event(db, ticket=ticket, event=event)
     await db.commit()
     await db.refresh(ticket)
     return ticket_read(ticket, await _requester_for(db, ticket))

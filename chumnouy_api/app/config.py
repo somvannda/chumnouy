@@ -41,6 +41,9 @@ class Settings(BaseSettings):
 
     # Outbound webhooks.
     webhook_timeout_seconds: int = 10
+    webhook_max_attempts: int = 5
+    webhook_worker_enabled: bool = False
+    webhook_worker_interval_seconds: int = 15
 
     # Ticket attachments. Files are content-addressed under
     # <media_root>/workspaces/<workspace_id>/… and served from <media_url_prefix>.

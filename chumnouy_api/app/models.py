@@ -286,3 +286,65 @@ class TicketAttachment(Base):
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# --- Webhooks -----------------------------------------------------------------
+# A workspace registers URLs; ticket events fan out to one delivery row per
+# webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.
+
+
+class Webhook(Base, TimestampMixin):
+    """A workspace-registered HTTPS endpoint that receives ticket events.
+
+    ``secret`` is the HMAC signing key, returned to the caller exactly once at
+    creation and never exposed again by a read model.
+    """
+
+    __tablename__ = "webhooks"
+    __table_args__ = (Index("ix_webhook_workspace_active", "workspace_id", "is_active"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    url: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    secret: Mapped[str] = mapped_column(String(64))
+    events: Mapped[list] = mapped_column(JSON, default=list)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+
+class WebhookDelivery(Base, TimestampMixin):
+    """One attempt ledger: a queued event for a webhook, sent and retried.
+
+    Rows start ``pending`` and are drained by the delivery worker, which retries
+    with backoff until ``delivered`` or ``failed``. ``event_id`` is the stable id
+    sent as ``X-Chumnouy-Delivery`` so a receiver can de-duplicate.
+    """
+
+    __tablename__ = "webhook_deliveries"
+    __table_args__ = (
+        Index("ix_webhook_delivery_webhook_created", "webhook_id", "created_at"),
+        Index("ix_webhook_delivery_queue", "status", "next_attempt_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    webhook_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("webhooks.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    event: Mapped[str] = mapped_column(String(60))
+    event_id: Mapped[str] = mapped_column(String(36))
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    response_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    response_body: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,15 +11,32 @@ from app.api.integrations import router as integrations_router
 from app.api.tickets import router as tickets_router
 from app.api.uploads import router as uploads_router
 from app.api.v1 import router as v1_router
+from app.api.webhooks import router as webhooks_router
 from app.config import settings
 from app.db import engine
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Background workers (webhook delivery, etc.) attach here in later steps.
-    yield
-    await engine.dispose()
+    # The webhook delivery worker attaches here when enabled; otherwise
+    # deliveries are drained by an external runner (e.g. a cron/worker process).
+    stop = asyncio.Event()
+    worker: asyncio.Task | None = None
+    if settings.webhook_worker_enabled:
+        from app.services.webhooks import run_worker
+
+        worker = asyncio.create_task(run_worker(stop))
+    try:
+        yield
+    finally:
+        stop.set()
+        if worker is not None:
+            worker.cancel()
+            try:
+                await worker
+            except asyncio.CancelledError:
+                pass
+        await engine.dispose()
 
 
 app = FastAPI(
@@ -43,6 +61,7 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(integrations_router, prefix="/api/v1")
 app.include_router(tickets_router, prefix="/api/v1")
 app.include_router(uploads_router, prefix="/api/v1")
+app.include_router(webhooks_router, prefix="/api/v1")
 
 # Attachment files are stored content-addressed under the media root and served
 # from the public media prefix (see app/media.py).

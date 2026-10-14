@@ -190,3 +190,48 @@ class AttachmentClaim(BaseModel):
 class TicketListRead(BaseModel):
     data: list[TicketRead] = Field(default_factory=list)
     next_cursor: str | None = None
+
+
+# --- Webhooks -----------------------------------------------------------------
+
+
+class WebhookCreate(BaseModel):
+    url: str = Field(min_length=1, max_length=500)
+    description: str | None = Field(default=None, max_length=255)
+    events: list[str] = Field(default_factory=list)
+    is_active: bool = True
+
+
+class WebhookUpdate(BaseModel):
+    url: str | None = Field(default=None, max_length=500)
+    description: str | None = Field(default=None, max_length=255)
+    events: list[str] | None = None
+    is_active: bool | None = None
+
+
+class WebhookRead(BaseModel):
+    id: UUID
+    url: str
+    description: str | None = None
+    events: list[str] = Field(default_factory=list)
+    is_active: bool
+    created_at: datetime
+
+
+class WebhookCreated(BaseModel):
+    """Returned once, at creation. ``secret`` is never retrievable again."""
+
+    secret: str
+    webhook: WebhookRead
+
+
+class WebhookDeliveryRead(BaseModel):
+    id: UUID
+    webhook_id: UUID
+    event: str
+    status: str
+    attempts: int
+    response_status: int | None = None
+    error: str | None = None
+    created_at: datetime
+    delivered_at: datetime | None = None
