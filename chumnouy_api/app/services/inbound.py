@@ -16,6 +16,7 @@ from app.models import Ticket, TicketMessage, Workspace
 from app.schemas import InboundEmailCreate, RequesterInput, TicketDetailRead
 from app.services import notifyr as notifyr_svc
 from app.services import quota as quota_svc
+from app.services import sla as sla_svc
 from app.services import tickets as tickets_svc
 from app.services import webhooks as webhooks_svc
 from app.services.sanitize import render_body
@@ -123,6 +124,7 @@ async def handle_inbound_email(
     )
     db.add(ticket)
     await db.flush()
+    sla_svc.apply_policy(workspace, ticket)
     db.add(
         TicketMessage(
             ticket_id=ticket.id,

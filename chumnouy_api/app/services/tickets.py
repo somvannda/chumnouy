@@ -27,6 +27,7 @@ from app.schemas import (
 )
 from app.services import attachments as attachments_svc
 from app.services import notifyr as notifyr_svc
+from app.services import sla as sla_svc
 from app.services import webhooks as webhooks_svc
 from app.services.sanitize import render_body
 
@@ -61,6 +62,9 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
         metadata=dict(ticket.metadata_json or {}),
         created_at=ticket.created_at,
         resolved_at=ticket.resolved_at,
+        first_response_due_at=ticket.first_response_due_at,
+        resolution_due_at=ticket.resolution_due_at,
+        sla_breached_at=ticket.sla_breached_at,
     )
 
 
@@ -161,6 +165,7 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
     )
     db.add(ticket)
     await db.flush()
+    sla_svc.apply_policy(ctx.workspace, ticket)
     message = TicketMessage(
         ticket_id=ticket.id,
         workspace_id=ticket.workspace_id,

@@ -40,6 +40,7 @@ EVENTS: frozenset[str] = frozenset(
         "ticket.assigned",
         "ticket.resolved",
         "ticket.reopened",
+        "sla.breached",
     }
 )
 
@@ -247,6 +248,7 @@ async def run_worker(stop: asyncio.Event) -> None:
     """Drain due webhook deliveries and Notifyr hand-offs until ``stop`` is set."""
     from app.db import SessionLocal
     from app.services import notifyr as notifyr_svc
+    from app.services import sla as sla_svc
 
     interval = max(1, settings.webhook_worker_interval_seconds)
     while not stop.is_set():
@@ -254,6 +256,7 @@ async def run_worker(stop: asyncio.Event) -> None:
             async with SessionLocal() as session:
                 await process_due(session)
                 await notifyr_svc.process_due(session)
+                await sla_svc.sweep_breaches(session)
         except Exception:  # noqa: BLE001 - the worker must never die
             logger.exception("webhook worker iteration failed")
         try:

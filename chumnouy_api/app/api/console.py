@@ -17,6 +17,7 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    SlaSettingsUpdate,
     WorkspaceSettingsRead,
 )
 from app.services import workspace_settings as svc
@@ -56,3 +57,12 @@ async def update_locale(
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
     return await svc.update_locale(db, ctx.workspace, payload)
+
+
+@router.patch("/settings/sla", response_model=WorkspaceSettingsRead)
+async def update_sla(
+    payload: SlaSettingsUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    return await svc.update_sla(db, ctx.workspace, payload)

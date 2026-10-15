@@ -177,7 +177,7 @@ articles used. The provider/key is configured per workspace (`workspace.settings
 | `POST` | `/v1/webhooks/deliveries/{id}/replay` | Replay a delivery |
 
 Events: `ticket.created`, `ticket.replied`, `ticket.status_changed`,
-`ticket.assigned`, `ticket.resolved`, `ticket.reopened`.
+`ticket.assigned`, `ticket.resolved`, `ticket.reopened`, `sla.breached`.
 
 Delivery headers:
 
@@ -206,6 +206,7 @@ external process that drives the worker loop.
 | `PATCH` | `/v1/console/settings/ai` | Set AI provider/model/base_url/api_key (secret write-only) |
 | `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |
 | `PATCH` | `/v1/console/settings/locale` | Set the workspace locale (`en`/`km`) |
+| `PATCH` | `/v1/console/settings/sla` | Set per-priority response/resolution targets (minutes) |
 
 Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 

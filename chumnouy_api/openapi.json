@@ -2019,6 +2019,60 @@
         "title": "SignupRequest",
         "type": "object"
       },
+      "SlaSettingsRead": {
+        "properties": {
+          "first_response_minutes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "First Response Minutes",
+            "type": "object"
+          },
+          "resolution_minutes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Resolution Minutes",
+            "type": "object"
+          }
+        },
+        "title": "SlaSettingsRead",
+        "type": "object"
+      },
+      "SlaSettingsUpdate": {
+        "properties": {
+          "first_response_minutes": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Response Minutes"
+          },
+          "resolution_minutes": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Minutes"
+          }
+        },
+        "title": "SlaSettingsUpdate",
+        "type": "object"
+      },
       "TeamCreate": {
         "properties": {
           "description": {
@@ -2258,6 +2312,18 @@
             "title": "Created At",
             "type": "string"
           },
+          "first_response_due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Response Due At"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2293,6 +2359,18 @@
               }
             ]
           },
+          "resolution_due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Due At"
+          },
           "resolved_at": {
             "anyOf": [
               {
@@ -2304,6 +2382,18 @@
               }
             ],
             "title": "Resolved At"
+          },
+          "sla_breached_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Breached At"
           },
           "status": {
             "title": "Status",
@@ -2474,6 +2564,18 @@
             "title": "Created At",
             "type": "string"
           },
+          "first_response_due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Response Due At"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2502,6 +2604,18 @@
               }
             ]
           },
+          "resolution_due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Due At"
+          },
           "resolved_at": {
             "anyOf": [
               {
@@ -2513,6 +2627,18 @@
               }
             ],
             "title": "Resolved At"
+          },
+          "sla_breached_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Breached At"
           },
           "status": {
             "title": "Status",
@@ -3000,11 +3126,15 @@
           },
           "notifications": {
             "$ref": "#/components/schemas/NotificationSettingsRead"
+          },
+          "sla": {
+            "$ref": "#/components/schemas/SlaSettingsRead"
           }
         },
         "required": [
           "ai",
-          "notifications"
+          "notifications",
+          "sla"
         ],
         "title": "WorkspaceSettingsRead",
         "type": "object"
@@ -4110,6 +4240,71 @@
           }
         ],
         "summary": "Update Notifications",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/sla": {
+      "patch": {
+        "operationId": "update_sla_api_v1_console_settings_sla_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SlaSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Sla",
         "tags": [
           "console"
         ]

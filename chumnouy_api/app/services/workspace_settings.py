@@ -16,6 +16,7 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    SlaSettingsUpdate,
     WorkspaceSettingsRead,
 )
 from app.services import ai as ai_service
@@ -59,11 +60,23 @@ def notification_settings(workspace: Workspace) -> NotificationSettingsRead:
 
 
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
+    from app.services import sla as sla_svc
+
     return WorkspaceSettingsRead(
         locale=(workspace.settings or {}).get("locale") or "en",
         ai=ai_settings(workspace),
         notifications=notification_settings(workspace),
+        sla=sla_svc.sla_settings(workspace),
     )
+
+
+async def update_sla(
+    db: AsyncSession, workspace: Workspace, payload: "SlaSettingsUpdate"
+) -> WorkspaceSettingsRead:
+    from app.services import sla as sla_svc
+
+    await sla_svc.update_settings(db, workspace, payload)
+    return read(workspace)
 
 
 async def update_locale(

@@ -632,6 +632,22 @@ export interface SignupRequest {
   workspace_name?: string | null;
 }
 
+/** SlaSettingsRead */
+export interface SlaSettingsRead {
+  /** First Response Minutes */
+  first_response_minutes?: Record<string, number>;
+  /** Resolution Minutes */
+  resolution_minutes?: Record<string, number>;
+}
+
+/** SlaSettingsUpdate */
+export interface SlaSettingsUpdate {
+  /** First Response Minutes */
+  first_response_minutes?: Record<string, number> | null;
+  /** Resolution Minutes */
+  resolution_minutes?: Record<string, number> | null;
+}
+
 /** TeamCreate */
 export interface TeamCreate {
   /** Description */
@@ -707,6 +723,8 @@ export interface TicketDetailRead {
   attachments?: AttachmentRead[];
   /** Created At */
   created_at: string;
+  /** First Response Due At */
+  first_response_due_at?: string | null;
   /** Id */
   id: string;
   /** Messages */
@@ -718,8 +736,12 @@ export interface TicketDetailRead {
   /** Reference */
   reference: string;
   requester?: RequesterRead | null;
+  /** Resolution Due At */
+  resolution_due_at?: string | null;
   /** Resolved At */
   resolved_at?: string | null;
+  /** Sla Breached At */
+  sla_breached_at?: string | null;
   /** Status */
   status: string;
   /** Subject */
@@ -774,6 +796,8 @@ export interface TicketRead {
   assignee_user_id?: string | null;
   /** Created At */
   created_at: string;
+  /** First Response Due At */
+  first_response_due_at?: string | null;
   /** Id */
   id: string;
   /** Metadata */
@@ -783,8 +807,12 @@ export interface TicketRead {
   /** Reference */
   reference: string;
   requester?: RequesterRead | null;
+  /** Resolution Due At */
+  resolution_due_at?: string | null;
   /** Resolved At */
   resolved_at?: string | null;
+  /** Sla Breached At */
+  sla_breached_at?: string | null;
   /** Status */
   status: string;
   /** Subject */
@@ -928,4 +956,5 @@ export interface WorkspaceSettingsRead {
   /** Locale */
   locale?: string;
   notifications: NotificationSettingsRead;
+  sla: SlaSettingsRead;
 }
