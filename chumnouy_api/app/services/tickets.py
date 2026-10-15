@@ -458,6 +458,17 @@ async def set_status(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
     )
     await webhooks_svc.enqueue_event(db, ticket=ticket, event=event)
+    if event == "ticket.resolved":
+        # Hand the requester a "how did we do?" prompt (CSAT) via Notifyr.
+        requester = await _requester_for(db, ticket)
+        await notifyr_svc.enqueue(
+            db,
+            workspace=ctx.workspace,
+            ticket=ticket,
+            event=notifyr_svc.TICKET_RESOLVED,
+            recipient=requester.email if requester else None,
+            variables={"reference": ticket.reference, "csat": True},
+        )
     await db.commit()
     await db.refresh(ticket)
     return ticket_read(ticket, await _requester_for(db, ticket))
