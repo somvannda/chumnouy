@@ -81,6 +81,9 @@ A single-host stack is scaffolded in `deploy/`:
 docker compose -f deploy/docker-compose.yml up --build   # http://localhost:8080
 ```
 
+Host ports are configurable: `API_PORT` (default 8000) and `WEB_PORT` (default
+8080) — handy when another project already owns 8000/8080.
+
 The API container runs `alembic upgrade head` before starting uvicorn and enables
 the in-process worker (`WEBHOOK_WORKER_ENABLED=true`). Postgres data and
 `MEDIA_ROOT` are named volumes. Set `JWT_SECRET` (and any `AI_*` / `NOTIFYR_*`
