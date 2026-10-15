@@ -126,7 +126,8 @@ hours** calendars and per-team policies.
   status/priority/tag/team, send notification, call webhook. ✅ **triggers done**
   (`/v1/triggers`, event `ticket.created|replied|updated`, conditions →
   set_status/priority/tag/team, `trigger.applied` audit); **automations** (time-based)
-  also ship (`/v1/automations` + a worker sweep); notify/webhook actions remain.
+  also ship (`/v1/automations` + a worker sweep); **`notify` actions** hand off
+  to Notifyr. Custom webhook actions remain.
 - **Macros / canned responses**: workspace-scoped saved replies + macros
   (a trigger bundle applied on demand). ✅ **canned responses done**
   (`/v1/canned-responses` CRUD); macros (trigger bundles) remain.

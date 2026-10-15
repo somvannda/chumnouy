@@ -24,6 +24,7 @@ TICKET_CREATED = "ticket.created"
 TICKET_REPLIED = "ticket.replied"
 TICKET_MENTIONED = "ticket.mentioned"
 TICKET_RESOLVED = "ticket.resolved"
+TICKET_NOTIFIED = "ticket.notified"
 
 BACKOFF_SECONDS: tuple[int, ...] = (10, 60, 300, 1800)
 

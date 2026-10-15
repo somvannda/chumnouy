@@ -337,9 +337,10 @@ Workspace-scoped; `tickets:read` / `tickets:write`. A trigger fires on an
 `event` (`ticket.created`, `ticket.replied`, `ticket.updated`) when its
 `conditions` match and runs its `actions` on the ticket:
 `conditions` = `[{field: status|priority|tag|subject, op: is|contains, value}]`;
-`actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team, value}]`.
+`actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team|notify, value}]`.
 Evaluated once per write, in `position` order; each application records a
-`trigger.applied` audit event.
+`trigger.applied` audit event. A `notify` action hands the ticket to Notifyr
+(`value` is `requester`, `agents`, or an email).
 
 ## 20. Automations
 
@@ -354,7 +355,8 @@ Evaluated once per write, in `position` order; each application records a
 Workspace-scoped; `tickets:read` / `tickets:write`. After `after_minutes`, a
 ticket that is still open and matches `conditions` (the trigger DSL) runs
 `actions` **once** (tracked in `ticket_automations`); a `automation.applied`
-audit event is recorded. Driven by the worker sweep.
+audit event is recorded. Actions include `notify` (hand off to Notifyr). Driven
+by the worker sweep.
 
 ## 18. Reports
 
