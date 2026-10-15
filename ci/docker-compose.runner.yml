@@ -20,7 +20,9 @@ services:
       # A registration token (short-lived) or a PAT named ACCESS_TOKEN.
       RUNNER_TOKEN: ${RUNNER_TOKEN:-}
       ACCESS_TOKEN: ${ACCESS_TOKEN:-}
-      EPHEMERAL: "false"
+      # NOTE: do not set EPHEMERAL. The image treats any value (including the
+      # string "false") as truthy, so the runner would exit after one job and
+      # then crash-loop trying to re-register with a spent token.
     volumes:
       - runner-work:/tmp/runner
 
