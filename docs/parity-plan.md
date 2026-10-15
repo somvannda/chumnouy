@@ -129,8 +129,8 @@ hours** calendars and per-team policies.
   also ship (`/v1/automations` + a worker sweep); **`notify` actions** hand off
   to Notifyr. Custom webhook actions remain.
 - **Macros / canned responses**: workspace-scoped saved replies + macros
-  (a trigger bundle applied on demand). ✅ **canned responses done**
-  (`/v1/canned-responses` CRUD); macros (trigger bundles) remain.
+  (a trigger bundle applied on demand). ✅ **done** (`/v1/canned-responses` CRUD;
+  `/v1/macros` + `POST /v1/tickets/{id}/macros/{id}` applies an action bundle).
 - **Routing**: round-robin, load-balanced (agent capacity), skill-based
   (teams/skills), on the ticket-assign path. ✅ **done** (`POST /v1/tickets/{id}/assign`
   with `round_robin`/`load_balanced`/`team` or a forced `user_id`; candidates are
