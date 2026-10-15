@@ -661,6 +661,39 @@ class TriggerRead(BaseModel):
     updated_at: datetime
 
 
+# --- Automations --------------------------------------------------------------
+
+
+class AutomationCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    conditions: list[TriggerCondition] = Field(default_factory=list)
+    actions: list[TriggerAction] = Field(default_factory=list)
+    after_minutes: int = Field(default=60, ge=0)
+    position: int = 0
+    is_active: bool = True
+
+
+class AutomationUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    conditions: list[TriggerCondition] | None = None
+    actions: list[TriggerAction] | None = None
+    after_minutes: int | None = Field(default=None, ge=0)
+    position: int | None = None
+    is_active: bool | None = None
+
+
+class AutomationRead(BaseModel):
+    id: UUID
+    name: str
+    conditions: list[dict] = Field(default_factory=list)
+    actions: list[dict] = Field(default_factory=list)
+    after_minutes: int
+    position: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
 # --- Reporting ----------------------------------------------------------------
 
 

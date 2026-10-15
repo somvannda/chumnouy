@@ -345,6 +345,60 @@ export interface AuthRead {
   workspace: WorkspaceRead;
 }
 
+/** AutomationCreate */
+export interface AutomationCreate {
+  /** Actions */
+  actions?: TriggerAction[];
+  /** After Minutes */
+  after_minutes?: number;
+  /** Conditions */
+  conditions?: TriggerCondition[];
+  /** Is Active */
+  is_active?: boolean;
+  /** Name */
+  name: string;
+  /** Position */
+  position?: number;
+}
+
+/** AutomationRead */
+export interface AutomationRead {
+  /** Actions */
+  actions?: Record<string, unknown>[];
+  /** After Minutes */
+  after_minutes: number;
+  /** Conditions */
+  conditions?: Record<string, unknown>[];
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+  /** Is Active */
+  is_active: boolean;
+  /** Name */
+  name: string;
+  /** Position */
+  position: number;
+  /** Updated At */
+  updated_at: string;
+}
+
+/** AutomationUpdate */
+export interface AutomationUpdate {
+  /** Actions */
+  actions?: TriggerAction[] | null;
+  /** After Minutes */
+  after_minutes?: number | null;
+  /** Conditions */
+  conditions?: TriggerCondition[] | null;
+  /** Is Active */
+  is_active?: boolean | null;
+  /** Name */
+  name?: string | null;
+  /** Position */
+  position?: number | null;
+}
+
 /** Body_upload_attachment_api_v1_uploads_post */
 export interface Body_upload_attachment_api_v1_uploads_post {
   /** File */

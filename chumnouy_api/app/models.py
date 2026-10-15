@@ -415,6 +415,46 @@ class CsatResponse(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+# --- Automations --------------------------------------------------------------
+
+
+class Automation(Base, TimestampMixin):
+    """A time-based rule: after ``after_minutes`` a ticket that matches
+    ``conditions`` and is still open runs ``actions`` (once per ticket)."""
+
+    __tablename__ = "automations"
+    __table_args__ = (Index("ix_automation_workspace_active", "workspace_id", "is_active"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    conditions: Mapped[list] = mapped_column(JSON, default=list)
+    actions: Mapped[list] = mapped_column(JSON, default=list)
+    after_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class TicketAutomation(Base):
+    """Marks that an automation has been applied to a ticket (once-only)."""
+
+    __tablename__ = "ticket_automations"
+    __table_args__ = (
+        UniqueConstraint("ticket_id", "automation_id", name="uq_ticket_automation"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), index=True
+    )
+    automation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("automations.id", ondelete="CASCADE"), index=True
+    )
+    applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.
