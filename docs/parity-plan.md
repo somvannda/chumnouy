@@ -99,7 +99,9 @@ The biggest gap. Split so the boundary stays clean:
   (`POST /v1/inbound/email`, scope `tickets:write`; threads by `in_reply_to` or
   the sender's latest open ticket; migration `0014_inbound_email`).
 - **Live chat (L)**: a real-time widget session (`/v1/chat/sessions`, WS/SSE
-  stream), agents reply from the console; delivery/notification via Notifyr.
+  stream), agents reply from the console; delivery/notification via Notifyr. ✅ **polling v1 done**
+  (`/v1/public/chat/sessions` + `/v1/console/chat/sessions`, migration
+  `0022_chat`); SSE/WebSocket transport and Notifyr nudges remain.
 - **Social/SMS/WhatsApp (delegated, M)**: define the channel adapter contract —
   Notifyr owns transport and posts inbound to `/v1/inbound/{channel}`; Chumnouy
   owns identity mapping and threading. Ship one adapter end-to-end (WhatsApp).

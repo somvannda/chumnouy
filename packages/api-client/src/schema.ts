@@ -496,6 +496,50 @@ export interface CannedResponseUpdate {
   title?: string | null;
 }
 
+/** ChatMessageCreate */
+export interface ChatMessageCreate {
+  /** Body */
+  body: string;
+}
+
+/** ChatMessageRead */
+export interface ChatMessageRead {
+  /** Author Type */
+  author_type: string;
+  /** Body */
+  body: string;
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+}
+
+/** ChatSessionDetail */
+export interface ChatSessionDetail {
+  /** Closed At */
+  closed_at?: string | null;
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+  /** Messages */
+  messages?: ChatMessageRead[];
+  /** Status */
+  status: string;
+}
+
+/** ChatSessionRead */
+export interface ChatSessionRead {
+  /** Closed At */
+  closed_at?: string | null;
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+  /** Status */
+  status: string;
+}
+
 /** CsatRead */
 export interface CsatRead {
   /** Comment */
