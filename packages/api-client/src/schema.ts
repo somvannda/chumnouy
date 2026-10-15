@@ -747,10 +747,14 @@ export interface ReportSummary {
   avg_resolution_minutes?: number | null;
   /** Breached */
   breached?: number;
+  /** By Assignee */
+  by_assignee?: Record<string, number>;
   /** By Priority */
   by_priority?: Record<string, number>;
   /** By Status */
   by_status?: Record<string, number>;
+  /** By Team */
+  by_team?: Record<string, number>;
   /** Csat Positive Pct */
   csat_positive_pct?: number | null;
   /** Csat Responses */
