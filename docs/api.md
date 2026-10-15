@@ -91,7 +91,6 @@ attribute allowlist) so any client can render it verbatim.
 ```
 
 ## 3. Requesters
-
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/v1/requesters` | List/search by external id, email, name |
@@ -262,3 +261,13 @@ resolves the workspace's agents) and on public replies (requester email for an
 agent reply, `null` for a requester reply). Events are **queued**
 (`notifyr_events`) inside the ticket transaction and handed off by the worker with
 retry/backoff; an unconfigured workspace enqueues nothing.
+
+## 13. Search
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/search` | Search tickets, messages and articles (`q`, `types`, `limit`) |
+
+Workspace-scoped; scope `tickets:read`. `types` is a comma-separated subset of
+`ticket,message,article`. Each result carries `type`, `id`, `title`, `snippet`
+and, for tickets/messages, `ticket_id` + `reference`.

@@ -16,6 +16,7 @@ from app.api.integrations import router as integrations_router
 from app.api.knowledge import router as knowledge_router
 from app.api.public import router as public_router
 from app.api.requesters import router as requesters_router
+from app.api.search import router as search_router
 from app.api.tickets import router as tickets_router
 from app.api.uploads import router as uploads_router
 from app.api.v1 import router as v1_router
@@ -97,6 +98,7 @@ app.include_router(webhooks_router, prefix="/api/v1")
 app.include_router(knowledge_router, prefix="/api/v1")
 app.include_router(assistant_router, prefix="/api/v1")
 app.include_router(console_router, prefix="/api/v1")
+app.include_router(search_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 
