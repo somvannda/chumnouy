@@ -50,6 +50,9 @@ def _payload(
     recipient: str | None,
     variables: dict | None,
 ) -> dict:
+    # Notifyr renders the message; it needs the workspace locale for templates.
+    merged = {"locale": (workspace.settings or {}).get("locale") or "en"}
+    merged.update(variables or {})
     return {
         "event": event,
         "workspace": {"id": str(workspace.id), "slug": workspace.slug},
@@ -61,7 +64,7 @@ def _payload(
             "priority": ticket.priority,
         },
         "recipient": recipient,
-        "variables": variables or {},
+        "variables": merged,
     }
 
 

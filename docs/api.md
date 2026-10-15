@@ -205,6 +205,7 @@ external process that drives the worker loop.
 | `GET` | `/v1/console/settings` | Current workspace settings (AI + notifications) |
 | `PATCH` | `/v1/console/settings/ai` | Set AI provider/model/base_url/api_key (secret write-only) |
 | `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |
+| `PATCH` | `/v1/console/settings/locale` | Set the workspace locale (`en`/`km`) |
 
 Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 
