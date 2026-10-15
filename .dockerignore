@@ -1,0 +1,13 @@
+# Build context exclusions (repo root). Keeps images small and builds fast.
+.git
+.github
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/dist
+**/build
+media
+*.sqlite
+docs
