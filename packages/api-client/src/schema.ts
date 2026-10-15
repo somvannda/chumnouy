@@ -365,6 +365,26 @@ export interface CannedResponseUpdate {
   title?: string | null;
 }
 
+/** CsatRead */
+export interface CsatRead {
+  /** Comment */
+  comment?: string | null;
+  /** Created At */
+  created_at: string;
+  /** Rating */
+  rating: string;
+  /** Ticket Id */
+  ticket_id: string;
+}
+
+/** CsatSubmit */
+export interface CsatSubmit {
+  /** Comment */
+  comment?: string | null;
+  /** Rating */
+  rating: "up" | "down";
+}
+
 /** HTTPValidationError */
 export interface HTTPValidationError {
   /** Detail */
@@ -574,6 +594,10 @@ export interface ReportSummary {
   by_priority?: Record<string, number>;
   /** By Status */
   by_status?: Record<string, number>;
+  /** Csat Positive Pct */
+  csat_positive_pct?: number | null;
+  /** Csat Responses */
+  csat_responses?: number;
   /** Sla Compliance */
   sla_compliance?: number | null;
   /** Total */

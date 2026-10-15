@@ -14,12 +14,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.deps import RequesterContext, get_requester_context
 from app.schemas import (
+    CsatRead,
+    CsatSubmit,
     PublicTicketCreate,
     PublicTicketMessageCreate,
     TicketDetailRead,
     TicketListRead,
     TicketMessageRead,
 )
+from app.services import csat as csat_svc
 from app.services import public as svc
 from app.services import quota as quota_svc
 
@@ -83,3 +86,14 @@ async def reply_my_ticket(
         return await svc.add_portal_message(db, ctx.workspace, ctx.requester, ticket, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post("/tickets/{ticket_id}/csat", response_model=CsatRead, status_code=status.HTTP_201_CREATED)
+async def submit_csat(
+    ticket_id: UUID,
+    payload: CsatSubmit,
+    ctx: RequesterContext = Depends(_requester),
+    db: AsyncSession = Depends(get_db),
+) -> CsatRead:
+    ticket = await _ticket(db, ctx, ticket_id)
+    return await csat_svc.submit(db, ctx.workspace, ticket, payload)

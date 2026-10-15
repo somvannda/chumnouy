@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Ticket
 from app.schemas import ReportSummary
+from app.services import csat as csat_svc
 
 STATUSES = ("open", "pending", "resolved", "closed")
 
@@ -56,6 +57,7 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
             resolutions.append(resolution)
 
     total = len(rows)
+    csat_responses, csat_positive = await csat_svc.aggregates(db, workspace_id)
     return ReportSummary(
         total=total,
         by_status={status: by_status.get(status, 0) for status in STATUSES},
@@ -64,4 +66,6 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
         sla_compliance=round((total - breached) / total * 100, 1) if total else None,
         avg_first_response_minutes=round(mean(first_responses), 1) if first_responses else None,
         avg_resolution_minutes=round(mean(resolutions), 1) if resolutions else None,
+        csat_responses=csat_responses,
+        csat_positive_pct=csat_positive,
     )

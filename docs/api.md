@@ -218,6 +218,7 @@ Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 | `GET` | `/v1/public/tickets` | My tickets |
 | `GET` | `/v1/public/tickets/{id}` | My ticket + public messages |
 | `POST` | `/v1/public/tickets/{id}/messages` | Reply |
+| `POST` | `/v1/public/tickets/{id}/csat` | Rate the ticket (`rating`: `up`/`down`, `comment?`) |
 
 Auth: a requester portal token (`Authorization: Bearer rqt_…` or
 `X-Requester-Token`), issued via `/v1/requesters/{id}/portal-token`. Only public
@@ -339,6 +340,6 @@ Evaluated once per write, in `position` order; each application records a
 | `GET` | `/v1/reports/summary` | Ticket counts, response/resolution averages, SLA compliance |
 
 Workspace-scoped; scope `tickets:read`. Returns `total`, `by_status`,
-`by_priority`, `breached`, `sla_compliance` (%), and
-`avg_first_response_minutes` / `avg_resolution_minutes` (null when no data).
-Computed on the fly from the ticket table.
+`by_priority`, `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
+`avg_resolution_minutes` (null when no data), and `csat_responses` /
+`csat_positive_pct`. Computed on the fly from the ticket table.
