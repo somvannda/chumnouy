@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import TenantContext
-from app.models import Requester, Ticket, TicketEvent, TicketMessage, utcnow
+from app.models import Membership, Requester, Ticket, TicketEvent, TicketMessage, User, utcnow
 from app.schemas import (
     AttachmentRead,
     RequesterInput,
@@ -232,6 +232,35 @@ async def _requester_for(db: AsyncSession, ticket: Ticket) -> Requester | None:
     ).scalar_one_or_none()
 
 
+async def _notify_mentions(
+    db: AsyncSession, ctx: TenantContext, ticket: Ticket, mentions: list[UUID]
+) -> None:
+    """Notify the mentioned workspace members (internal notes only)."""
+    unique = list(dict.fromkeys(mentions))
+    if not unique:
+        return
+    rows = (
+        await db.execute(
+            select(User)
+            .join(Membership, Membership.user_id == User.id)
+            .where(
+                Membership.workspace_id == ticket.workspace_id,
+                Membership.status == "active",
+                User.id.in_(unique),
+            )
+        )
+    ).scalars().all()
+    for user in rows:
+        await notifyr_svc.enqueue(
+            db,
+            workspace=ctx.workspace,
+            ticket=ticket,
+            event=notifyr_svc.TICKET_MENTIONED,
+            recipient=user.email,
+            variables={"mention": True},
+        )
+
+
 async def ticket_detail(db: AsyncSession, ticket: Ticket) -> TicketDetailRead:
     requester = await _requester_for(db, ticket)
     messages = (
@@ -350,6 +379,9 @@ async def add_message(
             recipient=requester.email if (agent and requester) else None,
             variables={"visibility": payload.visibility},
         )
+    elif payload.mentions:
+        # An internal note that mentions agents notifies exactly those agents.
+        await _notify_mentions(db, ctx, ticket, payload.mentions)
     await db.commit()
     await db.refresh(message)
     grouped = attachments_svc.group_by_message(await attachments_svc.load_attachments(db, ticket.id))

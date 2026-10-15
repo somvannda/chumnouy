@@ -2867,6 +2867,14 @@
             "title": "Body Format",
             "type": "string"
           },
+          "mentions": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Mentions",
+            "type": "array"
+          },
           "visibility": {
             "default": "public",
             "enum": [
