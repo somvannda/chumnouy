@@ -13,6 +13,7 @@ from app.models import Workspace
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
+    LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
     WorkspaceSettingsRead,
@@ -59,8 +60,19 @@ def notification_settings(workspace: Workspace) -> NotificationSettingsRead:
 
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
     return WorkspaceSettingsRead(
-        ai=ai_settings(workspace), notifications=notification_settings(workspace)
+        locale=(workspace.settings or {}).get("locale") or "en",
+        ai=ai_settings(workspace),
+        notifications=notification_settings(workspace),
     )
+
+
+async def update_locale(
+    db: AsyncSession, workspace: Workspace, payload: "LocaleUpdate"
+) -> WorkspaceSettingsRead:
+    _apply(workspace, {"locale": payload.locale})
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
 
 
 async def update_ai(

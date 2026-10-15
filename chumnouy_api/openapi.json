@@ -1452,6 +1452,21 @@
         "title": "KnowledgeArticleUpdate",
         "type": "object"
       },
+      "LocaleUpdate": {
+        "properties": {
+          "locale": {
+            "default": "en",
+            "enum": [
+              "en",
+              "km"
+            ],
+            "title": "Locale",
+            "type": "string"
+          }
+        },
+        "title": "LocaleUpdate",
+        "type": "object"
+      },
       "LoginRequest": {
         "properties": {
           "email": {
@@ -2978,6 +2993,11 @@
           "ai": {
             "$ref": "#/components/schemas/AISettingsRead"
           },
+          "locale": {
+            "default": "en",
+            "title": "Locale",
+            "type": "string"
+          },
           "notifications": {
             "$ref": "#/components/schemas/NotificationSettingsRead"
           }
@@ -3960,6 +3980,71 @@
           }
         ],
         "summary": "Update Ai",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/locale": {
+      "patch": {
+        "operationId": "update_locale_api_v1_console_settings_locale_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocaleUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Locale",
         "tags": [
           "console"
         ]

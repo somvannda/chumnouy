@@ -465,6 +465,12 @@ export interface KnowledgeArticleUpdate {
   verticals?: string[] | null;
 }
 
+/** LocaleUpdate */
+export interface LocaleUpdate {
+  /** Locale */
+  locale?: "en" | "km";
+}
+
 /** LoginRequest */
 export interface LoginRequest {
   /** Email */
@@ -919,5 +925,7 @@ export interface WorkspaceRead {
 /** WorkspaceSettingsRead */
 export interface WorkspaceSettingsRead {
   ai: AISettingsRead;
+  /** Locale */
+  locale?: string;
   notifications: NotificationSettingsRead;
 }

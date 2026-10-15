@@ -14,6 +14,7 @@ from app.deps import WorkspaceContext, require_workspace_roles
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
+    LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
     WorkspaceSettingsRead,
@@ -46,3 +47,12 @@ async def update_notifications(
     db: AsyncSession = Depends(get_db),
 ) -> NotificationSettingsRead:
     return await svc.update_notifications(db, ctx.workspace, payload)
+
+
+@router.patch("/settings/locale", response_model=WorkspaceSettingsRead)
+async def update_locale(
+    payload: LocaleUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    return await svc.update_locale(db, ctx.workspace, payload)

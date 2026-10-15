@@ -460,8 +460,13 @@ class NotificationSettingsUpdate(BaseModel):
 
 
 class WorkspaceSettingsRead(BaseModel):
+    locale: str = "en"
     ai: AISettingsRead
     notifications: NotificationSettingsRead
+
+
+class LocaleUpdate(BaseModel):
+    locale: Literal["en", "km"] = "en"
 
 
 # --- Search -------------------------------------------------------------------
