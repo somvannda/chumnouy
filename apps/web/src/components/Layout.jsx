@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Sun,
   Users,
+  Wand2,
   Webhook,
   Zap,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const NAV = [
   { to: "/triggers", label: "Triggers", icon: Zap },
   { to: "/automations", label: "Automations", icon: Clock },
   { to: "/canned-responses", label: "Canned", icon: MessageSquareText },
+  { to: "/macros", label: "Macros", icon: Wand2 },
   { to: "/audit", label: "Audit", icon: ScrollText },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },

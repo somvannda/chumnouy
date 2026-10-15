@@ -28,6 +28,8 @@ export default function TicketView() {
   const [ai, setAi] = useState(null);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState(null);
+  const [macros, setMacros] = useState([]);
+  const [macroId, setMacroId] = useState("");
 
   const load = useCallback(
     () =>
@@ -41,6 +43,10 @@ export default function TicketView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    api.listMacros(token).then(setMacros).catch(() => setMacros([]));
+  }, [token]);
 
   async function run(action) {
     setBusy(true);
@@ -141,6 +147,32 @@ export default function TicketView() {
               Resolve
             </Button>
           )}
+        </div>
+      </Card>
+
+      <Card className="mt-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">Macro</p>
+          <Select
+            className="w-48"
+            value={macroId}
+            disabled={busy || !macros.length}
+            onChange={(event) => setMacroId(event.target.value)}
+          >
+            <option value="">{macros.length ? "Choose…" : "No macros"}</option>
+            {macros.map((macro) => (
+              <option key={macro.id} value={macro.id}>
+                {macro.name}
+              </option>
+            ))}
+          </Select>
+          <Button
+            variant="secondary"
+            disabled={busy || !macroId}
+            onClick={() => run(async () => { await api.applyMacro(token, id, macroId); setMacroId(""); })}
+          >
+            Apply
+          </Button>
         </div>
       </Card>
 
