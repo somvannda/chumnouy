@@ -471,6 +471,7 @@ class AISettingsRead(BaseModel):
     model: str | None = None
     base_url: str | None = None
     api_key_set: bool
+    auto_triage: bool = False
     providers: list[dict] = Field(default_factory=list)
 
 
@@ -479,6 +480,7 @@ class AISettingsUpdate(BaseModel):
     model: str | None = Field(default=None, max_length=120)
     base_url: str | None = Field(default=None, max_length=300)
     api_key: str | None = Field(default=None, max_length=400)
+    auto_triage: bool | None = None
 
 
 class NotificationSettingsRead(BaseModel):

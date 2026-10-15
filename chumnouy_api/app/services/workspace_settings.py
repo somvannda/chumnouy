@@ -50,6 +50,7 @@ def ai_settings(workspace: Workspace) -> AISettingsRead:
         model=stored.get("ai_model"),
         base_url=stored.get("ai_base_url"),
         api_key_set=bool(effective_key),
+        auto_triage=bool(stored.get("ai_auto_triage")),
         providers=ai_service.provider_catalog(),
     )
 
@@ -137,6 +138,7 @@ async def update_ai(
             "ai_model": payload.model,
             "ai_base_url": payload.base_url,
             "ai_api_key": payload.api_key,
+            "ai_auto_triage": payload.auto_triage,
         },
     )
     await db.commit()

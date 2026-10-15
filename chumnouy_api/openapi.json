@@ -7,6 +7,11 @@
             "title": "Api Key Set",
             "type": "boolean"
           },
+          "auto_triage": {
+            "default": false,
+            "title": "Auto Triage",
+            "type": "boolean"
+          },
           "base_url": {
             "anyOf": [
               {
@@ -68,6 +73,17 @@
               }
             ],
             "title": "Api Key"
+          },
+          "auto_triage": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Triage"
           },
           "base_url": {
             "anyOf": [
