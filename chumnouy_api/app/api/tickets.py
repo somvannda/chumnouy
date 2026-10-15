@@ -28,6 +28,7 @@ from app.schemas import (
 )
 from app.services import attachments as attachments_svc
 from app.services import idempotency as idempotency_svc
+from app.services import quota as quota_svc
 from app.services import tickets as svc
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
@@ -55,6 +56,7 @@ async def create_ticket(
         stored = await idempotency_svc.get_stored(db, ctx.workspace.id, idempotency_key)
         if stored is not None:
             return JSONResponse(content=stored.response, status_code=stored.status_code)
+    await quota_svc.enforce_ticket_quota(db, ctx.workspace)
     try:
         result = await svc.create_ticket(db, ctx, payload)
     except ValueError as exc:

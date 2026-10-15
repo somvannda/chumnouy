@@ -21,6 +21,7 @@ from app.schemas import (
     TicketMessageRead,
 )
 from app.services import public as svc
+from app.services import quota as quota_svc
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -49,6 +50,7 @@ async def create_my_ticket(
     ctx: RequesterContext = Depends(_requester),
     db: AsyncSession = Depends(get_db),
 ) -> TicketDetailRead:
+    await quota_svc.enforce_ticket_quota(db, ctx.workspace)
     try:
         return await svc.create_portal_ticket(db, ctx.workspace, ctx.requester, payload)
     except ValueError as exc:

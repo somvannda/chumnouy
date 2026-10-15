@@ -18,6 +18,9 @@ Base URL: `https://api.chumnouy.chmaba.com/v1` (dev: `http://127.0.0.1:8100/v1`)
   limited per client IP.
 - Every resource includes `id` (UUID) + `created_at`; tickets also carry
   `reference` (`CMY-1042`).
+- A workspace may cap its monthly ticket volume
+  (`workspace.settings.quota.tickets_per_month`); exceeding it returns `429`
+  (`too_many_requests`). `0`/absent = unlimited.
 
 ## 1. Integrations & keys (console)
 
