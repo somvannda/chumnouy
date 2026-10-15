@@ -125,6 +125,24 @@ export const api = {
     request(`/tickets/${id}/assistant/summary`, { method: "POST", token }),
   triageTicket: (token, id) =>
     request(`/tickets/${id}/assistant/triage`, { method: "POST", token }),
+
+  // Canned responses
+  listCannedResponses: (token) => request("/canned-responses", { token }),
+  createCannedResponse: (token, body) =>
+    request("/canned-responses", { method: "POST", token, body }),
+  deleteCannedResponse: (token, id) =>
+    request(`/canned-responses/${id}`, { method: "DELETE", token }),
+
+  // Triggers
+  listTriggers: (token) => request("/triggers", { token }),
+  createTrigger: (token, body) => request("/triggers", { method: "POST", token, body }),
+  updateTrigger: (token, id, body) =>
+    request(`/triggers/${id}`, { method: "PATCH", token, body }),
+  deleteTrigger: (token, id) => request(`/triggers/${id}`, { method: "DELETE", token }),
+
+  // SLA settings
+  updateSlaSettings: (token, body) =>
+    request("/console/settings/sla", { method: "PATCH", token, body }),
 };
 
 function parseSse(chunk) {

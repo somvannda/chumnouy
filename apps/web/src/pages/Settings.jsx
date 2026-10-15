@@ -11,6 +11,7 @@ export default function Settings() {
   const [settings, setSettings] = useState(null);
   const [ai, setAi] = useState(EMPTY_AI);
   const [notifyr, setNotifyr] = useState(EMPTY_NOTIFYR);
+  const [sla, setSla] = useState(null);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -30,6 +31,10 @@ export default function Settings() {
           setNotifyr({
             notifyr_api_url: data.notifications.notifyr_api_url || "",
             notifyr_api_key: "",
+          });
+          setSla({
+            first_response_minutes: data.sla?.first_response_minutes || {},
+            resolution_minutes: data.sla?.resolution_minutes || {},
           });
         })
         .catch((err) => setError(err.message)),
@@ -72,6 +77,22 @@ export default function Settings() {
     };
     if (notifyr.notifyr_api_key) body.notifyr_api_key = notifyr.notifyr_api_key;
     return save(event, () => api.updateNotificationSettings(token, body), "Notification settings saved.");
+  }
+
+  function saveSla(event) {
+    const minutes = (values) =>
+      Object.fromEntries(
+        Object.entries(values).map(([key, value]) => [key, Math.max(0, Number(value) || 0)]),
+      );
+    return save(
+      event,
+      () =>
+        api.updateSlaSettings(token, {
+          first_response_minutes: minutes(sla.first_response_minutes),
+          resolution_minutes: minutes(sla.resolution_minutes),
+        }),
+      "SLA settings saved.",
+    );
   }
 
   if (!settings) {
@@ -151,6 +172,41 @@ export default function Settings() {
           </Field>
           <Button type="submit" disabled={busy}>
             Save notification settings
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">SLA targets</h2>
+        <p className="mt-1 text-sm text-ink-soft">Minutes by priority; 0 disables the target.</p>
+        <form onSubmit={saveSla} className="mt-4 space-y-4">
+          {["first_response_minutes", "resolution_minutes"].map((key) => (
+            <div key={key}>
+              <p className="mb-1.5 text-xs font-bold uppercase tracking-[.08em] text-ink-soft">
+                {key === "first_response_minutes" ? "First response" : "Resolution"}
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {["low", "normal", "high", "urgent"].map((priority) => (
+                  <label key={priority} className="text-xs font-bold capitalize text-muted">
+                    {priority}
+                    <Input
+                      className="mt-1"
+                      inputMode="numeric"
+                      value={sla?.[key]?.[priority] ?? ""}
+                      onChange={(event) =>
+                        setSla((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], [priority]: event.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          <Button type="submit" disabled={busy || !sla}>
+            Save SLA settings
           </Button>
         </form>
       </Card>
