@@ -216,6 +216,7 @@ external process that drives the worker loop.
 | `PATCH` | `/v1/console/settings/locale` | Set the workspace locale (`en`/`km`) |
 | `PATCH` | `/v1/console/settings/sla` | Set per-priority response/resolution targets (minutes) |
 | `PATCH` | `/v1/console/settings/sso` | Configure OIDC SSO (issuer, client id/secret, allowed domains) |
+| `PATCH` | `/v1/console/settings/business-hours` | Set working hours (per weekday, timezone) for SLA due dates |
 
 Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 

@@ -1381,6 +1381,78 @@
         "title": "BulkUpdate",
         "type": "object"
       },
+      "BusinessHoursRead": {
+        "properties": {
+          "days": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Days",
+            "type": "object"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "timezone": {
+            "default": "UTC",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "title": "BusinessHoursRead",
+        "type": "object"
+      },
+      "BusinessHoursUpdate": {
+        "properties": {
+          "days": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "BusinessHoursUpdate",
+        "type": "object"
+      },
       "CannedResponseCreate": {
         "properties": {
           "body": {
@@ -4497,6 +4569,9 @@
           "ai": {
             "$ref": "#/components/schemas/AISettingsRead"
           },
+          "business_hours": {
+            "$ref": "#/components/schemas/BusinessHoursRead"
+          },
           "locale": {
             "default": "en",
             "title": "Locale",
@@ -4516,7 +4591,8 @@
           "ai",
           "notifications",
           "sla",
-          "sso"
+          "sso",
+          "business_hours"
         ],
         "title": "WorkspaceSettingsRead",
         "type": "object"
@@ -6463,6 +6539,71 @@
           }
         ],
         "summary": "Update Ai",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/business-hours": {
+      "patch": {
+        "operationId": "update_business_hours_api_v1_console_settings_business_hours_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessHoursUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Business Hours",
         "tags": [
           "console"
         ]

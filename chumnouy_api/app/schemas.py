@@ -524,12 +524,25 @@ class SsoStart(BaseModel):
     state: str
 
 
+class BusinessHoursRead(BaseModel):
+    enabled: bool = False
+    timezone: str = "UTC"
+    days: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class BusinessHoursUpdate(BaseModel):
+    enabled: bool | None = None
+    timezone: str | None = Field(default=None, max_length=60)
+    days: dict[str, list[str]] | None = None
+
+
 class WorkspaceSettingsRead(BaseModel):
     locale: str = "en"
     ai: AISettingsRead
     notifications: NotificationSettingsRead
     sla: SlaSettingsRead
     sso: SsoSettingsRead
+    business_hours: BusinessHoursRead
 
 
 class LocaleUpdate(BaseModel):
