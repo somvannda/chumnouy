@@ -150,7 +150,9 @@ hours** calendars and per-team policies.
 
 ### P5 — Collaboration · M
 
-- **@mentions** in internal notes → notify the mentioned agent (Notifyr).
+- **@mentions** in internal notes → notify the mentioned agent (Notifyr). ✅ **done**
+  (reply `mentions: [user_id]` on an `internal` note enqueues a `ticket.mentioned`
+  Notifyr event per mentioned member).
 - **Collision detection**: `GET /v1/tickets/{id}/presence` (who is viewing).
 - **Bulk actions** on a ticket id list (assign/status/tag/team). ✅ **done**
   (`POST /v1/console/bulk`, scope `tickets:write`).

@@ -126,6 +126,7 @@ class TicketMessageCreate(BaseModel):
     body_format: Literal["text", "html"] = "text"
     visibility: Literal["public", "internal"] = "public"
     attachment_ids: list[UUID] = Field(default_factory=list)
+    mentions: list[UUID] = Field(default_factory=list)
 
 
 class AttachmentRead(APIModel):

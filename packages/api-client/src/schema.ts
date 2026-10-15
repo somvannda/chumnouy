@@ -877,6 +877,8 @@ export interface TicketMessageCreate {
   body: string;
   /** Body Format */
   body_format?: "text" | "html";
+  /** Mentions */
+  mentions?: string[];
   /** Visibility */
   visibility?: "public" | "internal";
 }

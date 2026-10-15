@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 TICKET_CREATED = "ticket.created"
 TICKET_REPLIED = "ticket.replied"
+TICKET_MENTIONED = "ticket.mentioned"
 
 BACKOFF_SECONDS: tuple[int, ...] = (10, 60, 300, 1800)
 
