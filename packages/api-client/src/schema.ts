@@ -875,6 +875,78 @@ export interface TicketUpdate {
   team_id?: string | null;
 }
 
+/** TriggerAction */
+export interface TriggerAction {
+  /** Type */
+  type: "set_status" | "set_priority" | "add_tag" | "remove_tag" | "set_team";
+  /** Value */
+  value: string;
+}
+
+/** TriggerCondition */
+export interface TriggerCondition {
+  /** Field */
+  field: "status" | "priority" | "tag" | "subject";
+  /** Op */
+  op?: "is" | "contains";
+  /** Value */
+  value: string;
+}
+
+/** TriggerCreate */
+export interface TriggerCreate {
+  /** Actions */
+  actions?: TriggerAction[];
+  /** Conditions */
+  conditions?: TriggerCondition[];
+  /** Event */
+  event: "ticket.created" | "ticket.replied" | "ticket.updated";
+  /** Is Active */
+  is_active?: boolean;
+  /** Name */
+  name: string;
+  /** Position */
+  position?: number;
+}
+
+/** TriggerRead */
+export interface TriggerRead {
+  /** Actions */
+  actions?: Record<string, unknown>[];
+  /** Conditions */
+  conditions?: Record<string, unknown>[];
+  /** Created At */
+  created_at: string;
+  /** Event */
+  event: string;
+  /** Id */
+  id: string;
+  /** Is Active */
+  is_active: boolean;
+  /** Name */
+  name: string;
+  /** Position */
+  position: number;
+  /** Updated At */
+  updated_at: string;
+}
+
+/** TriggerUpdate */
+export interface TriggerUpdate {
+  /** Actions */
+  actions?: TriggerAction[] | null;
+  /** Conditions */
+  conditions?: TriggerCondition[] | null;
+  /** Event */
+  event?: "ticket.created" | "ticket.replied" | "ticket.updated" | null;
+  /** Is Active */
+  is_active?: boolean | null;
+  /** Name */
+  name?: string | null;
+  /** Position */
+  position?: number | null;
+}
+
 /** UserRead */
 export interface UserRead {
   /** Created At */

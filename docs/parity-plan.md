@@ -123,7 +123,10 @@ hours** calendars and per-team policies.
 
 - **Triggers** (event-based) and **automations** (time-based) with a
   condition/action DSL: conditions on ticket fields; actions = assign, set
-  status/priority/tag/team, send notification, call webhook.
+  status/priority/tag/team, send notification, call webhook. ✅ **triggers done**
+  (`/v1/triggers`, event `ticket.created|replied|updated`, conditions →
+  set_status/priority/tag/team, `trigger.applied` audit); time-based automations
+  and notify/webhook actions remain.
 - **Macros / canned responses**: workspace-scoped saved replies + macros
   (a trigger bundle applied on demand). ✅ **canned responses done**
   (`/v1/canned-responses` CRUD); macros (trigger bundles) remain.

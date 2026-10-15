@@ -586,3 +586,47 @@ class CannedResponseRead(BaseModel):
     body_format: str = "text"
     created_at: datetime
     updated_at: datetime
+
+
+# --- Triggers -----------------------------------------------------------------
+
+
+class TriggerCondition(BaseModel):
+    field: Literal["status", "priority", "tag", "subject"]
+    op: Literal["is", "contains"] = "is"
+    value: str = Field(max_length=255)
+
+
+class TriggerAction(BaseModel):
+    type: Literal["set_status", "set_priority", "add_tag", "remove_tag", "set_team"]
+    value: str = Field(max_length=255)
+
+
+class TriggerCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    event: Literal["ticket.created", "ticket.replied", "ticket.updated"]
+    conditions: list[TriggerCondition] = Field(default_factory=list)
+    actions: list[TriggerAction] = Field(default_factory=list)
+    position: int = 0
+    is_active: bool = True
+
+
+class TriggerUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    event: Literal["ticket.created", "ticket.replied", "ticket.updated"] | None = None
+    conditions: list[TriggerCondition] | None = None
+    actions: list[TriggerAction] | None = None
+    position: int | None = None
+    is_active: bool | None = None
+
+
+class TriggerRead(BaseModel):
+    id: UUID
+    name: str
+    event: str
+    conditions: list[dict] = Field(default_factory=list)
+    actions: list[dict] = Field(default_factory=list)
+    position: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
