@@ -5,6 +5,7 @@ import { isPlatformAdmin } from "./lib/format";
 import Admin from "./pages/Admin";
 import Assistant from "./pages/Assistant";
 import Audit from "./pages/Audit";
+import CannedResponses from "./pages/CannedResponses";
 import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
@@ -14,6 +15,7 @@ import Reports from "./pages/Reports";
 import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
 import TicketView from "./pages/TicketView";
+import Triggers from "./pages/Triggers";
 import Settings from "./pages/Settings";
 import Webhooks from "./pages/Webhooks";
 
@@ -53,6 +55,8 @@ export default function App() {
         <Route path="/webhooks" element={<Webhooks />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<Audit />} />
+        <Route path="/triggers" element={<Triggers />} />
+        <Route path="/canned-responses" element={<CannedResponses />} />
         <Route path="/settings" element={<Settings />} />
         <Route
           path="/admin"

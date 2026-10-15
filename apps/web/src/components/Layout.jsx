@@ -7,6 +7,7 @@ import {
   KeyRound,
   LifeBuoy,
   LogOut,
+  MessageSquareText,
   Moon,
   ScrollText,
   Settings,
@@ -14,6 +15,7 @@ import {
   Sun,
   Users,
   Webhook,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials, isPlatformAdmin } from "../lib/format";
@@ -26,6 +28,8 @@ const NAV = [
   { to: "/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/requesters", label: "Requesters", icon: Users },
   { to: "/webhooks", label: "Webhooks", icon: Webhook },
+  { to: "/triggers", label: "Triggers", icon: Zap },
+  { to: "/canned-responses", label: "Canned", icon: MessageSquareText },
   { to: "/audit", label: "Audit", icon: ScrollText },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },
