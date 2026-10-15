@@ -459,3 +459,21 @@ class NotificationSettingsUpdate(BaseModel):
 class WorkspaceSettingsRead(BaseModel):
     ai: AISettingsRead
     notifications: NotificationSettingsRead
+
+
+# --- Search -------------------------------------------------------------------
+
+
+class SearchResult(BaseModel):
+    type: Literal["ticket", "message", "article"]
+    id: UUID
+    title: str
+    snippet: str = ""
+    ticket_id: UUID | None = None
+    reference: str | None = None
+    created_at: datetime | None = None
+
+
+class SearchResults(BaseModel):
+    query: str
+    results: list[SearchResult] = Field(default_factory=list)

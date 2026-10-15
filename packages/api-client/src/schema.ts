@@ -542,6 +542,32 @@ export interface RequesterUpdate {
   phone?: string | null;
 }
 
+/** SearchResult */
+export interface SearchResult {
+  /** Created At */
+  created_at?: string | null;
+  /** Id */
+  id: string;
+  /** Reference */
+  reference?: string | null;
+  /** Snippet */
+  snippet?: string;
+  /** Ticket Id */
+  ticket_id?: string | null;
+  /** Title */
+  title: string;
+  /** Type */
+  type: "ticket" | "message" | "article";
+}
+
+/** SearchResults */
+export interface SearchResults {
+  /** Query */
+  query: string;
+  /** Results */
+  results?: SearchResult[];
+}
+
 /** SignupRequest */
 export interface SignupRequest {
   /** Email */

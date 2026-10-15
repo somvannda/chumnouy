@@ -70,7 +70,9 @@ Everything else depends on these; do first.
 - **Attachments breadth**: allow any content type with a per-workspace allowlist
   + max size; keep content-addressed storage; add `kind` (image/file).
 - **Full-text search**: Postgres `tsvector` on tickets/messages/articles +
-  `GET /v1/search`. Migration `0011`.
+  `GET /v1/search`. Migration `0011`. ✅ **done** (`GET /v1/search` over
+  tickets/messages/articles; Postgres GIN expression indexes in `0011_search`,
+  portable `ILIKE` query).
 - **Teams/groups + RBAC**: `teams`, `team_members`; roles
   `owner|admin|team_lead|agent|viewer`; permission checks in `deps`.
 - **Audit log surface**: expose `ticket_events` (and account/workspace events)
