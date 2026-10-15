@@ -28,6 +28,7 @@ from app.schemas import (
 from app.services import attachments as attachments_svc
 from app.services import notifyr as notifyr_svc
 from app.services import webhooks as webhooks_svc
+from app.services.sanitize import render_body
 
 REFERENCE_PREFIX = "CMY"
 OPEN_STATUSES = ("open", "pending")
@@ -70,6 +71,7 @@ def message_read(
         author_type=message.author_type,
         visibility=message.visibility,
         body=message.body,
+        body_format=message.body_format,
         created_at=message.created_at,
         attachments=attachments or [],
     )
@@ -163,7 +165,8 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         workspace_id=ticket.workspace_id,
         author_type="requester",
         visibility="public",
-        body=payload.message,
+        body=render_body(payload.message, payload.message_format),
+        body_format=payload.message_format,
     )
     db.add(message)
     try:
@@ -295,7 +298,8 @@ async def add_message(
         author_type="agent" if agent else "requester",
         author_user_id=ctx.user.id if agent and ctx.user else None,
         visibility=payload.visibility,
-        body=payload.body,
+        body=render_body(payload.body, payload.body_format),
+        body_format=payload.body_format,
     )
     db.add(message)
     await db.flush()

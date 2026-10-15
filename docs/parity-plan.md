@@ -65,7 +65,8 @@ Everything else depends on these; do first.
 
 - **Rich messages**: allow HTML/markdown in `ticket_messages.body` with
   sanitisation (port Chmaba's `sanitize_html`), a `body_format` column
-  (`text|html`). Migration `0010`.
+  (`text|html`). Migration `0010`. ✅ **done** (`body_format`/`message_format`,
+  sanitised via `services/sanitize.py`).
 - **Attachments breadth**: allow any content type with a per-workspace allowlist
   + max size; keep content-addressed storage; add `kind` (image/file).
 - **Full-text search**: Postgres `tsvector` on tickets/messages/articles +
