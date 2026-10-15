@@ -106,12 +106,13 @@ The biggest gap. Split so the boundary stays clean:
 - **Voice**: **not planned** (contact-centre scope) — document as such.
 
 ### P2 — SLA & business hours · L
-✅ **v1 done**: per-priority first-response/resolution targets
-(`workspace.settings.sla`, editable via `/v1/console/settings/sla`), due
-timestamps stamped on ticket creation, a worker sweep that marks breaches
-(`sla.breached` event + webhook), and `first_response_due_at` /
-`resolution_due_at` / `sla_breached_at` on the ticket. Still to add: **business
-hours** calendars and per-team policies.
+✅ **done**: per-priority first-response/resolution targets
+(`workspace.settings.sla`, editable via `/v1/console/settings/sla`), **business
+hours** (`/v1/console/settings/business-hours`; due dates are computed over
+working hours), due timestamps stamped on ticket creation, a worker sweep that
+marks breaches (`sla.breached` event + webhook), and
+`first_response_due_at` / `resolution_due_at` / `sla_breached_at` on the ticket.
+Still to add: per-team SLA policies.
 
 - `business_hours` (per workspace, calendars), `sla_policies` (per priority/
   team), `sla_events` (first-response/resolution targets + breaches).

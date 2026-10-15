@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Ticket, Workspace, utcnow
 from app.schemas import SlaSettingsRead, SlaSettingsUpdate
+from app.services import business_hours as business_hours_svc
 from app.services import webhooks as webhooks_svc
 
 logger = logging.getLogger(__name__)
@@ -51,12 +52,24 @@ def sla_settings(workspace: Workspace) -> SlaSettingsRead:
     return SlaSettingsRead(first_response_minutes=first, resolution_minutes=resolution)
 
 
+def _due(workspace: Workspace, start, minutes: int):
+    """Add ``minutes`` to ``start``, honouring business hours when enabled."""
+    bh = (workspace.settings or {}).get("business_hours") or {}
+    if bh.get("enabled"):
+        schedule = business_hours_svc.parse_schedule(bh.get("days"))
+        if schedule:
+            return business_hours_svc.add_business_minutes(
+                start, minutes, schedule, bh.get("timezone")
+            )
+    return start + timedelta(minutes=minutes)
+
+
 def apply_policy(workspace: Workspace, ticket: Ticket) -> None:
     """Stamp the due timestamps for a freshly created ticket."""
     first, resolution = load_policy(workspace)
     now = ticket.created_at or utcnow()
-    ticket.first_response_due_at = now + timedelta(minutes=first.get(ticket.priority, first["normal"]))
-    ticket.resolution_due_at = now + timedelta(minutes=resolution.get(ticket.priority, resolution["normal"]))
+    ticket.first_response_due_at = _due(workspace, now, first.get(ticket.priority, first["normal"]))
+    ticket.resolution_due_at = _due(workspace, now, resolution.get(ticket.priority, resolution["normal"]))
 
 
 async def update_settings(

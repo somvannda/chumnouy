@@ -13,6 +13,8 @@ from app.models import Workspace
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
+    BusinessHoursRead,
+    BusinessHoursUpdate,
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
@@ -22,6 +24,7 @@ from app.schemas import (
     WorkspaceSettingsRead,
 )
 from app.services import ai as ai_service
+from app.services import business_hours as business_hours_svc
 
 
 def _stored(workspace: Workspace) -> dict:
@@ -73,6 +76,15 @@ def sso_settings(workspace: Workspace) -> SsoSettingsRead:
     )
 
 
+def business_hours_settings(workspace: Workspace) -> BusinessHoursRead:
+    stored = _stored(workspace).get("business_hours") or {}
+    return BusinessHoursRead(
+        enabled=bool(stored.get("enabled")),
+        timezone=stored.get("timezone") or "UTC",
+        days=dict(stored.get("days") or {}),
+    )
+
+
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
     from app.services import sla as sla_svc
 
@@ -82,7 +94,30 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         notifications=notification_settings(workspace),
         sla=sla_svc.sla_settings(workspace),
         sso=sso_settings(workspace),
+        business_hours=business_hours_settings(workspace),
     )
+
+
+async def update_business_hours(
+    db: AsyncSession, workspace: Workspace, payload: BusinessHoursUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    bh = dict(stored.get("business_hours") or {})
+    if payload.enabled is not None:
+        bh["enabled"] = payload.enabled
+    if payload.timezone is not None:
+        bh["timezone"] = payload.timezone.strip() or "UTC"
+    if payload.days is not None:
+        bh["days"] = {
+            day: [str(value) for value in hours]
+            for day, hours in payload.days.items()
+            if day in business_hours_svc.WEEKDAYS and len(hours) == 2
+        }
+    stored["business_hours"] = bh
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
 
 
 async def update_sso(

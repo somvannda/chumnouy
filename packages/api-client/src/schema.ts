@@ -440,6 +440,26 @@ export interface BulkUpdate {
   ticket_ids: string[];
 }
 
+/** BusinessHoursRead */
+export interface BusinessHoursRead {
+  /** Days */
+  days?: Record<string, string[]>;
+  /** Enabled */
+  enabled?: boolean;
+  /** Timezone */
+  timezone?: string;
+}
+
+/** BusinessHoursUpdate */
+export interface BusinessHoursUpdate {
+  /** Days */
+  days?: Record<string, string[]> | null;
+  /** Enabled */
+  enabled?: boolean | null;
+  /** Timezone */
+  timezone?: string | null;
+}
+
 /** CannedResponseCreate */
 export interface CannedResponseCreate {
   /** Body */
@@ -1359,6 +1379,7 @@ export interface WorkspaceRead {
 /** WorkspaceSettingsRead */
 export interface WorkspaceSettingsRead {
   ai: AISettingsRead;
+  business_hours: BusinessHoursRead;
   /** Locale */
   locale?: string;
   notifications: NotificationSettingsRead;
