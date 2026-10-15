@@ -348,6 +348,29 @@ class TeamMember(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+# --- Canned responses ---------------------------------------------------------
+
+
+class CannedResponse(Base, TimestampMixin):
+    """A saved reply an agent can insert into a ticket message."""
+
+    __tablename__ = "canned_responses"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "title", name="uq_canned_workspace_title"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(120))
+    body: Mapped[str] = mapped_column(Text)
+    body_format: Mapped[str] = mapped_column(String(10), default="text")
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.

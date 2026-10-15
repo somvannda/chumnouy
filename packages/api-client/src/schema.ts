@@ -329,6 +329,42 @@ export interface Body_upload_attachment_api_v1_uploads_post {
   file: string;
 }
 
+/** CannedResponseCreate */
+export interface CannedResponseCreate {
+  /** Body */
+  body: string;
+  /** Body Format */
+  body_format?: "text" | "html";
+  /** Title */
+  title: string;
+}
+
+/** CannedResponseRead */
+export interface CannedResponseRead {
+  /** Body */
+  body: string;
+  /** Body Format */
+  body_format?: string;
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+  /** Title */
+  title: string;
+  /** Updated At */
+  updated_at: string;
+}
+
+/** CannedResponseUpdate */
+export interface CannedResponseUpdate {
+  /** Body */
+  body?: string | null;
+  /** Body Format */
+  body_format?: "text" | "html" | null;
+  /** Title */
+  title?: string | null;
+}
+
 /** HTTPValidationError */
 export interface HTTPValidationError {
   /** Detail */

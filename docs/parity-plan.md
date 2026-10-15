@@ -125,7 +125,8 @@ hours** calendars and per-team policies.
   condition/action DSL: conditions on ticket fields; actions = assign, set
   status/priority/tag/team, send notification, call webhook.
 - **Macros / canned responses**: workspace-scoped saved replies + macros
-  (a trigger bundle applied on demand).
+  (a trigger bundle applied on demand). ✅ **canned responses done**
+  (`/v1/canned-responses` CRUD); macros (trigger bundles) remain.
 - **Routing**: round-robin, load-balanced (agent capacity), skill-based
   (teams/skills), on the ticket-assign path.
 - Reuse the worker for time-based sweeps.
