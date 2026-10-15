@@ -49,3 +49,16 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+
+  client:
+    name: API client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Regenerate and check for drift
+        run: |
+          node packages/api-client/scripts/generate.mjs
+          git diff --exit-code -- packages/api-client/src/schema.ts
