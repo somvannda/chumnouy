@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/auth";
 import { initials, isPlatformAdmin } from "../lib/format";
+import CommandBar from "./CommandBar";
 import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
@@ -106,6 +107,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <CommandBar items={nav} />
     </div>
   );
 }
