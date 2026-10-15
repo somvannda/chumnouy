@@ -22,6 +22,7 @@ from app.schemas import (
 )
 from app.services import attachments as attachments_svc
 from app.services import notifyr as notifyr_svc
+from app.services import sla as sla_svc
 from app.services import tickets as tickets_svc
 from app.services import webhooks as webhooks_svc
 from app.services.sanitize import render_body
@@ -93,6 +94,7 @@ async def create_portal_ticket(
     )
     db.add(ticket)
     await db.flush()
+    sla_svc.apply_policy(workspace, ticket)
     message = TicketMessage(
         ticket_id=ticket.id,
         workspace_id=ticket.workspace_id,

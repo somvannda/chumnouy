@@ -183,6 +183,9 @@ class TicketRead(BaseModel):
     metadata: dict = Field(default_factory=dict)
     created_at: datetime
     resolved_at: datetime | None = None
+    first_response_due_at: datetime | None = None
+    resolution_due_at: datetime | None = None
+    sla_breached_at: datetime | None = None
 
 
 class TicketDetailRead(TicketRead):
@@ -459,10 +462,21 @@ class NotificationSettingsUpdate(BaseModel):
     notifyr_api_key: str | None = Field(default=None, max_length=400)
 
 
+class SlaSettingsRead(BaseModel):
+    first_response_minutes: dict[str, int] = Field(default_factory=dict)
+    resolution_minutes: dict[str, int] = Field(default_factory=dict)
+
+
+class SlaSettingsUpdate(BaseModel):
+    first_response_minutes: dict[str, int] | None = None
+    resolution_minutes: dict[str, int] | None = None
+
+
 class WorkspaceSettingsRead(BaseModel):
     locale: str = "en"
     ai: AISettingsRead
     notifications: NotificationSettingsRead
+    sla: SlaSettingsRead
 
 
 class LocaleUpdate(BaseModel):
