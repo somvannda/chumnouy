@@ -137,7 +137,10 @@ hours** calendars and per-team policies.
 ### P4 — Reporting & CSAT · L
 
 - **Metrics**: materialise `ticket_metrics` (first response, resolution, reopen,
-  volume by channel/team/agent) with a daily rollup worker.
+  volume by channel/team/agent) with a daily rollup worker. ✅ **summary done**
+  (`GET /v1/reports/summary`: counts, response/resolution averages, SLA
+  compliance, computed on the fly); the daily rollup + per-agent/team breakdowns
+  remain.
 - **API + console**: `GET /v1/reports/*` and a Reports screen (volume, FRT,
   resolution, SLA compliance, agent/team breakdowns, CSV export).
 - **CSAT**: `csat_surveys` + `csat_responses`; send via Notifyr on resolve; a

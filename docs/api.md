@@ -331,3 +331,14 @@ Workspace-scoped; `tickets:read` / `tickets:write`. A trigger fires on an
 `actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team, value}]`.
 Evaluated once per write, in `position` order; each application records a
 `trigger.applied` audit event.
+
+## 18. Reports
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/reports/summary` | Ticket counts, response/resolution averages, SLA compliance |
+
+Workspace-scoped; scope `tickets:read`. Returns `total`, `by_status`,
+`by_priority`, `breached`, `sla_compliance` (%), and
+`avg_first_response_minutes` / `avg_resolution_minutes` (null when no data).
+Computed on the fly from the ticket table.
