@@ -28,6 +28,7 @@ from app.schemas import (
 from app.services import attachments as attachments_svc
 from app.services import notifyr as notifyr_svc
 from app.services import sla as sla_svc
+from app.services import triggers as triggers_svc
 from app.services import webhooks as webhooks_svc
 from app.services.sanitize import render_body
 
@@ -193,6 +194,7 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         actor_type=ctx.actor_type,
         actor_id=ctx.integration.id if ctx.integration else None,
     )
+    await triggers_svc.apply_triggers(db, ticket=ticket, event="ticket.created")
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.created", data={"reference": ticket.reference}
     )
@@ -332,6 +334,7 @@ async def add_message(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data={"visibility": payload.visibility},
     )
+    await triggers_svc.apply_triggers(db, ticket=ticket, event="ticket.replied")
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.replied", data={"visibility": payload.visibility}
     )
@@ -383,6 +386,7 @@ async def apply_update(
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
         data=payload.model_dump(mode="json", exclude_none=True),
     )
+    await triggers_svc.apply_triggers(db, ticket=ticket, event="ticket.updated")
     if payload.status is not None and ticket.status != previous_status:
         await webhooks_svc.enqueue_event(
             db,

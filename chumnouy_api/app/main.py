@@ -22,6 +22,7 @@ from app.api.requesters import router as requesters_router
 from app.api.search import router as search_router
 from app.api.teams import router as teams_router
 from app.api.tickets import router as tickets_router
+from app.api.triggers import router as triggers_router
 from app.api.uploads import router as uploads_router
 from app.api.v1 import router as v1_router
 from app.api.webhooks import router as webhooks_router
@@ -107,6 +108,7 @@ app.include_router(teams_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(inbound_router, prefix="/api/v1")
 app.include_router(canned_responses_router, prefix="/api/v1")
+app.include_router(triggers_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 

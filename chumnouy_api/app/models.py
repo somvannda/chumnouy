@@ -371,6 +371,29 @@ class CannedResponse(Base, TimestampMixin):
     )
 
 
+# --- Triggers -----------------------------------------------------------------
+
+
+class Trigger(Base, TimestampMixin):
+    """An event-based rule: when ``event`` fires and ``conditions`` match, run
+    ``actions`` against the ticket (set status/priority, add/remove a tag, set
+    team). Evaluated once per ticket write; actions do not re-trigger."""
+
+    __tablename__ = "triggers"
+    __table_args__ = (Index("ix_trigger_workspace_event", "workspace_id", "event"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    event: Mapped[str] = mapped_column(String(40))
+    conditions: Mapped[list] = mapped_column(JSON, default=list)
+    actions: Mapped[list] = mapped_column(JSON, default=list)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.

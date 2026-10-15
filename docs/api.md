@@ -313,3 +313,21 @@ first contact. A new ticket is subject to the workspace quota.
 Workspace-scoped; `tickets:read` / `tickets:write`. Body carries `title`,
 `body` and `body_format` (`text`/`html`, sanitised). Titles are unique per
 workspace.
+
+## 17. Triggers
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/triggers` | List rules |
+| `POST` | `/v1/triggers` | Create |
+| `GET` | `/v1/triggers/{id}` | Detail |
+| `PATCH` | `/v1/triggers/{id}` | Update / deactivate |
+| `DELETE` | `/v1/triggers/{id}` | Delete |
+
+Workspace-scoped; `tickets:read` / `tickets:write`. A trigger fires on an
+`event` (`ticket.created`, `ticket.replied`, `ticket.updated`) when its
+`conditions` match and runs its `actions` on the ticket:
+`conditions` = `[{field: status|priority|tag|subject, op: is|contains, value}]`;
+`actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team, value}]`.
+Evaluated once per write, in `position` order; each application records a
+`trigger.applied` audit event.
