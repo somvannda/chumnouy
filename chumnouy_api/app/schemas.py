@@ -501,11 +501,33 @@ class SlaSettingsUpdate(BaseModel):
     resolution_minutes: dict[str, int] | None = None
 
 
+class SsoSettingsRead(BaseModel):
+    enabled: bool = False
+    issuer: str | None = None
+    client_id: str | None = None
+    allowed_domains: list[str] = Field(default_factory=list)
+    client_secret_set: bool = False
+
+
+class SsoSettingsUpdate(BaseModel):
+    enabled: bool | None = None
+    issuer: str | None = Field(default=None, max_length=300)
+    client_id: str | None = Field(default=None, max_length=200)
+    client_secret: str | None = Field(default=None, max_length=400)
+    allowed_domains: list[str] | None = None
+
+
+class SsoStart(BaseModel):
+    authorize_url: str
+    state: str
+
+
 class WorkspaceSettingsRead(BaseModel):
     locale: str = "en"
     ai: AISettingsRead
     notifications: NotificationSettingsRead
     sla: SlaSettingsRead
+    sso: SsoSettingsRead
 
 
 class LocaleUpdate(BaseModel):

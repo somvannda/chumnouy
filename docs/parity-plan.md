@@ -173,9 +173,9 @@ hours** calendars and per-team policies.
 
 ### P7 — Enterprise & security · XL
 
-- **SSO/SAML** (+ optional SCIM), **granular RBAC** wired to every endpoint. ✅ **RBAC done**
-  (`permissions` map enforced on integrations/keys, console settings, teams, and
-  ticket writes — `viewer` is read-only); SSO/SAML remains.
+- **SSO/SAML** (+ optional SCIM), **granular RBAC** wired to every endpoint. ✅ **OIDC SSO done**
+  (`/v1/auth/sso/{slug}` + callback, JWKS verification, allowed domains, JIT
+  provisioning) and RBAC done; SAML/SCIM remain.
 - **Audit log UI**; **GDPR**: requester data export/erasure endpoints. ✅ **GDPR done**
   (`GET /v1/requesters/{id}/export`, `DELETE /v1/requesters/{id}`); the audit-log
   console UI remains.

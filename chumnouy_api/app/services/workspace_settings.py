@@ -17,6 +17,8 @@ from app.schemas import (
     NotificationSettingsRead,
     NotificationSettingsUpdate,
     SlaSettingsUpdate,
+    SsoSettingsRead,
+    SsoSettingsUpdate,
     WorkspaceSettingsRead,
 )
 from app.services import ai as ai_service
@@ -59,6 +61,17 @@ def notification_settings(workspace: Workspace) -> NotificationSettingsRead:
     return NotificationSettingsRead(notifyr_api_url=url, notifyr_api_key_set=bool(key))
 
 
+def sso_settings(workspace: Workspace) -> SsoSettingsRead:
+    sso = _stored(workspace).get("sso") or {}
+    return SsoSettingsRead(
+        enabled=bool(sso.get("enabled")),
+        issuer=sso.get("issuer"),
+        client_id=sso.get("client_id"),
+        allowed_domains=list(sso.get("allowed_domains") or []),
+        client_secret_set=bool(sso.get("client_secret")),
+    )
+
+
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
     from app.services import sla as sla_svc
 
@@ -67,7 +80,33 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         ai=ai_settings(workspace),
         notifications=notification_settings(workspace),
         sla=sla_svc.sla_settings(workspace),
+        sso=sso_settings(workspace),
     )
+
+
+async def update_sso(
+    db: AsyncSession, workspace: Workspace, payload: SsoSettingsUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    sso = dict(stored.get("sso") or {})
+    if payload.enabled is not None:
+        sso["enabled"] = payload.enabled
+    if payload.issuer is not None:
+        sso["issuer"] = payload.issuer.strip() or None
+    if payload.client_id is not None:
+        sso["client_id"] = payload.client_id.strip() or None
+    if payload.client_secret is not None:
+        if payload.client_secret.strip():
+            sso["client_secret"] = payload.client_secret.strip()
+        else:
+            sso.pop("client_secret", None)
+    if payload.allowed_domains is not None:
+        sso["allowed_domains"] = [d.strip().lower() for d in payload.allowed_domains if d.strip()]
+    stored["sso"] = {key: value for key, value in sso.items() if value is not None}
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
 
 
 async def update_sla(

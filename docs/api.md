@@ -215,6 +215,7 @@ external process that drives the worker loop.
 | `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |
 | `PATCH` | `/v1/console/settings/locale` | Set the workspace locale (`en`/`km`) |
 | `PATCH` | `/v1/console/settings/sla` | Set per-priority response/resolution targets (minutes) |
+| `PATCH` | `/v1/console/settings/sso` | Configure OIDC SSO (issuer, client id/secret, allowed domains) |
 
 Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 
@@ -379,3 +380,15 @@ unset), `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
 
 **Unauthenticated**, addressed by workspace slug; only active articles are
 exposed. Rate-limited by the public middleware.
+
+## 21. SSO (OIDC)
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/auth/sso/{workspace_slug}` | Return the provider `authorize_url` + signed `state` |
+| `GET` | `/v1/auth/sso/callback?code=&state=` | Exchange the code, verify the ID token, sign in |
+
+Configured per workspace via `PATCH /v1/console/settings/sso`. The callback
+verifies the ID token against the issuer's JWKS, enforces `allowed_domains`, and
+just-in-time provisions the user + membership (role `agent`), returning the
+console `AuthRead`.
