@@ -155,6 +155,28 @@ def require_permission(action: str):
     return dependency
 
 
+def require_permission_scope(scope: str, action: str):
+    """Allow the request when an API key holds ``scope`` **or** a console user's
+    role grants ``action`` (so a read-only role cannot write via the console)."""
+
+    async def dependency(ctx: TenantContext = Depends(get_tenant_context)) -> TenantContext:
+        if ctx.actor_type == "user":
+            role = ctx.membership.role if ctx.membership else None
+            if not has_permission(role, action):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your role cannot perform this action",
+                )
+        elif scope not in ctx.scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Missing scope(s): {scope}",
+            )
+        return ctx
+
+    return dependency
+
+
 # --- Integration (API key) ----------------------------------------------------
 
 

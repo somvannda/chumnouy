@@ -10,6 +10,10 @@ Base URL: `https://api.chumnouy.chmaba.com/v1` (dev: `http://127.0.0.1:8100/v1`)
 - JSON in, JSON out.
 - Machine auth: `Authorization: Bearer chm_live_…` (or `X-Api-Key`).
 - Console auth: `Authorization: Bearer <jwt>`.
+- Console roles (coarse permissions): `owner` > `admin` > `team_lead` > `agent` >
+  `viewer`. Management endpoints need the matching permission (`keys:manage`,
+  `settings:manage`, `teams:manage`); ticket writes need `tickets:manage`, so a
+  `viewer` is read-only. API keys are checked against their scopes instead.
 - Writes accept `Idempotency-Key: <uuid>`; a repeat returns the original result.
   Implemented for ticket creation and replies.
 - Pagination: `?limit=&cursor=`; response carries `{ "data": [...], "next_cursor": "…" }`.

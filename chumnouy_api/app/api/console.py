@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.deps import WorkspaceContext, require_workspace_roles
+from app.deps import WorkspaceContext, require_permission
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
@@ -24,7 +24,7 @@ from app.services import workspace_settings as svc
 
 router = APIRouter(prefix="/console", tags=["console"])
 
-_owner = require_workspace_roles("owner", "admin")
+_owner = require_permission("settings:manage")
 
 
 @router.get("/settings", response_model=WorkspaceSettingsRead)

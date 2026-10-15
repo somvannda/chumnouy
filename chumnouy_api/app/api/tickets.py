@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.deps import TenantContext, require_tenant_scopes
+from app.deps import TenantContext, require_permission_scope, require_tenant_scopes
 from app.models import Ticket, TicketEvent
 from app.schemas import (
     AttachmentClaim,
@@ -34,7 +34,7 @@ from app.services import tickets as svc
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
 _read = require_tenant_scopes("tickets:read")
-_write = require_tenant_scopes("tickets:write")
+_write = require_permission_scope("tickets:write", "tickets:manage")
 
 
 async def _get_ticket(db: AsyncSession, ctx: TenantContext, ticket_id: UUID) -> Ticket:
