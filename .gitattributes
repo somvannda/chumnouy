@@ -1,0 +1,17 @@
+# Normalize line endings: store LF in the repo and check out LF everywhere, so
+# Windows and Linux agree and CRLF noise stops.
+* text=auto eol=lf
+
+# Windows-native scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never touch.
+*.woff2 binary
+*.ttf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
