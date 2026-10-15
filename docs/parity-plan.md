@@ -83,7 +83,9 @@ Everything else depends on these; do first.
 - **i18n**: content locales exist; add a UI locale switch (en/km) and
   translatable notification templates (rendered by Notifyr).
 - **Quotas**: per-workspace limits (tickets/mo, seats, storage) enforced in
-  middleware, surfaced in admin.
+  middleware, surfaced in admin. ✅ **done for tickets/month**
+  (`workspace.settings.quota.tickets_per_month`, enforced on the tenant and
+  public create paths with a `429`; seats/storage still to add).
 
 ### P1 — Channels · XL
 
