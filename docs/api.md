@@ -384,6 +384,22 @@ audit event and raises the usual status/assignee webhooks.
 
 Console only (JWT). Used for collision detection when two agents open a ticket.
 
+## 24. Live chat
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/public/chat/sessions` | Start a chat (requester token) |
+| `GET` | `/v1/public/chat/sessions/{id}` | My session + messages |
+| `POST` | `/v1/public/chat/sessions/{id}/messages` | Send (requester) |
+| `GET` | `/v1/console/chat/sessions` | List sessions (`status`) |
+| `GET` | `/v1/console/chat/sessions/{id}` | Session + messages |
+| `POST` | `/v1/console/chat/sessions/{id}/messages` | Reply (agent) |
+| `POST` | `/v1/console/chat/sessions/{id}/close` | Close |
+
+Polling v1 (the client re-fetches the session); an SSE/WebSocket transport can be
+added later. Requester sessions are reachable only with the matching portal
+token; a closed session rejects new requester messages with `409`.
+
 ## 18. Reports
 
 | Method | Path | Purpose |

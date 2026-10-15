@@ -759,6 +759,31 @@ class PresenceRead(BaseModel):
     viewers: list[UUID] = Field(default_factory=list)
 
 
+# --- Live chat ----------------------------------------------------------------
+
+
+class ChatMessageCreate(BaseModel):
+    body: str = Field(min_length=1)
+
+
+class ChatMessageRead(BaseModel):
+    id: UUID
+    author_type: str
+    body: str
+    created_at: datetime
+
+
+class ChatSessionRead(BaseModel):
+    id: UUID
+    status: str
+    created_at: datetime
+    closed_at: datetime | None = None
+
+
+class ChatSessionDetail(ChatSessionRead):
+    messages: list[ChatMessageRead] = Field(default_factory=list)
+
+
 # --- Reporting ----------------------------------------------------------------
 
 

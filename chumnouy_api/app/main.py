@@ -15,6 +15,8 @@ from app.api.auth import router as auth_router
 from app.api.automations import router as automations_router
 from app.api.bulk import router as bulk_router
 from app.api.canned_responses import router as canned_responses_router
+from app.api.chat import router as chat_router
+from app.api.chat_public import router as chat_public_router
 from app.api.console import router as console_router
 from app.api.help_centre import router as help_centre_router
 from app.api.inbound import router as inbound_router
@@ -123,6 +125,8 @@ app.include_router(automations_router, prefix="/api/v1")
 app.include_router(sso_router, prefix="/api/v1")
 app.include_router(macros_router, prefix="/api/v1")
 app.include_router(presence_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api/v1")
+app.include_router(chat_public_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 
