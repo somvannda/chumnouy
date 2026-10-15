@@ -5,6 +5,7 @@ import { isPlatformAdmin } from "./lib/format";
 import Admin from "./pages/Admin";
 import Assistant from "./pages/Assistant";
 import Audit from "./pages/Audit";
+import Automations from "./pages/Automations";
 import CannedResponses from "./pages/CannedResponses";
 import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="/triggers" element={<Triggers />} />
+        <Route path="/automations" element={<Automations />} />
         <Route path="/canned-responses" element={<CannedResponses />} />
         <Route path="/settings" element={<Settings />} />
         <Route

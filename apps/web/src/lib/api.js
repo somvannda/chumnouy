@@ -140,6 +140,13 @@ export const api = {
     request(`/triggers/${id}`, { method: "PATCH", token, body }),
   deleteTrigger: (token, id) => request(`/triggers/${id}`, { method: "DELETE", token }),
 
+  // Automations
+  listAutomations: (token) => request("/automations", { token }),
+  createAutomation: (token, body) => request("/automations", { method: "POST", token, body }),
+  updateAutomation: (token, id, body) =>
+    request(`/automations/${id}`, { method: "PATCH", token, body }),
+  deleteAutomation: (token, id) => request(`/automations/${id}`, { method: "DELETE", token }),
+
   // SLA settings
   updateSlaSettings: (token, body) =>
     request("/console/settings/sla", { method: "PATCH", token, body }),
