@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.deps import WorkspaceContext, require_workspace_roles
+from app.deps import WorkspaceContext, require_permission
 from app.models import ApiKey, Integration, utcnow
 from app.schemas import ApiKeyCreate, ApiKeyCreated, ApiKeyRead, IntegrationCreate, IntegrationRead
 from app.scopes import normalise_scopes
@@ -20,7 +20,7 @@ from app.security import api_key_prefix, generate_api_key, hash_api_key, slugify
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 
-_owner = require_workspace_roles("owner", "admin")
+_owner = require_permission("keys:manage")
 
 
 async def _unique_integration_slug(db: AsyncSession, workspace_id, base: str) -> str:

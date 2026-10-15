@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.deps import TenantContext, require_tenant_scopes
+from app.deps import TenantContext, require_permission_scope
 from app.schemas import BulkResult, BulkUpdate
 from app.services import bulk as svc
 
 router = APIRouter(prefix="/console", tags=["console"])
 
-_write = require_tenant_scopes("tickets:write")
+_write = require_permission_scope("tickets:write", "tickets:manage")
 
 
 @router.post("/bulk", response_model=BulkResult)
