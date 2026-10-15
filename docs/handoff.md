@@ -15,7 +15,7 @@ implemented and tested.
 | Repo layout, docs, ADRs, shared `@chmaba/ui` tokens | Done |
 | FastAPI skeleton (config, db, alembic, `export_openapi.py`, CI) | Done |
 | Agent console: auth, inbox (saved views), ticket view + composer, integrations & keys | Done |
-| Console ops: reports/CSAT, audit log, triggers + automations + canned + macros editors, SLA + SSO settings, ticket triage/summary + macro apply | Done |
+| Console ops: reports/CSAT, audit log, triggers + automations + canned + macros editors, SLA + SSO + business-hours settings, ticket triage/summary + macro apply | Done |
 | Tenancy: Account → Workspace → Integration + API keys | Done |
 | Console auth: signup / login / me | Done |
 | Machine auth: scoped API keys (test/live) + `whoami` | Done |

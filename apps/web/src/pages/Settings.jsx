@@ -5,6 +5,7 @@ import { Alert, Button, Card, Field, Input, Select, Spinner } from "../component
 
 const EMPTY_AI = { provider: "", model: "", base_url: "", api_key: "" };
 const EMPTY_NOTIFYR = { notifyr_api_url: "", notifyr_api_key: "" };
+const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 export default function Settings() {
   const { token } = useAuth();
@@ -13,7 +14,7 @@ export default function Settings() {
   const [notifyr, setNotifyr] = useState(EMPTY_NOTIFYR);
   const [sla, setSla] = useState(null);
   const [sso, setSso] = useState(null);
-  const [error, setError] = useState(null);
+  const [hours, setHours] = useState(null);  const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -44,6 +45,14 @@ export default function Settings() {
             client_secret: "",
             allowed_domains: (data.sso?.allowed_domains || []).join(", "),
             client_secret_set: data.sso?.client_secret_set || false,
+          });
+          const days = data.business_hours?.days || {};
+          setHours({
+            enabled: data.business_hours?.enabled || false,
+            timezone: data.business_hours?.timezone || "UTC",
+            days: Object.fromEntries(
+              WEEKDAYS.map((day) => [day, days[day] || ["09:00", "17:00"]]),
+            ),
           });
         })
         .catch((err) => setError(err.message)),
@@ -116,6 +125,19 @@ export default function Settings() {
     };
     if (sso.client_secret) body.client_secret = sso.client_secret;
     return save(event, () => api.updateSsoSettings(token, body), "SSO settings saved.");
+  }
+
+  function saveHours(event) {
+    return save(
+      event,
+      () =>
+        api.updateBusinessHours(token, {
+          enabled: hours.enabled,
+          timezone: hours.timezone || "UTC",
+          days: hours.days,
+        }),
+      "Business hours saved.",
+    );
   }
 
   if (!settings) {
@@ -279,6 +301,60 @@ export default function Settings() {
           </Field>
           <Button type="submit" disabled={busy || !sso}>
             Save SSO settings
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Business hours</h2>
+        <p className="mt-1 text-sm text-ink-soft">SLA due dates are computed over these hours.</p>
+        <form onSubmit={saveHours} className="mt-4 space-y-4">
+          <label className="flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={hours?.enabled || false}
+              onChange={(event) => setHours({ ...hours, enabled: event.target.checked })}
+            />
+            Enabled
+          </label>
+          <Field label="Timezone">
+            <Input
+              value={hours?.timezone || ""}
+              onChange={(event) => setHours({ ...hours, timezone: event.target.value })}
+              placeholder="Asia/Phnom_Penh"
+            />
+          </Field>
+          <div className="space-y-2">
+            {WEEKDAYS.map((day) => (
+              <div key={day} className="flex items-center gap-3">
+                <span className="w-10 text-xs font-bold uppercase text-muted">{day}</span>
+                <Input
+                  type="time"
+                  className="w-32"
+                  value={hours?.days?.[day]?.[0] || ""}
+                  onChange={(event) =>
+                    setHours({
+                      ...hours,
+                      days: { ...hours.days, [day]: [event.target.value, hours.days[day][1]] },
+                    })
+                  }
+                />
+                <Input
+                  type="time"
+                  className="w-32"
+                  value={hours?.days?.[day]?.[1] || ""}
+                  onChange={(event) =>
+                    setHours({
+                      ...hours,
+                      days: { ...hours.days, [day]: [hours.days[day][0], event.target.value] },
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+          <Button type="submit" disabled={busy || !hours}>
+            Save business hours
           </Button>
         </form>
       </Card>
