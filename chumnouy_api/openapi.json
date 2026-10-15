@@ -2372,6 +2372,13 @@
             "title": "Breached",
             "type": "integer"
           },
+          "by_assignee": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Assignee",
+            "type": "object"
+          },
           "by_priority": {
             "additionalProperties": {
               "type": "integer"
@@ -2384,6 +2391,13 @@
               "type": "integer"
             },
             "title": "By Status",
+            "type": "object"
+          },
+          "by_team": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Team",
             "type": "object"
           },
           "csat_positive_pct": {

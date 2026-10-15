@@ -365,7 +365,8 @@ by the worker sweep.
 | `GET` | `/v1/reports/summary` | Ticket counts, response/resolution averages, SLA compliance |
 
 Workspace-scoped; scope `tickets:read`. Returns `total`, `by_status`,
-`by_priority`, `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
+`by_priority`, `by_assignee` / `by_team` (id → count; `unassigned`/`none` for
+unset), `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
 `avg_resolution_minutes` (null when no data), and `csat_responses` /
 `csat_positive_pct`. Computed on the fly from the ticket table.
 
