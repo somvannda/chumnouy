@@ -12,6 +12,7 @@ import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
 import Knowledge from "./pages/Knowledge";
 import Login from "./pages/Login";
+import Macros from "./pages/Macros";
 import Reports from "./pages/Reports";
 import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="/triggers" element={<Triggers />} />
         <Route path="/automations" element={<Automations />} />
         <Route path="/canned-responses" element={<CannedResponses />} />
+        <Route path="/macros" element={<Macros />} />
         <Route path="/settings" element={<Settings />} />
         <Route
           path="/admin"

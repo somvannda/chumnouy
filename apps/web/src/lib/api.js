@@ -147,6 +147,13 @@ export const api = {
     request(`/automations/${id}`, { method: "PATCH", token, body }),
   deleteAutomation: (token, id) => request(`/automations/${id}`, { method: "DELETE", token }),
 
+  // Macros
+  listMacros: (token) => request("/macros", { token }),
+  createMacro: (token, body) => request("/macros", { method: "POST", token, body }),
+  deleteMacro: (token, id) => request(`/macros/${id}`, { method: "DELETE", token }),
+  applyMacro: (token, ticketId, macroId) =>
+    request(`/tickets/${ticketId}/macros/${macroId}`, { method: "POST", token }),
+
   // SLA settings
   updateSlaSettings: (token, body) =>
     request("/console/settings/sla", { method: "PATCH", token, body }),
