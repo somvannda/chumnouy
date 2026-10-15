@@ -894,6 +894,42 @@ export interface SlaSettingsUpdate {
   resolution_minutes?: Record<string, number> | null;
 }
 
+/** SsoSettingsRead */
+export interface SsoSettingsRead {
+  /** Allowed Domains */
+  allowed_domains?: string[];
+  /** Client Id */
+  client_id?: string | null;
+  /** Client Secret Set */
+  client_secret_set?: boolean;
+  /** Enabled */
+  enabled?: boolean;
+  /** Issuer */
+  issuer?: string | null;
+}
+
+/** SsoSettingsUpdate */
+export interface SsoSettingsUpdate {
+  /** Allowed Domains */
+  allowed_domains?: string[] | null;
+  /** Client Id */
+  client_id?: string | null;
+  /** Client Secret */
+  client_secret?: string | null;
+  /** Enabled */
+  enabled?: boolean | null;
+  /** Issuer */
+  issuer?: string | null;
+}
+
+/** SsoStart */
+export interface SsoStart {
+  /** Authorize Url */
+  authorize_url: string;
+  /** State */
+  state: string;
+}
+
 /** TeamCreate */
 export interface TeamCreate {
   /** Description */
@@ -1287,4 +1323,5 @@ export interface WorkspaceSettingsRead {
   locale?: string;
   notifications: NotificationSettingsRead;
   sla: SlaSettingsRead;
+  sso: SsoSettingsRead;
 }

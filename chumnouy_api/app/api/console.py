@@ -18,6 +18,7 @@ from app.schemas import (
     NotificationSettingsRead,
     NotificationSettingsUpdate,
     SlaSettingsUpdate,
+    SsoSettingsUpdate,
     WorkspaceSettingsRead,
 )
 from app.services import workspace_settings as svc
@@ -66,3 +67,12 @@ async def update_sla(
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
     return await svc.update_sla(db, ctx.workspace, payload)
+
+
+@router.patch("/settings/sso", response_model=WorkspaceSettingsRead)
+async def update_sso(
+    payload: SsoSettingsUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    return await svc.update_sso(db, ctx.workspace, payload)
