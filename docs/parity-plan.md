@@ -78,7 +78,8 @@ Everything else depends on these; do first.
 - **Teams/groups + RBAC**: `teams`, `team_members`; roles
   `owner|admin|team_lead|agent|viewer`; permission checks in `deps`.
 - **Audit log surface**: expose `ticket_events` (and account/workspace events)
-  via `GET /v1/audit`.
+  via `GET /v1/audit`. ✅ **done** (`GET /v1/audit`, filterable ticket-event
+  trail; account/workspace-level events still to add).
 - **i18n**: content locales exist; add a UI locale switch (en/km) and
   translatable notification templates (rendered by Notifyr).
 - **Quotas**: per-workspace limits (tickets/mo, seats, storage) enforced in
