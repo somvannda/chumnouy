@@ -194,6 +194,7 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         actor_type=ctx.actor_type,
         actor_id=ctx.integration.id if ctx.integration else None,
     )
+    await _maybe_auto_triage(ctx.workspace, ticket, [message])
     await triggers_svc.apply_triggers(db, ticket=ticket, event="ticket.created")
     await webhooks_svc.enqueue_event(
         db, ticket=ticket, event="ticket.created", data={"reference": ticket.reference}
@@ -222,6 +223,22 @@ async def load_ticket(db: AsyncSession, workspace_id: UUID, ticket_id: UUID) -> 
             select(Ticket).where(Ticket.id == ticket_id, Ticket.workspace_id == workspace_id)
         )
     ).scalar_one_or_none()
+
+
+async def _maybe_auto_triage(workspace, ticket: Ticket, messages: list[TicketMessage]) -> None:
+    """Best-effort: apply the assistant's triage suggestion when enabled."""
+    if not (workspace.settings or {}).get("ai_auto_triage"):
+        return
+    from app.services import assistant as assistant_svc
+
+    try:
+        result = await assistant_svc.suggest_triage(workspace, ticket=ticket, messages=messages)
+    except Exception:  # noqa: BLE001 - triage must never break ticket creation
+        return
+    if result.get("priority"):
+        ticket.priority = result["priority"]
+    if result.get("tags"):
+        ticket.tags = list(dict.fromkeys([*(ticket.tags or []), *result["tags"]]))
 
 
 async def _requester_for(db: AsyncSession, ticket: Ticket) -> Requester | None:

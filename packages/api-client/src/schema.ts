@@ -6,6 +6,8 @@
 export interface AISettingsRead {
   /** Api Key Set */
   api_key_set: boolean;
+  /** Auto Triage */
+  auto_triage?: boolean;
   /** Base Url */
   base_url?: string | null;
   /** Model */
@@ -20,6 +22,8 @@ export interface AISettingsRead {
 export interface AISettingsUpdate {
   /** Api Key */
   api_key?: string | null;
+  /** Auto Triage */
+  auto_triage?: boolean | null;
   /** Base Url */
   base_url?: string | null;
   /** Model */
