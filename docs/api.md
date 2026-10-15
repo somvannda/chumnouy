@@ -285,3 +285,15 @@ and, for tickets/messages, `ticket_id` + `reference`.
 Workspace-scoped; scope `tickets:read`. A filterable, newest-first trail over
 `ticket_events` (`ticket.created`, `ticket.replied`, `ticket.updated`,
 `ticket.resolved`, …) with `data` (the changed fields / visibility / team).
+
+## 15. Inbound email
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/inbound/email` | Hand off a parsed inbound email → create or append a ticket |
+
+Scope `tickets:write`; called by Notifyr (which owns transport + parsing). Body:
+`{ from_email, from_name?, subject, body, body_format?, message_id?, in_reply_to? }`.
+`in_reply_to` threads the message onto the matching ticket (else the sender's
+latest open ticket, else a new ticket); the sender is created as a requester on
+first contact. A new ticket is subject to the workspace quota.

@@ -93,7 +93,9 @@ The biggest gap. Split so the boundary stays clean:
 
 - **Inbound email → ticket (M)**: `POST /v1/inbound/email` (signed webhook from
   Notifyr's inbound parse) creating a ticket or appending a threaded reply;
-  `email_message_id`/`in_reply_to` on messages for threading.
+  `email_message_id`/`in_reply_to` on messages for threading. ✅ **done**
+  (`POST /v1/inbound/email`, scope `tickets:write`; threads by `in_reply_to` or
+  the sender's latest open ticket; migration `0014_inbound_email`).
 - **Live chat (L)**: a real-time widget session (`/v1/chat/sessions`, WS/SSE
   stream), agents reply from the console; delivery/notification via Notifyr.
 - **Social/SMS/WhatsApp (delegated, M)**: define the channel adapter contract —

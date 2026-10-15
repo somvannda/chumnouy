@@ -530,3 +530,16 @@ class AuditEventRead(BaseModel):
 class AuditListRead(BaseModel):
     data: list[AuditEventRead] = Field(default_factory=list)
     next_cursor: str | None = None
+
+
+# --- Inbound email ------------------------------------------------------------
+
+
+class InboundEmailCreate(BaseModel):
+    from_email: EmailStr
+    from_name: str | None = Field(default=None, max_length=160)
+    subject: str = Field(default="(no subject)", max_length=255)
+    body: str = Field(min_length=1)
+    body_format: Literal["text", "html"] = "text"
+    message_id: str | None = Field(default=None, max_length=255)
+    in_reply_to: str | None = Field(default=None, max_length=255)

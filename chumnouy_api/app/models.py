@@ -238,6 +238,8 @@ class TicketMessage(Base):
     body: Mapped[str] = mapped_column(Text)
     # "text" or "html"; an "html" body is stored sanitised (services/sanitize.py).
     body_format: Mapped[str] = mapped_column(String(10), default="text")
+    # The inbound email Message-ID, used to thread replies (services/inbound.py).
+    email_message_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
