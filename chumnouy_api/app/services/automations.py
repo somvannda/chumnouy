@@ -134,6 +134,9 @@ async def sweep_automations(db: AsyncSession, *, limit: int = 100) -> int:
             if not triggers_svc._matches(ticket, automation.conditions):
                 continue
             changes = triggers_svc._apply_actions(ticket, automation.actions)
+            changes += await triggers_svc.apply_notify_actions(
+                db, ticket, automation.actions, source=f"automation:{automation.name}"
+            )
             db.add(TicketAutomation(ticket_id=ticket.id, automation_id=automation.id))
             await tickets_svc.record_event(
                 db,

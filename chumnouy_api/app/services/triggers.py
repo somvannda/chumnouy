@@ -11,8 +11,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Ticket, Trigger
+from app.models import Ticket, Trigger, Workspace
 from app.schemas import TriggerCreate, TriggerRead, TriggerUpdate
+from app.services import notifyr as notifyr_svc
 
 TRIGGER_EVENTS = ("ticket.created", "ticket.replied", "ticket.updated")
 VALID_STATUSES = ("open", "pending", "resolved", "closed")
@@ -140,6 +141,45 @@ def _apply_actions(ticket: Ticket, actions: list[dict]) -> list[str]:
     return applied
 
 
+async def apply_notify_actions(
+    db: AsyncSession, ticket: Ticket, actions: list[dict], *, source: str
+) -> list[str]:
+    """Hand off ``notify`` actions to Notifyr. ``value`` is the recipient:
+    ``requester`` (their email), ``agents`` (Notifyr resolves), or an email."""
+    notify = [a for a in (actions or []) if a.get("type") == "notify"]
+    if not notify:
+        return []
+    workspace = await db.get(Workspace, ticket.workspace_id)
+    if workspace is None:
+        return []
+    from app.models import Requester  # local import avoids a cycle
+
+    requester = None
+    if ticket.requester_id is not None:
+        requester = (
+            await db.execute(select(Requester).where(Requester.id == ticket.requester_id))
+        ).scalar_one_or_none()
+    applied: list[str] = []
+    for action in notify:
+        value = str(action.get("value") or "agents").strip().lower()
+        if value in ("requester", "customer") and requester:
+            recipient = requester.email
+        elif value in ("agents", "team", ""):
+            recipient = None
+        else:
+            recipient = value
+        await notifyr_svc.enqueue(
+            db,
+            workspace=workspace,
+            ticket=ticket,
+            event=notifyr_svc.TICKET_NOTIFIED,
+            recipient=recipient,
+            variables={"source": source},
+        )
+        applied.append(f"notify:{value}")
+    return applied
+
+
 async def apply_triggers(db: AsyncSession, *, ticket: Ticket, event: str) -> list[str]:
     """Run the workspace's active triggers for ``event`` against ``ticket``."""
     rows = (
@@ -158,6 +198,9 @@ async def apply_triggers(db: AsyncSession, *, ticket: Ticket, event: str) -> lis
         if not _matches(ticket, trigger.conditions):
             continue
         changes = _apply_actions(ticket, trigger.actions)
+        changes += await apply_notify_actions(
+            db, ticket, trigger.actions, source=f"trigger:{trigger.name}"
+        )
         if changes:
             from app.services import tickets as tickets_svc  # local import avoids a cycle
 

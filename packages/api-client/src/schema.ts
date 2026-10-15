@@ -1096,7 +1096,7 @@ export interface TicketUpdate {
 /** TriggerAction */
 export interface TriggerAction {
   /** Type */
-  type: "set_status" | "set_priority" | "add_tag" | "remove_tag" | "set_team";
+  type: "set_status" | "set_priority" | "add_tag" | "remove_tag" | "set_team" | "notify";
   /** Value */
   value: string;
 }

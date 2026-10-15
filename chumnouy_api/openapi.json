@@ -3630,7 +3630,8 @@
               "set_priority",
               "add_tag",
               "remove_tag",
-              "set_team"
+              "set_team",
+              "notify"
             ],
             "title": "Type",
             "type": "string"
