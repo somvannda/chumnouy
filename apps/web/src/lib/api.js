@@ -110,6 +110,11 @@ export const api = {
     request(`/webhooks/${id}/deliveries${buildQuery(params)}`, { token }),
   replayWebhookDelivery: (token, deliveryId) =>
     request(`/webhooks/deliveries/${deliveryId}/replay`, { method: "POST", token }),
+
+  // Public help centre (no auth; addressed by workspace slug)
+  helpIndex: (slug, params = {}) => request(`/public/help/${slug}${buildQuery(params)}`),
+  helpArticle: (slug, articleSlug, params = {}) =>
+    request(`/public/help/${slug}/articles/${articleSlug}${buildQuery(params)}`),
 };
 
 function parseSse(chunk) {

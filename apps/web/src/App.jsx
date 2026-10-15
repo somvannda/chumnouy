@@ -4,6 +4,7 @@ import { useAuth } from "./context/auth";
 import { isPlatformAdmin } from "./lib/format";
 import Admin from "./pages/Admin";
 import Assistant from "./pages/Assistant";
+import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
 import Knowledge from "./pages/Knowledge";
@@ -31,6 +32,8 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/help/:slug" element={<HelpCentre />} />
+      <Route path="/help/:slug/:articleSlug" element={<HelpCentre />} />
       <Route
         element={
           <RequireAuth>

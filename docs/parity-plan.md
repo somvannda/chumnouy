@@ -162,8 +162,9 @@ hours** calendars and per-team policies.
 
 - **Rendered help centre**: a public, SEO-friendly site over the knowledge API
   (sections, article pages, search, article feedback) — new `apps/help` or an
-  SSR route in `apps/web`. ✅ **API done** (`/v1/public/help/{slug}` index +
-  article detail, unauthenticated, active-only); the rendered site remains.
+  SSR route in `apps/web`. ✅ **done** (`/v1/public/help/{slug}` API + public
+  `/help/:slug` pages in the console app: index, search, section filter, article
+  view); article feedback and a dedicated SEO site remain.
 - **Widget v2**: pre-chat form, live-chat handoff, article suggestions from the
   assistant, branding config per workspace.
 
