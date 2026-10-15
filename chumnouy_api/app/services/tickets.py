@@ -55,6 +55,7 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
         status=ticket.status,
         priority=ticket.priority,
         assignee_user_id=ticket.assignee_user_id,
+        team_id=ticket.team_id,
         requester=_requester_read(requester),
         tags=list(ticket.tags or []),
         metadata=dict(ticket.metadata_json or {}),
@@ -352,6 +353,7 @@ async def apply_update(
 ) -> TicketRead:
     previous_status = ticket.status
     previous_assignee = ticket.assignee_user_id
+    previous_team = ticket.team_id
     if payload.subject is not None:
         ticket.subject = payload.subject.strip()
     if payload.priority is not None:
@@ -360,6 +362,8 @@ async def apply_update(
         ticket.tags = payload.tags
     if payload.assignee_user_id is not None:
         ticket.assignee_user_id = payload.assignee_user_id
+    if payload.team_id is not None:
+        ticket.team_id = payload.team_id
     if payload.status is not None:
         ticket.status = payload.status
         if payload.status in ("resolved", "closed"):
@@ -372,7 +376,7 @@ async def apply_update(
         type="ticket.updated",
         actor_type=ctx.actor_type,
         actor_id=ctx.user.id if ctx.user else (ctx.integration.id if ctx.integration else None),
-        data=payload.model_dump(exclude_none=True),
+        data=payload.model_dump(mode="json", exclude_none=True),
     )
     if payload.status is not None and ticket.status != previous_status:
         await webhooks_svc.enqueue_event(
@@ -387,6 +391,13 @@ async def apply_update(
             ticket=ticket,
             event="ticket.assigned",
             data={"assignee_user_id": str(ticket.assignee_user_id)},
+        )
+    if payload.team_id is not None and ticket.team_id != previous_team:
+        await webhooks_svc.enqueue_event(
+            db,
+            ticket=ticket,
+            event="ticket.assigned",
+            data={"team_id": str(ticket.team_id)},
         )
     await db.commit()
     await db.refresh(ticket)

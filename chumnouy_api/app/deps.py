@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db import get_db
 from app.models import ApiKey, Integration, Membership, Requester, User, Workspace, utcnow
+from app.permissions import has_permission
 from app.security import decode_token, hash_api_key
 
 bearer = HTTPBearer(auto_error=False)
@@ -131,6 +132,20 @@ def require_workspace_roles(*allowed_roles: str):
 
     async def dependency(ctx: WorkspaceContext = Depends(get_workspace_context)) -> WorkspaceContext:
         if ctx.membership.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your role cannot perform this action",
+            )
+        return ctx
+
+    return dependency
+
+
+def require_permission(action: str):
+    """Allow the request only when the member's role grants ``action``."""
+
+    async def dependency(ctx: WorkspaceContext = Depends(get_workspace_context)) -> WorkspaceContext:
+        if not has_permission(ctx.membership.role, action):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Your role cannot perform this action",

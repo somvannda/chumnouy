@@ -166,6 +166,7 @@ class TicketUpdate(BaseModel):
     status: Literal["open", "pending", "resolved", "closed"] | None = None
     priority: Literal["low", "normal", "high", "urgent"] | None = None
     assignee_user_id: UUID | None = None
+    team_id: UUID | None = None
     tags: list[str] | None = None
 
 
@@ -176,6 +177,7 @@ class TicketRead(BaseModel):
     status: str
     priority: str
     assignee_user_id: UUID | None = None
+    team_id: UUID | None = None
     requester: RequesterRead | None = None
     tags: list[str] = Field(default_factory=list)
     metadata: dict = Field(default_factory=dict)
@@ -478,3 +480,35 @@ class SearchResult(BaseModel):
 class SearchResults(BaseModel):
     query: str
     results: list[SearchResult] = Field(default_factory=list)
+
+
+# --- Teams --------------------------------------------------------------------
+
+
+class TeamCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class TeamUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class TeamMemberAdd(BaseModel):
+    user_id: UUID
+    role: Literal["lead", "member"] = "member"
+
+
+class TeamMemberRead(BaseModel):
+    user_id: UUID
+    role: str
+
+
+class TeamRead(BaseModel):
+    id: UUID
+    name: str
+    slug: str
+    description: str | None = None
+    members: list[TeamMemberRead] = Field(default_factory=list)
+    created_at: datetime

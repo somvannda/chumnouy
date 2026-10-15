@@ -582,6 +582,54 @@ export interface SignupRequest {
   workspace_name?: string | null;
 }
 
+/** TeamCreate */
+export interface TeamCreate {
+  /** Description */
+  description?: string | null;
+  /** Name */
+  name: string;
+}
+
+/** TeamMemberAdd */
+export interface TeamMemberAdd {
+  /** Role */
+  role?: "lead" | "member";
+  /** User Id */
+  user_id: string;
+}
+
+/** TeamMemberRead */
+export interface TeamMemberRead {
+  /** Role */
+  role: string;
+  /** User Id */
+  user_id: string;
+}
+
+/** TeamRead */
+export interface TeamRead {
+  /** Created At */
+  created_at: string;
+  /** Description */
+  description?: string | null;
+  /** Id */
+  id: string;
+  /** Members */
+  members?: TeamMemberRead[];
+  /** Name */
+  name: string;
+  /** Slug */
+  slug: string;
+}
+
+/** TeamUpdate */
+export interface TeamUpdate {
+  /** Description */
+  description?: string | null;
+  /** Name */
+  name?: string | null;
+}
+
 /** TicketCreate */
 export interface TicketCreate {
   /** Attachment Ids */
@@ -628,6 +676,8 @@ export interface TicketDetailRead {
   subject: string;
   /** Tags */
   tags?: string[];
+  /** Team Id */
+  team_id?: string | null;
 }
 
 /** TicketListRead */
@@ -691,6 +741,8 @@ export interface TicketRead {
   subject: string;
   /** Tags */
   tags?: string[];
+  /** Team Id */
+  team_id?: string | null;
 }
 
 /** TicketUpdate */
@@ -705,6 +757,8 @@ export interface TicketUpdate {
   subject?: string | null;
   /** Tags */
   tags?: string[] | null;
+  /** Team Id */
+  team_id?: string | null;
 }
 
 /** UserRead */
