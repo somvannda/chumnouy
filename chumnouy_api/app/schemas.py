@@ -354,6 +354,19 @@ class AgentDraftRead(BaseModel):
     model: str | None = None
 
 
+class AssistantSummaryRead(BaseModel):
+    summary: str
+    provider: str | None = None
+    model: str | None = None
+
+
+class AssistantTriageRead(BaseModel):
+    priority: str
+    tags: list[str] = Field(default_factory=list)
+    provider: str | None = None
+    model: str | None = None
+
+
 # --- Requesters & public surface ----------------------------------------------
 
 

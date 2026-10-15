@@ -61,6 +61,47 @@ AGENT_DRAFT_SYSTEM = (
     "- Do not mention that a machine wrote this, and return plain text only."
 )
 
+SUMMARY_SYSTEM = (
+    "You summarise a support conversation for a busy agent.\n"
+    "Rules:\n"
+    "- Two or three sentences: what the customer wants, what has happened, what "
+    "is still open.\n"
+    "- Plain text only, no preamble, no markdown."
+)
+
+TRIAGE_SYSTEM = (
+    "You triage a support ticket. Reply with strict JSON only:\n"
+    '{"priority": "low"|"normal"|"high"|"urgent", "tags": ["..."]}\n'
+    "Rules:\n"
+    "- Choose the priority from the urgency and impact described.\n"
+    "- Suggest up to three short lowercase tags (product area, topic).\n"
+    "- Do not invent tags that are not supported by the ticket."
+)
+
+TRIAGE_PRIORITIES = ("low", "normal", "high", "urgent")
+
+
+def _parse_triage(raw: str, default_priority: str) -> tuple[str, list[str]]:
+    import json
+
+    text = (raw or "").strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start != -1 and end > start:
+        try:
+            payload = json.loads(text[start : end + 1])
+            priority = str(payload.get("priority") or "").strip().lower()
+            if priority not in TRIAGE_PRIORITIES:
+                priority = default_priority
+            tags = [
+                str(tag).strip().lower()
+                for tag in (payload.get("tags") or [])
+                if str(tag).strip()
+            ][:3]
+            return priority, tags
+        except (ValueError, TypeError):
+            pass
+    return default_priority, []
+
 # In-process sliding-window limiter. A single API process today; move to shared
 # storage if the API scales to multiple workers (docs/architecture.md).
 _rate_windows: dict[str, deque[float]] = defaultdict(deque)
@@ -414,3 +455,46 @@ async def stream_answer(
         usage_out=usage_out,
     ):
         yield chunk
+
+
+def _thread_text(ticket: Ticket, messages: list[TicketMessage]) -> str:
+    conversation = "\n".join(f"{m.author_type}: {m.body}" for m in messages) or "(no messages)"
+    return f"Ticket: {ticket.subject}\n\n{conversation}"
+
+
+async def summarize_thread(
+    workspace: Workspace, *, ticket: Ticket, messages: list[TicketMessage]
+) -> dict:
+    """Two or three sentences an agent can read at a glance."""
+    result = await ai_service.complete_chat(
+        workspace,
+        system=SUMMARY_SYSTEM,
+        messages=[{"role": "user", "content": _thread_text(ticket, messages)}],
+        temperature=0.2,
+        max_tokens=settings.assistant_max_output_tokens,
+    )
+    return {
+        "summary": (result.get("content") or "").strip(),
+        "provider": result.get("provider"),
+        "model": result.get("model"),
+    }
+
+
+async def suggest_triage(
+    workspace: Workspace, *, ticket: Ticket, messages: list[TicketMessage]
+) -> dict:
+    """Suggest a priority and tags for a ticket (does not modify it)."""
+    result = await ai_service.complete_chat(
+        workspace,
+        system=TRIAGE_SYSTEM,
+        messages=[{"role": "user", "content": _thread_text(ticket, messages)}],
+        temperature=0.2,
+        max_tokens=200,
+    )
+    priority, tags = _parse_triage(result.get("content") or "", ticket.priority)
+    return {
+        "priority": priority,
+        "tags": tags,
+        "provider": result.get("provider"),
+        "model": result.get("model"),
+    }

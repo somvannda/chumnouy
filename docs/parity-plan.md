@@ -179,8 +179,11 @@ hours** calendars and per-team policies.
 
 ### P8 — AI depth · L
 
-- **Triage**: auto-priority/team/label suggestions on create.
-- **Copilot**: summarise thread, suggest macro, sentiment, reply QA.
+- **Triage**: auto-priority/team/label suggestions on create. ✅ **suggestion done**
+  (`POST /v1/tickets/{id}/assistant/triage` returns a suggested priority + tags;
+  auto-apply and team suggestions remain).
+- **Copilot**: summarise thread, suggest macro, sentiment, reply QA. ✅ **summary
+  done** (`POST /v1/tickets/{id}/assistant/summary`); sentiment/QA/macro remain.
 - **Agentic tools**: the integrator-supplied read-only tool contract (the
   long-open decision) so the assistant can answer data questions safely.
 - **AI agent**: auto-answer from the corpus with escalation to a human ticket
