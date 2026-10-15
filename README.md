@@ -54,6 +54,7 @@ Tailwind (react-router, lucide-react)** on the frontend, sharing the
 - `docs/tenancy.md` — account / workspace / integration isolation model
 - `docs/handoff.md` — current state, local run/verify steps, and the task backlog
 - `docs/review-checklist.md` — retrospective review checklist (security, decisions, process)
+- `docs/parity-plan.md` — roadmap to feature parity with Chatwoot / Zendesk / Freshdesk
 
 ## Status
 
