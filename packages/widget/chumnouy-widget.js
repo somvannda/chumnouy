@@ -59,6 +59,7 @@
 
     var apiUrl = (opts.apiUrl || "").replace(/\/$/, "");
     var token = opts.token;
+    var helpSlug = opts.helpSlug || null;
     var side = opts.position === "left" ? "left" : "right";
     var anchor = side + ":20px";
     var accent = opts.accent || "#6957f5";
@@ -145,8 +146,53 @@
         });
     }
 
+    function renderArticle(articleSlug) {
+      body.innerHTML = "";
+      request("/public/help/" + encodeURIComponent(helpSlug) + "/articles/" + encodeURIComponent(articleSlug))
+        .then(function (article) {
+          title.textContent = article.title;
+          body.appendChild(el("div", "cmy-msg them", article.body));
+          var back = el("button", "cmy-ghost", "Back");
+          back.onclick = function () {
+            title.textContent = opts.title || "Support";
+            renderCompose();
+          };
+          body.appendChild(back);
+        })
+        .catch(function (err) {
+          setError(err.message);
+        });
+    }
+
     function renderCompose() {
       body.innerHTML = "";
+      // Optional help-centre search: suggest articles before opening a ticket.
+      if (helpSlug) {
+        var search = el("input", "cmy-input");
+        search.placeholder = "Search help…";
+        var results = el("div", null);
+        search.oninput = function () {
+          var term = search.value.trim();
+          results.innerHTML = "";
+          if (!term) return;
+          request("/public/help/" + encodeURIComponent(helpSlug) + "?q=" + encodeURIComponent(term))
+            .then(function (data) {
+              (data.articles || []).slice(0, 5).forEach(function (article) {
+                var item = el("div", "cmy-item");
+                item.appendChild(el("div", null, article.title));
+                item.onclick = function () {
+                  renderArticle(article.slug);
+                };
+                results.appendChild(item);
+              });
+            })
+            .catch(function () {
+              /* suggestions are best-effort */
+            });
+        };
+        body.appendChild(search);
+        body.appendChild(results);
+      }
       var subject = el("input", "cmy-input");
       subject.placeholder = "Subject";
       var message = el("textarea", "cmy-area");

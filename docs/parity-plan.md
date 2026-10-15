@@ -169,7 +169,9 @@ hours** calendars and per-team policies.
   `/help/:slug` pages in the console app: index, search, section filter, article
   view); article feedback and a dedicated SEO site remain.
 - **Widget v2**: pre-chat form, live-chat handoff, article suggestions from the
-  assistant, branding config per workspace.
+  assistant, branding config per workspace. ✅ **article suggestions done**
+  (`helpSlug` → help-centre search in the widget); pre-chat/live-chat/branding
+  remain.
 
 ### P7 — Enterprise & security · XL
 

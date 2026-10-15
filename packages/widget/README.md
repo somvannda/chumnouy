@@ -17,6 +17,7 @@ tickets or any internal note.
   Chumnouy.init({
     token: "rqt_…",                        // required — portal token
     apiUrl: "https://api.chumnouy.chmaba.com", // omit for same-origin
+    helpSlug: "acme-support",              // optional — enables help search
     title: "Support",
     label: "Support",
     accent: "#6957f5",
@@ -39,6 +40,8 @@ into the page, or fetched with their session).
 - No build step and no dependencies — the file is the artifact.
 - Styling is scoped (a `cmy-` prefix + one injected `<style>`); the accent is a
   CSS variable so it can be themed per integrator.
+- With `helpSlug` set, the compose view offers a help-centre search that suggests
+  articles (and lets the user read one) before they open a ticket.
 - It is intentionally small: a launcher, a ticket list, a compose form and a
   thread with replies. Embedders who want the full experience should build their
   own UI on the public API.
