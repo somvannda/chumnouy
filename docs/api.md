@@ -53,7 +53,7 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 Messages are `text` by default; pass `body_format: "html"` (or `message_format`
 on ticket create) to send rich text, which is **stored sanitised** (strict tag/
 attribute allowlist) so any client can render it verbatim.
-| `POST` | `/v1/tickets/{id}/assign` | Assign/claim |
+| `POST` | `/v1/tickets/{id}/assign` | Assign by strategy (`round_robin`/`load_balanced`/`team`) or to a `user_id`/`team_id` |
 | `POST` | `/v1/tickets/{id}/resolve` | Resolve (optional note) |
 | `POST` | `/v1/tickets/{id}/reopen` | Reopen |
 | `POST` | `/v1/tickets/{id}/attachments` | Attach an uploaded file to the ticket |

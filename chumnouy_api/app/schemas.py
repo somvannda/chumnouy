@@ -194,6 +194,14 @@ class TicketDetailRead(TicketRead):
     attachments: list[AttachmentRead] = Field(default_factory=list)
 
 
+class TicketAssign(BaseModel):
+    """Assign a ticket. ``strategy`` picks among candidates; ``user_id`` forces one."""
+
+    strategy: Literal["round_robin", "load_balanced", "team"] = "round_robin"
+    team_id: UUID | None = None
+    user_id: UUID | None = None
+
+
 class AttachmentClaim(BaseModel):
     attachment_ids: list[UUID] = Field(default_factory=list)
 
