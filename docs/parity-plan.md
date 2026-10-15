@@ -146,9 +146,9 @@ hours** calendars and per-team policies.
 - **API + console**: `GET /v1/reports/*` and a Reports screen (volume, FRT,
   resolution, SLA compliance, agent/team breakdowns, CSV export).
 - **CSAT**: `csat_surveys` + `csat_responses`; send via Notifyr on resolve; a
-  public rating endpoint; reports + per-agent rollups. ✅ **responses done**
-  (`POST /v1/public/tickets/{id}/csat` + CSAT in the summary report, migration
-  `0018_csat`); sending the survey via Notifyr and per-agent rollups remain.
+  public rating endpoint; reports + per-agent rollups. ✅ **done** (responses +
+  report, and a `ticket.resolved` Notifyr hand-off with `csat: true` so the
+  prompt is delivered); per-agent rollups remain.
 
 ### P5 — Collaboration · M
 

@@ -45,6 +45,7 @@ implemented and tested.
 | Triggers: event-based rules (conditions → actions) (P3) | Done |
 | Reports: workspace summary (counts, averages, SLA compliance) (P4) | Done |
 | CSAT: requester satisfaction ratings + report (P4) | Done |
+| CSAT delivery: `ticket.resolved` hand-off to Notifyr (P4) | Done |
 | Bulk actions: status/priority/assignee/team/tags over a ticket list (P5) | Done |
 | Mentions: @mentions on internal notes notify the members (P5) | Done |
 | Help centre: public API + rendered pages (`/help/:slug`) (P6) | Done |
@@ -53,7 +54,7 @@ implemented and tested.
 | RBAC: roles gate management + ticket writes (P7) | Done |
 | Routing: round-robin / load-balanced / forced assignment (P3) | Done |
 | Migrations | `0001`…`0018` (`0018_csat`) |
-| Tests | 140 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Tests | 141 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -64,7 +65,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 140 passing
+python -m pytest                       # 141 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
