@@ -12,6 +12,7 @@ from app.api.admin import router as admin_router
 from app.api.assistant import router as assistant_router
 from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
+from app.api.automations import router as automations_router
 from app.api.bulk import router as bulk_router
 from app.api.canned_responses import router as canned_responses_router
 from app.api.console import router as console_router
@@ -115,6 +116,7 @@ app.include_router(triggers_router, prefix="/api/v1")
 app.include_router(reports_router, prefix="/api/v1")
 app.include_router(bulk_router, prefix="/api/v1")
 app.include_router(help_centre_router, prefix="/api/v1")
+app.include_router(automations_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 

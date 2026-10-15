@@ -341,6 +341,21 @@ Workspace-scoped; `tickets:read` / `tickets:write`. A trigger fires on an
 Evaluated once per write, in `position` order; each application records a
 `trigger.applied` audit event.
 
+## 20. Automations
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/automations` | List time-based rules |
+| `POST` | `/v1/automations` | Create |
+| `GET` | `/v1/automations/{id}` | Detail |
+| `PATCH` | `/v1/automations/{id}` | Update / deactivate |
+| `DELETE` | `/v1/automations/{id}` | Delete |
+
+Workspace-scoped; `tickets:read` / `tickets:write`. After `after_minutes`, a
+ticket that is still open and matches `conditions` (the trigger DSL) runs
+`actions` **once** (tracked in `ticket_automations`); a `automation.applied`
+audit event is recorded. Driven by the worker sweep.
+
 ## 18. Reports
 
 | Method | Path | Purpose |
