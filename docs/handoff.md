@@ -46,7 +46,7 @@ implemented and tested.
 | CSAT: requester satisfaction ratings + report (P4) | Done |
 | Bulk actions: status/priority/assignee/team/tags over a ticket list (P5) | Done |
 | Mentions: @mentions on internal notes notify the members (P5) | Done |
-| Help centre: public read-only knowledge API by workspace slug (P6) | Done |
+| Help centre: public API + rendered pages (`/help/:slug`) (P6) | Done |
 | Migrations | `0001`…`0018` (`0018_csat`) |
 | Tests | 127 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
