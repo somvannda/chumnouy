@@ -63,3 +63,22 @@ async def test_summary_reflects_breaches(client, db_session):
     body = (await client.get("/api/v1/reports/summary", headers=headers)).json()
     assert body["breached"] == 1
     assert body["sla_compliance"] == 0.0
+
+
+async def test_summary_breaks_down_by_team_and_assignee(client):
+    headers, key = await _workspace(client, email="reports4@example.com")
+    team_id = (
+        await client.post("/api/v1/teams", json={"name": "Tier 1"}, headers=headers)
+    ).json()["id"]
+    ticket_id = (
+        await client.post("/api/v1/tickets", json=_body(), headers={"X-Api-Key": key})
+    ).json()["id"]
+    await client.post(
+        f"/api/v1/tickets/{ticket_id}/assign",
+        json={"strategy": "team", "team_id": team_id},
+        headers=headers,
+    )
+
+    body = (await client.get("/api/v1/reports/summary", headers=headers)).json()
+    assert body["by_team"].get(team_id) == 1
+    assert body["by_assignee"].get("unassigned") == 1

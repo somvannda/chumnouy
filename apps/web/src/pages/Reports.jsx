@@ -46,16 +46,34 @@ export default function Reports() {
         </div>
       )}
       {summary && (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {CARDS.map(([path, label]) => (
-            <Card key={path}>
-              <p className="text-2xl font-black text-ink">
-                {pick(summary, path) ?? "—"}
-              </p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[.08em] text-muted">{label}</p>
+        <>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {CARDS.map(([path, label]) => (
+              <Card key={path}>
+                <p className="text-2xl font-black text-ink">
+                  {pick(summary, path) ?? "—"}
+                </p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[.08em] text-muted">{label}</p>
+              </Card>
+            ))}
+          </div>
+          {[
+            ["by_team", "By team"],
+            ["by_assignee", "By assignee"],
+          ].map(([key, label]) => (
+            <Card key={key} className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">{label}</p>
+              <ul className="mt-2 space-y-1">
+                {Object.entries(summary[key] || {}).map(([id, count]) => (
+                  <li key={id} className="flex items-center justify-between text-sm">
+                    <span className="truncate font-mono text-xs text-ink-soft">{id}</span>
+                    <span className="font-bold text-ink">{count}</span>
+                  </li>
+                ))}
+              </ul>
             </Card>
           ))}
-        </div>
+        </>
       )}
     </div>
   );

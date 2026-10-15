@@ -701,6 +701,8 @@ class ReportSummary(BaseModel):
     total: int
     by_status: dict[str, int] = Field(default_factory=dict)
     by_priority: dict[str, int] = Field(default_factory=dict)
+    by_assignee: dict[str, int] = Field(default_factory=dict)
+    by_team: dict[str, int] = Field(default_factory=dict)
     breached: int = 0
     sla_compliance: float | None = None
     avg_first_response_minutes: float | None = None
