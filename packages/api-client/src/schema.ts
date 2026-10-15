@@ -456,6 +456,8 @@ export interface PublicTicketCreate {
   attachment_ids?: string[];
   /** Message */
   message: string;
+  /** Message Format */
+  message_format?: "text" | "html";
   /** Priority */
   priority?: "low" | "normal" | "high" | "urgent";
   /** Subject */
@@ -468,6 +470,8 @@ export interface PublicTicketMessageCreate {
   attachment_ids?: string[];
   /** Body */
   body: string;
+  /** Body Format */
+  body_format?: "text" | "html";
 }
 
 /** RequesterDetail */
@@ -556,6 +560,8 @@ export interface TicketCreate {
   attachment_ids?: string[];
   /** Message */
   message: string;
+  /** Message Format */
+  message_format?: "text" | "html";
   /** Metadata */
   metadata?: Record<string, unknown>;
   /** Priority */
@@ -610,6 +616,8 @@ export interface TicketMessageCreate {
   attachment_ids?: string[];
   /** Body */
   body: string;
+  /** Body Format */
+  body_format?: "text" | "html";
   /** Visibility */
   visibility?: "public" | "internal";
 }
@@ -622,6 +630,8 @@ export interface TicketMessageRead {
   author_type: string;
   /** Body */
   body: string;
+  /** Body Format */
+  body_format?: string;
   /** Created At */
   created_at: string;
   /** Id */
