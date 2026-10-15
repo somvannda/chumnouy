@@ -434,6 +434,56 @@ export interface HealthRead {
   version: string;
 }
 
+/** HelpArticleRead */
+export interface HelpArticleRead {
+  /** Body */
+  body: string;
+  /** Locale */
+  locale: string;
+  /** Section */
+  section: string;
+  /** Slug */
+  slug: string;
+  /** Summary */
+  summary?: string | null;
+  /** Title */
+  title: string;
+  /** Updated At */
+  updated_at: string;
+}
+
+/** HelpArticleSummary */
+export interface HelpArticleSummary {
+  /** Locale */
+  locale: string;
+  /** Section */
+  section: string;
+  /** Slug */
+  slug: string;
+  /** Summary */
+  summary?: string | null;
+  /** Title */
+  title: string;
+}
+
+/** HelpIndex */
+export interface HelpIndex {
+  /** Articles */
+  articles?: HelpArticleSummary[];
+  /** Sections */
+  sections?: HelpSection[];
+  /** Workspace */
+  workspace: string;
+}
+
+/** HelpSection */
+export interface HelpSection {
+  /** Count */
+  count: number;
+  /** Section */
+  section: string;
+}
+
 /** InboundEmailCreate */
 export interface InboundEmailCreate {
   /** Body */

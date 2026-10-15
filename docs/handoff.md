@@ -46,8 +46,9 @@ implemented and tested.
 | CSAT: requester satisfaction ratings + report (P4) | Done |
 | Bulk actions: status/priority/assignee/team/tags over a ticket list (P5) | Done |
 | Mentions: @mentions on internal notes notify the members (P5) | Done |
+| Help centre: public read-only knowledge API by workspace slug (P6) | Done |
 | Migrations | `0001`…`0018` (`0018_csat`) |
-| Tests | 123 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Tests | 127 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -58,7 +59,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 123 passing
+python -m pytest                       # 127 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
