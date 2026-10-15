@@ -394,6 +394,27 @@ class Trigger(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
+# --- CSAT ---------------------------------------------------------------------
+
+
+class CsatResponse(Base):
+    """A requester's satisfaction rating for a resolved ticket (one per ticket)."""
+
+    __tablename__ = "csat_responses"
+    __table_args__ = (UniqueConstraint("ticket_id", name="uq_csat_ticket"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), index=True
+    )
+    rating: Mapped[str] = mapped_column(String(10))
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.

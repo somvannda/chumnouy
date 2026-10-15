@@ -643,3 +643,20 @@ class ReportSummary(BaseModel):
     sla_compliance: float | None = None
     avg_first_response_minutes: float | None = None
     avg_resolution_minutes: float | None = None
+    csat_responses: int = 0
+    csat_positive_pct: float | None = None
+
+
+# --- CSAT ---------------------------------------------------------------------
+
+
+class CsatSubmit(BaseModel):
+    rating: Literal["up", "down"]
+    comment: str | None = Field(default=None, max_length=2000)
+
+
+class CsatRead(BaseModel):
+    ticket_id: UUID
+    rating: str
+    comment: str | None = None
+    created_at: datetime
