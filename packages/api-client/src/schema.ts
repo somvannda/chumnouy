@@ -562,6 +562,24 @@ export interface PublicTicketMessageCreate {
   body_format?: "text" | "html";
 }
 
+/** ReportSummary */
+export interface ReportSummary {
+  /** Avg First Response Minutes */
+  avg_first_response_minutes?: number | null;
+  /** Avg Resolution Minutes */
+  avg_resolution_minutes?: number | null;
+  /** Breached */
+  breached?: number;
+  /** By Priority */
+  by_priority?: Record<string, number>;
+  /** By Status */
+  by_status?: Record<string, number>;
+  /** Sla Compliance */
+  sla_compliance?: number | null;
+  /** Total */
+  total: number;
+}
+
 /** RequesterDetail */
 export interface RequesterDetail {
   /** Email */
