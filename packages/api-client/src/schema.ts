@@ -703,6 +703,13 @@ export interface RequesterDetail {
   tickets?: TicketRead[];
 }
 
+/** RequesterExport */
+export interface RequesterExport {
+  requester: RequesterRead;
+  /** Tickets */
+  tickets?: TicketDetailRead[];
+}
+
 /** RequesterInput */
 export interface RequesterInput {
   /** Email */

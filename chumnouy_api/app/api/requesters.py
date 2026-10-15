@@ -8,7 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.deps import TenantContext, require_tenant_scopes
-from app.schemas import RequesterDetail, RequesterPortalToken, RequesterRead, RequesterUpdate
+from app.schemas import (
+    RequesterDetail,
+    RequesterExport,
+    RequesterPortalToken,
+    RequesterRead,
+    RequesterUpdate,
+)
 from app.services import requesters as svc
 
 router = APIRouter(prefix="/requesters", tags=["requesters"])
@@ -69,3 +75,25 @@ async def issue_portal_token(
     requester = await _get_requester(db, ctx, requester_id)
     token, prefix = await svc.issue_portal_token(db, requester)
     return RequesterPortalToken(token=token, token_prefix=prefix)
+
+
+@router.get("/{requester_id}/export", response_model=RequesterExport)
+async def export_requester(
+    requester_id: UUID,
+    ctx: TenantContext = Depends(_read),
+    db: AsyncSession = Depends(get_db),
+) -> RequesterExport:
+    """GDPR data export: the requester's profile and every ticket/message."""
+    requester = await _get_requester(db, ctx, requester_id)
+    return await svc.export_requester(db, ctx.workspace.id, requester)
+
+
+@router.delete("/{requester_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def erase_requester(
+    requester_id: UUID,
+    ctx: TenantContext = Depends(_write),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """GDPR erasure: delete the requester and every ticket they opened."""
+    requester = await _get_requester(db, ctx, requester_id)
+    await svc.erase_requester(db, requester)
