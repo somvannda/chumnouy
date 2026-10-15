@@ -233,6 +233,8 @@ class TicketMessage(Base):
     )
     visibility: Mapped[str] = mapped_column(String(20), default="public")
     body: Mapped[str] = mapped_column(Text)
+    # "text" or "html"; an "html" body is stored sanitised (services/sanitize.py).
+    body_format: Mapped[str] = mapped_column(String(10), default="text")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 

@@ -1407,6 +1407,15 @@
             "title": "Message",
             "type": "string"
           },
+          "message_format": {
+            "default": "text",
+            "enum": [
+              "text",
+              "html"
+            ],
+            "title": "Message Format",
+            "type": "string"
+          },
           "priority": {
             "default": "normal",
             "enum": [
@@ -1445,6 +1454,15 @@
           "body": {
             "minLength": 1,
             "title": "Body",
+            "type": "string"
+          },
+          "body_format": {
+            "default": "text",
+            "enum": [
+              "text",
+              "html"
+            ],
+            "title": "Body Format",
             "type": "string"
           }
         },
@@ -1759,6 +1777,15 @@
             "title": "Message",
             "type": "string"
           },
+          "message_format": {
+            "default": "text",
+            "enum": [
+              "text",
+              "html"
+            ],
+            "title": "Message Format",
+            "type": "string"
+          },
           "metadata": {
             "additionalProperties": true,
             "title": "Metadata",
@@ -1939,6 +1966,15 @@
             "title": "Body",
             "type": "string"
           },
+          "body_format": {
+            "default": "text",
+            "enum": [
+              "text",
+              "html"
+            ],
+            "title": "Body Format",
+            "type": "string"
+          },
           "visibility": {
             "default": "public",
             "enum": [
@@ -1970,6 +2006,11 @@
           },
           "body": {
             "title": "Body",
+            "type": "string"
+          },
+          "body_format": {
+            "default": "text",
+            "title": "Body Format",
             "type": "string"
           },
           "created_at": {

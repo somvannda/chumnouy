@@ -42,6 +42,10 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 | `GET` | `/v1/tickets/{id}` | Ticket + thread + attachments |
 | `PATCH` | `/v1/tickets/{id}` | `subject`, `status`, `priority`, `assignee_user_id`, `tags`, `metadata` |
 | `POST` | `/v1/tickets/{id}/messages` | Reply (`visibility`: `public` \| `internal`) |
+
+Messages are `text` by default; pass `body_format: "html"` (or `message_format`
+on ticket create) to send rich text, which is **stored sanitised** (strict tag/
+attribute allowlist) so any client can render it verbatim.
 | `POST` | `/v1/tickets/{id}/assign` | Assign/claim |
 | `POST` | `/v1/tickets/{id}/resolve` | Resolve (optional note) |
 | `POST` | `/v1/tickets/{id}/reopen` | Reopen |

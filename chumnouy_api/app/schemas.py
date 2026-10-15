@@ -123,6 +123,7 @@ class RequesterRead(BaseModel):
 
 class TicketMessageCreate(BaseModel):
     body: str = Field(min_length=1)
+    body_format: Literal["text", "html"] = "text"
     visibility: Literal["public", "internal"] = "public"
     attachment_ids: list[UUID] = Field(default_factory=list)
 
@@ -143,6 +144,7 @@ class TicketMessageRead(BaseModel):
     author_type: str
     visibility: str
     body: str
+    body_format: str = "text"
     created_at: datetime
     attachments: list[AttachmentRead] = Field(default_factory=list)
 
@@ -150,6 +152,7 @@ class TicketMessageRead(BaseModel):
 class TicketCreate(BaseModel):
     subject: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1)
+    message_format: Literal["text", "html"] = "text"
     requester: RequesterInput
     priority: Literal["low", "normal", "high", "urgent"] = "normal"
     tags: list[str] = Field(default_factory=list)
@@ -368,12 +371,14 @@ class RequesterDetail(RequesterRead):
 class PublicTicketCreate(BaseModel):
     subject: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1)
+    message_format: Literal["text", "html"] = "text"
     priority: Literal["low", "normal", "high", "urgent"] = "normal"
     attachment_ids: list[UUID] = Field(default_factory=list)
 
 
 class PublicTicketMessageCreate(BaseModel):
     body: str = Field(min_length=1)
+    body_format: Literal["text", "html"] = "text"
     attachment_ids: list[UUID] = Field(default_factory=list)
 
 

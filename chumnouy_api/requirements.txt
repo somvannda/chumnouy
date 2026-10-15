@@ -11,3 +11,4 @@ bcrypt
 httpx
 email-validator
 python-multipart
+bleach

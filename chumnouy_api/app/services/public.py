@@ -24,6 +24,7 @@ from app.services import attachments as attachments_svc
 from app.services import notifyr as notifyr_svc
 from app.services import tickets as tickets_svc
 from app.services import webhooks as webhooks_svc
+from app.services.sanitize import render_body
 
 
 async def list_portal_tickets(
@@ -97,7 +98,8 @@ async def create_portal_ticket(
         workspace_id=ticket.workspace_id,
         author_type="requester",
         visibility="public",
-        body=payload.message,
+        body=render_body(payload.message, payload.message_format),
+        body_format=payload.message_format,
     )
     db.add(message)
     await db.flush()
@@ -140,7 +142,8 @@ async def add_portal_message(
         workspace_id=ticket.workspace_id,
         author_type="requester",
         visibility="public",
-        body=payload.body,
+        body=render_body(payload.body, payload.body_format),
+        body_format=payload.body_format,
     )
     db.add(message)
     await db.flush()
