@@ -15,6 +15,7 @@ from app.api.auth import router as auth_router
 from app.api.bulk import router as bulk_router
 from app.api.canned_responses import router as canned_responses_router
 from app.api.console import router as console_router
+from app.api.help_centre import router as help_centre_router
 from app.api.inbound import router as inbound_router
 from app.api.integrations import router as integrations_router
 from app.api.knowledge import router as knowledge_router
@@ -113,6 +114,7 @@ app.include_router(canned_responses_router, prefix="/api/v1")
 app.include_router(triggers_router, prefix="/api/v1")
 app.include_router(reports_router, prefix="/api/v1")
 app.include_router(bulk_router, prefix="/api/v1")
+app.include_router(help_centre_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 

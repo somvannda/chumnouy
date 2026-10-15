@@ -343,3 +343,13 @@ Workspace-scoped; scope `tickets:read`. Returns `total`, `by_status`,
 `by_priority`, `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
 `avg_resolution_minutes` (null when no data), and `csat_responses` /
 `csat_positive_pct`. Computed on the fly from the ticket table.
+
+## 19. Help centre (public)
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/public/help/{workspace_slug}` | Index: sections + articles (`section`, `q`, `locale`) |
+| `GET` | `/v1/public/help/{workspace_slug}/articles/{slug}` | One article (`locale`) |
+
+**Unauthenticated**, addressed by workspace slug; only active articles are
+exposed. Rate-limited by the public middleware.

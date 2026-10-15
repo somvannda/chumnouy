@@ -683,3 +683,30 @@ class BulkUpdate(BaseModel):
 class BulkResult(BaseModel):
     updated: int
     ticket_ids: list[UUID] = Field(default_factory=list)
+
+
+# --- Public help centre -------------------------------------------------------
+
+
+class HelpSection(BaseModel):
+    section: str
+    count: int
+
+
+class HelpArticleSummary(BaseModel):
+    slug: str
+    title: str
+    summary: str | None = None
+    section: str
+    locale: str
+
+
+class HelpArticleRead(HelpArticleSummary):
+    body: str
+    updated_at: datetime
+
+
+class HelpIndex(BaseModel):
+    workspace: str
+    sections: list[HelpSection] = Field(default_factory=list)
+    articles: list[HelpArticleSummary] = Field(default_factory=list)
