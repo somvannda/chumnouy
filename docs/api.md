@@ -374,6 +374,15 @@ Workspace-scoped; `tickets:read` / `tickets:write`. A macro is a named action
 bundle (the trigger DSL) applied on demand; applying records a `macro.applied`
 audit event and raises the usual status/assignee webhooks.
 
+## 23. Presence
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/tickets/{id}/presence` | Heartbeat: mark me as viewing; returns viewers |
+| `GET` | `/v1/tickets/{id}/presence` | Who is viewing (last 60s) |
+
+Console only (JWT). Used for collision detection when two agents open a ticket.
+
 ## 18. Reports
 
 | Method | Path | Purpose |

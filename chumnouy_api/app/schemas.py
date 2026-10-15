@@ -739,6 +739,13 @@ class MacroRead(BaseModel):
     updated_at: datetime
 
 
+# --- Presence -----------------------------------------------------------------
+
+
+class PresenceRead(BaseModel):
+    viewers: list[UUID] = Field(default_factory=list)
+
+
 # --- Reporting ----------------------------------------------------------------
 
 

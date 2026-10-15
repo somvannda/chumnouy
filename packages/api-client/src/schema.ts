@@ -749,6 +749,12 @@ export interface NotificationSettingsUpdate {
   notifyr_api_url?: string | null;
 }
 
+/** PresenceRead */
+export interface PresenceRead {
+  /** Viewers */
+  viewers?: string[];
+}
+
 /** PublicTicketCreate */
 export interface PublicTicketCreate {
   /** Attachment Ids */

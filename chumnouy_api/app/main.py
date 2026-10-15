@@ -21,6 +21,7 @@ from app.api.inbound import router as inbound_router
 from app.api.integrations import router as integrations_router
 from app.api.knowledge import router as knowledge_router
 from app.api.macros import router as macros_router
+from app.api.presence import router as presence_router
 from app.api.public import router as public_router
 from app.api.reports import router as reports_router
 from app.api.requesters import router as requesters_router
@@ -121,6 +122,7 @@ app.include_router(help_centre_router, prefix="/api/v1")
 app.include_router(automations_router, prefix="/api/v1")
 app.include_router(sso_router, prefix="/api/v1")
 app.include_router(macros_router, prefix="/api/v1")
+app.include_router(presence_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 
