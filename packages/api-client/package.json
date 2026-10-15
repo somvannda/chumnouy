@@ -1,0 +1,12 @@
+{
+  "name": "@chumnouy/api-client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Typed client generated from the committed Chumnouy OpenAPI spec.",
+  "main": "src/client.ts",
+  "types": "src/client.ts",
+  "scripts": {
+    "generate": "node scripts/generate.mjs"
+  }
+}
