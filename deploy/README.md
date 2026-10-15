@@ -65,3 +65,24 @@ the in-process worker (`WEBHOOK_WORKER_ENABLED=true`) or run a dedicated
 worker/cron that drains due deliveries. The same worker also drains the Notifyr
 hand-off outbox. Run only **one** drainer per database so deliveries are not sent
 twice.
+
+## Docker
+
+A single-host stack is scaffolded in `deploy/`:
+
+- `Dockerfile.api` — the API image (build context is the repo root).
+- `Dockerfile.web` — builds the console and serves it with nginx, proxying
+  `/api` and `/media` to the API.
+- `nginx.conf` — the web server config (SPA fallback; buffering off so the
+  assistant's SSE stream is not held back).
+- `docker-compose.yml` — Postgres + API + web.
+
+```powershell
+docker compose -f deploy/docker-compose.yml up --build   # http://localhost:8080
+```
+
+The API container runs `alembic upgrade head` before starting uvicorn and enables
+the in-process worker (`WEBHOOK_WORKER_ENABLED=true`). Postgres data and
+`MEDIA_ROOT` are named volumes. Set `JWT_SECRET` (and any `AI_*` / `NOTIFYR_*`
+defaults) via a `.env` beside the compose file or the shell environment; those are
+fallbacks — per-workspace settings override them.
