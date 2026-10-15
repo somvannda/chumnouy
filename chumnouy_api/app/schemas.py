@@ -718,6 +718,27 @@ class AutomationRead(BaseModel):
     updated_at: datetime
 
 
+# --- Macros -------------------------------------------------------------------
+
+
+class MacroCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    actions: list[TriggerAction] = Field(default_factory=list)
+
+
+class MacroUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    actions: list[TriggerAction] | None = None
+
+
+class MacroRead(BaseModel):
+    id: UUID
+    name: str
+    actions: list[dict] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+
 # --- Reporting ----------------------------------------------------------------
 
 

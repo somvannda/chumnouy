@@ -455,6 +455,22 @@ class TicketAutomation(Base):
     applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+# --- Macros -------------------------------------------------------------------
+
+
+class Macro(Base, TimestampMixin):
+    """A named set of actions an agent applies to a ticket on demand."""
+
+    __tablename__ = "macros"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    actions: Mapped[list] = mapped_column(JSON, default=list)
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.

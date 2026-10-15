@@ -696,6 +696,36 @@ export interface LoginRequest {
   password: string;
 }
 
+/** MacroCreate */
+export interface MacroCreate {
+  /** Actions */
+  actions?: TriggerAction[];
+  /** Name */
+  name: string;
+}
+
+/** MacroRead */
+export interface MacroRead {
+  /** Actions */
+  actions?: Record<string, unknown>[];
+  /** Created At */
+  created_at: string;
+  /** Id */
+  id: string;
+  /** Name */
+  name: string;
+  /** Updated At */
+  updated_at: string;
+}
+
+/** MacroUpdate */
+export interface MacroUpdate {
+  /** Actions */
+  actions?: TriggerAction[] | null;
+  /** Name */
+  name?: string | null;
+}
+
 /** MeRead */
 export interface MeRead {
   user: UserRead;

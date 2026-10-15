@@ -359,6 +359,21 @@ ticket that is still open and matches `conditions` (the trigger DSL) runs
 audit event is recorded. Actions include `notify` (hand off to Notifyr). Driven
 by the worker sweep.
 
+## 22. Macros
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/macros` | List macros |
+| `POST` | `/v1/macros` | Create (`name`, `actions`) |
+| `GET` | `/v1/macros/{id}` | Detail |
+| `PATCH` | `/v1/macros/{id}` | Update |
+| `DELETE` | `/v1/macros/{id}` | Delete |
+| `POST` | `/v1/tickets/{id}/macros/{macro_id}` | Apply a macro to a ticket |
+
+Workspace-scoped; `tickets:read` / `tickets:write`. A macro is a named action
+bundle (the trigger DSL) applied on demand; applying records a `macro.applied`
+audit event and raises the usual status/assignee webhooks.
+
 ## 18. Reports
 
 | Method | Path | Purpose |

@@ -56,8 +56,9 @@ implemented and tested.
 | Automations: time-based rules (conditions → actions after a delay) (P3) | Done |
 | SSO: OIDC login (settings, authorize, callback, JIT provisioning) (P7) | Done |
 | AI auto-triage: apply the assistant's suggestion on create (P8) | Done |
-| Migrations | `0001`…`0019` (`0019_automations`) |
-| Tests | 153 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Macros: named action bundles applied on demand (P3) | Done |
+| Migrations | `0001`…`0020` (`0020_macros`) |
+| Tests | 156 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -68,7 +69,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 153 passing
+python -m pytest                       # 156 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
