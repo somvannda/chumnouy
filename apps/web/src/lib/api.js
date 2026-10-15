@@ -161,6 +161,10 @@ export const api = {
   // SSO settings
   updateSsoSettings: (token, body) =>
     request("/console/settings/sso", { method: "PATCH", token, body }),
+
+  // Business hours
+  updateBusinessHours: (token, body) =>
+    request("/console/settings/business-hours", { method: "PATCH", token, body }),
 };
 
 function parseSse(chunk) {
