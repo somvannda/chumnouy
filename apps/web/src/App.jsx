@@ -4,11 +4,13 @@ import { useAuth } from "./context/auth";
 import { isPlatformAdmin } from "./lib/format";
 import Admin from "./pages/Admin";
 import Assistant from "./pages/Assistant";
+import Audit from "./pages/Audit";
 import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
 import Knowledge from "./pages/Knowledge";
 import Login from "./pages/Login";
+import Reports from "./pages/Reports";
 import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
 import TicketView from "./pages/TicketView";
@@ -49,6 +51,8 @@ export default function App() {
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/requesters" element={<Requesters />} />
         <Route path="/webhooks" element={<Webhooks />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/audit" element={<Audit />} />
         <Route path="/settings" element={<Settings />} />
         <Route
           path="/admin"

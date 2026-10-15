@@ -25,6 +25,9 @@ export default function TicketView() {
   const [busy, setBusy] = useState(false);
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState("public");
+  const [ai, setAi] = useState(null);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   const load = useCallback(
     () =>
@@ -59,6 +62,19 @@ export default function TicketView() {
       await api.replyTicket(token, id, { body: body.trim(), visibility });
       setBody("");
     });
+  }
+
+  async function runAi(action) {
+    setAiBusy(true);
+    setAiError(null);
+    setAi(null);
+    try {
+      setAi(await action());
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setAiBusy(false);
+    }
   }
 
   if (!ticket) {
@@ -126,6 +142,43 @@ export default function TicketView() {
             </Button>
           )}
         </div>
+      </Card>
+
+      <Card className="mt-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">Assistant</p>
+          <Button
+            variant="secondary"
+            disabled={aiBusy}
+            onClick={() =>
+              runAi(async () => ({ kind: "summary", ...(await api.summarizeTicket(token, id)) }))
+            }
+          >
+            Summarise
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={aiBusy}
+            onClick={() =>
+              runAi(async () => ({ kind: "triage", ...(await api.triageTicket(token, id)) }))
+            }
+          >
+            Suggest triage
+          </Button>
+          {aiBusy && <Spinner />}
+        </div>
+        {aiError && <p className="mt-2 text-sm font-semibold text-danger">{aiError}</p>}
+        {ai?.kind === "summary" && <p className="mt-3 text-sm leading-relaxed text-ink">{ai.summary}</p>}
+        {ai?.kind === "triage" && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Badge tone={priorityTone(ai.priority)}>{ai.priority}</Badge>
+            {ai.tags.map((tag) => (
+              <Badge key={tag} tone="neutral">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </Card>
 
       <section className="mt-6 space-y-4">
