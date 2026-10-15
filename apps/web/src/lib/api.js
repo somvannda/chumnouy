@@ -150,6 +150,10 @@ export const api = {
   // SLA settings
   updateSlaSettings: (token, body) =>
     request("/console/settings/sla", { method: "PATCH", token, body }),
+
+  // SSO settings
+  updateSsoSettings: (token, body) =>
+    request("/console/settings/sso", { method: "PATCH", token, body }),
 };
 
 function parseSse(chunk) {

@@ -12,6 +12,7 @@ export default function Settings() {
   const [ai, setAi] = useState(EMPTY_AI);
   const [notifyr, setNotifyr] = useState(EMPTY_NOTIFYR);
   const [sla, setSla] = useState(null);
+  const [sso, setSso] = useState(null);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -35,6 +36,14 @@ export default function Settings() {
           setSla({
             first_response_minutes: data.sla?.first_response_minutes || {},
             resolution_minutes: data.sla?.resolution_minutes || {},
+          });
+          setSso({
+            enabled: data.sso?.enabled || false,
+            issuer: data.sso?.issuer || "",
+            client_id: data.sso?.client_id || "",
+            client_secret: "",
+            allowed_domains: (data.sso?.allowed_domains || []).join(", "),
+            client_secret_set: data.sso?.client_secret_set || false,
           });
         })
         .catch((err) => setError(err.message)),
@@ -93,6 +102,20 @@ export default function Settings() {
         }),
       "SLA settings saved.",
     );
+  }
+
+  function saveSso(event) {
+    const body = {
+      enabled: sso.enabled,
+      issuer: sso.issuer || null,
+      client_id: sso.client_id || null,
+      allowed_domains: sso.allowed_domains
+        .split(",")
+        .map((domain) => domain.trim())
+        .filter(Boolean),
+    };
+    if (sso.client_secret) body.client_secret = sso.client_secret;
+    return save(event, () => api.updateSsoSettings(token, body), "SSO settings saved.");
   }
 
   if (!settings) {
@@ -207,6 +230,55 @@ export default function Settings() {
           ))}
           <Button type="submit" disabled={busy || !sla}>
             Save SLA settings
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Single sign-on (OIDC)</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Let your team sign in through an identity provider.
+        </p>
+        <form onSubmit={saveSso} className="mt-4 space-y-4">
+          <label className="flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={sso?.enabled || false}
+              onChange={(event) => setSso({ ...sso, enabled: event.target.checked })}
+            />
+            Enabled
+          </label>
+          <Field label="Issuer">
+            <Input
+              value={sso?.issuer || ""}
+              onChange={(event) => setSso({ ...sso, issuer: event.target.value })}
+              placeholder="https://idp.example.com"
+            />
+          </Field>
+          <Field label="Client ID">
+            <Input
+              value={sso?.client_id || ""}
+              onChange={(event) => setSso({ ...sso, client_id: event.target.value })}
+            />
+          </Field>
+          <Field label="Client secret" hint="Write-only. Leave blank to keep the current secret.">
+            <Input
+              type="password"
+              autoComplete="off"
+              value={sso?.client_secret || ""}
+              onChange={(event) => setSso({ ...sso, client_secret: event.target.value })}
+              placeholder={sso?.client_secret_set ? "•••••••• configured" : ""}
+            />
+          </Field>
+          <Field label="Allowed email domains" hint="Comma-separated; blank allows any.">
+            <Input
+              value={sso?.allowed_domains || ""}
+              onChange={(event) => setSso({ ...sso, allowed_domains: event.target.value })}
+              placeholder="example.com"
+            />
+          </Field>
+          <Button type="submit" disabled={busy || !sso}>
+            Save SSO settings
           </Button>
         </form>
       </Card>
