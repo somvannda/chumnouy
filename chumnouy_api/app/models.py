@@ -208,6 +208,9 @@ class Ticket(Base, TimestampMixin):
     assignee_user_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    team_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("teams.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     tags: Mapped[list] = mapped_column(JSON, default=list)
     metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     first_response_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -297,6 +300,46 @@ class TicketAttachment(Base):
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# --- Teams --------------------------------------------------------------------
+
+
+class Team(Base, TimestampMixin):
+    """A group of agents inside a workspace (routing / collaboration unit)."""
+
+    __tablename__ = "teams"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "slug", name="uq_team_workspace_slug"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    slug: Mapped[str] = mapped_column(String(80))
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class TeamMember(Base):
+    """A user's membership of a team (``lead`` or ``member``)."""
+
+    __tablename__ = "team_members"
+    __table_args__ = (
+        UniqueConstraint("team_id", "user_id", name="uq_team_member"),
+        Index("ix_team_member_user", "user_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("teams.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    role: Mapped[str] = mapped_column(String(20), default="member")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
