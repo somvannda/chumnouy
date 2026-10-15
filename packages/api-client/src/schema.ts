@@ -884,6 +884,16 @@ export interface TeamUpdate {
   name?: string | null;
 }
 
+/** TicketAssign */
+export interface TicketAssign {
+  /** Strategy */
+  strategy?: "round_robin" | "load_balanced" | "team";
+  /** Team Id */
+  team_id?: string | null;
+  /** User Id */
+  user_id?: string | null;
+}
+
 /** TicketCreate */
 export interface TicketCreate {
   /** Attachment Ids */

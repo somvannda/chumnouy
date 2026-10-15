@@ -18,6 +18,7 @@ from app.models import Ticket, TicketEvent
 from app.schemas import (
     AttachmentClaim,
     AttachmentRead,
+    TicketAssign,
     TicketCreate,
     TicketDetailRead,
     TicketListRead,
@@ -29,6 +30,7 @@ from app.schemas import (
 from app.services import attachments as attachments_svc
 from app.services import idempotency as idempotency_svc
 from app.services import quota as quota_svc
+from app.services import routing as routing_svc
 from app.services import tickets as svc
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
@@ -165,6 +167,18 @@ async def attach_files(
         return await attachments_svc.claim_attachments(db, ctx, ticket, payload.attachment_ids)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post("/{ticket_id}/assign", response_model=TicketRead)
+async def assign_ticket(
+    ticket_id: UUID,
+    payload: TicketAssign,
+    ctx: TenantContext = Depends(_write),
+    db: AsyncSession = Depends(get_db),
+) -> TicketRead:
+    """Assign by strategy (round-robin / load-balanced) or to a user/team."""
+    ticket = await _get_ticket(db, ctx, ticket_id)
+    return await routing_svc.assign(db, ctx, ticket, payload)
 
 
 @router.post("/{ticket_id}/resolve", response_model=TicketRead)

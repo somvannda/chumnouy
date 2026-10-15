@@ -2837,6 +2837,47 @@
         "title": "TeamUpdate",
         "type": "object"
       },
+      "TicketAssign": {
+        "description": "Assign a ticket. ``strategy`` picks among candidates; ``user_id`` forces one.",
+        "properties": {
+          "strategy": {
+            "default": "round_robin",
+            "enum": [
+              "round_robin",
+              "load_balanced",
+              "team"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "title": "TicketAssign",
+        "type": "object"
+      },
       "TicketCreate": {
         "properties": {
           "attachment_ids": {
@@ -8662,6 +8703,98 @@
           }
         ],
         "summary": "Update Ticket",
+        "tags": [
+          "tickets"
+        ]
+      }
+    },
+    "/api/v1/tickets/{ticket_id}/assign": {
+      "post": {
+        "description": "Assign by strategy (round-robin / load-balanced) or to a user/team.",
+        "operationId": "assign_ticket_api_v1_tickets__ticket_id__assign_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketAssign"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Assign Ticket",
         "tags": [
           "tickets"
         ]

@@ -131,7 +131,9 @@ hours** calendars and per-team policies.
   (a trigger bundle applied on demand). ✅ **canned responses done**
   (`/v1/canned-responses` CRUD); macros (trigger bundles) remain.
 - **Routing**: round-robin, load-balanced (agent capacity), skill-based
-  (teams/skills), on the ticket-assign path.
+  (teams/skills), on the ticket-assign path. ✅ **done** (`POST /v1/tickets/{id}/assign`
+  with `round_robin`/`load_balanced`/`team` or a forced `user_id`; candidates are
+  a team's members or the workspace's agents); skill-based matching remains.
 - Reuse the worker for time-based sweeps.
 
 ### P4 — Reporting & CSAT · L
