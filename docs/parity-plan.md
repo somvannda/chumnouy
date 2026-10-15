@@ -171,7 +171,9 @@ hours** calendars and per-team policies.
 ### P7 — Enterprise & security · XL
 
 - **SSO/SAML** (+ optional SCIM), **granular RBAC** wired to every endpoint.
-- **Audit log UI**; **GDPR**: requester data export/erasure endpoints.
+- **Audit log UI**; **GDPR**: requester data export/erasure endpoints. ✅ **GDPR done**
+  (`GET /v1/requesters/{id}/export`, `DELETE /v1/requesters/{id}`); the audit-log
+  console UI remains.
 - **Retention/data residency** settings; **IP allowlists** for admin.
 - Compliance groundwork (SOC 2 controls, logging, backups) — process + docs.
 

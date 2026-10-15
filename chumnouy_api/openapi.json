@@ -2223,6 +2223,26 @@
         "title": "RequesterDetail",
         "type": "object"
       },
+      "RequesterExport": {
+        "description": "A requester's full record (GDPR data export).",
+        "properties": {
+          "requester": {
+            "$ref": "#/components/schemas/RequesterRead"
+          },
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/TicketDetailRead"
+            },
+            "title": "Tickets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "requester"
+        ],
+        "title": "RequesterExport",
+        "type": "object"
+      },
       "RequesterInput": {
         "properties": {
           "email": {
@@ -7146,6 +7166,79 @@
       }
     },
     "/api/v1/requesters/{requester_id}": {
+      "delete": {
+        "description": "GDPR erasure: delete the requester and every ticket they opened.",
+        "operationId": "erase_requester_api_v1_requesters__requester_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requester_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Requester Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Erase Requester",
+        "tags": [
+          "requesters"
+        ]
+      },
       "get": {
         "operationId": "get_requester_api_v1_requesters__requester_id__get",
         "parameters": [
@@ -7310,6 +7403,88 @@
           }
         ],
         "summary": "Update Requester",
+        "tags": [
+          "requesters"
+        ]
+      }
+    },
+    "/api/v1/requesters/{requester_id}/export": {
+      "get": {
+        "description": "GDPR data export: the requester's profile and every ticket/message.",
+        "operationId": "export_requester_api_v1_requesters__requester_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requester_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Requester Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequesterExport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Requester",
         "tags": [
           "requesters"
         ]

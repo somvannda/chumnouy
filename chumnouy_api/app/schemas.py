@@ -375,6 +375,13 @@ class RequesterDetail(RequesterRead):
     tickets: list[TicketRead] = Field(default_factory=list)
 
 
+class RequesterExport(BaseModel):
+    """A requester's full record (GDPR data export)."""
+
+    requester: RequesterRead
+    tickets: list[TicketDetailRead] = Field(default_factory=list)
+
+
 class PublicTicketCreate(BaseModel):
     subject: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1)

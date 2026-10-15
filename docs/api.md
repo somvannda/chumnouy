@@ -100,6 +100,8 @@ attribute allowlist) so any client can render it verbatim.
 | `GET` | `/v1/requesters/{id}` | Detail + their tickets |
 | `PATCH` | `/v1/requesters/{id}` | Update name/email/phone/metadata |
 | `POST` | `/v1/requesters/{id}/portal-token` | Issue/rotate the requester's public-surface token (shown once) |
+| `GET` | `/v1/requesters/{id}/export` | GDPR data export: profile + every ticket/message |
+| `DELETE` | `/v1/requesters/{id}` | GDPR erasure: delete the requester and their tickets |
 
 Scopes: `requesters:read`, `requesters:write`. A requester is created implicitly
 when a ticket is opened with a new `external_id`.

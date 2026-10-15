@@ -10,12 +10,13 @@ from __future__ import annotations
 import secrets
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Requester, Ticket, utcnow
-from app.schemas import RequesterDetail, RequesterRead, RequesterUpdate
+from app.schemas import RequesterDetail, RequesterExport, RequesterRead, RequesterUpdate
 from app.security import hash_api_key
+from app.services import tickets as tickets_svc
 from app.services.tickets import ticket_read
 
 PORTAL_TOKEN_PREFIX = "rqt"
@@ -119,3 +120,28 @@ async def issue_portal_token(db: AsyncSession, requester: Requester) -> tuple[st
     await db.commit()
     await db.refresh(requester)
     return token, requester.portal_token_prefix or ""
+
+
+async def export_requester(
+    db: AsyncSession, workspace_id: UUID, requester: Requester
+) -> RequesterExport:
+    """A requester's full record (profile + every ticket and message)."""
+    tickets = (
+        await db.execute(
+            select(Ticket)
+            .where(Ticket.workspace_id == workspace_id, Ticket.requester_id == requester.id)
+            .order_by(Ticket.created_at)
+        )
+    ).scalars().all()
+    details = [await tickets_svc.ticket_detail(db, ticket) for ticket in tickets]
+    return RequesterExport(requester=requester_read(requester), tickets=details)
+
+
+async def erase_requester(db: AsyncSession, requester: Requester) -> None:
+    """GDPR erasure: delete the requester and every ticket they opened.
+
+    Ticket children (messages, attachments, events, CSAT) cascade on delete.
+    """
+    await db.execute(delete(Ticket).where(Ticket.requester_id == requester.id))
+    await db.delete(requester)
+    await db.commit()
