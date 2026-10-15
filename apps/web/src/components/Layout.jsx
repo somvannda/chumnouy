@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
+  BarChart3,
   BookOpen,
   Bot,
   Inbox,
@@ -7,6 +8,7 @@ import {
   LifeBuoy,
   LogOut,
   Moon,
+  ScrollText,
   Settings,
   ShieldCheck,
   Sun,
@@ -19,10 +21,12 @@ import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/assistant", label: "Assistant", icon: Bot },
   { to: "/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/requesters", label: "Requesters", icon: Users },
   { to: "/webhooks", label: "Webhooks", icon: Webhook },
+  { to: "/audit", label: "Audit", icon: ScrollText },
   { to: "/integrations", label: "Integrations", icon: KeyRound },
   { to: "/settings", label: "Settings", icon: Settings },
 ];

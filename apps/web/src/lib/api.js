@@ -115,6 +115,16 @@ export const api = {
   helpIndex: (slug, params = {}) => request(`/public/help/${slug}${buildQuery(params)}`),
   helpArticle: (slug, articleSlug, params = {}) =>
     request(`/public/help/${slug}/articles/${articleSlug}${buildQuery(params)}`),
+
+  // Reporting & audit
+  reportSummary: (token) => request("/reports/summary", { token }),
+  auditEvents: (token, params = {}) => request(`/audit${buildQuery(params)}`, { token }),
+
+  // Ticket AI helpers
+  summarizeTicket: (token, id) =>
+    request(`/tickets/${id}/assistant/summary`, { method: "POST", token }),
+  triageTicket: (token, id) =>
+    request(`/tickets/${id}/assistant/triage`, { method: "POST", token }),
 };
 
 function parseSse(chunk) {
