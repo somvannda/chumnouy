@@ -43,6 +43,12 @@ gh variable set CI_RUNNER --body ubuntu-latest
 
 - The runner image (`myoung34/github-runner`) includes Git; `actions/setup-python`
   and `actions/setup-node` install the toolchains the jobs need.
+- **Don't set `EPHEMERAL`** in the compose file: the image treats any value
+  (including `"false"`) as truthy, so the runner exits after one job and
+  crash-loops re-registering with a spent token. A long-lived runner omits it.
+- **Docker Desktop must be running** — the runner lives in a container, so if the
+  Docker engine stops, queued jobs hang to the 10-minute timeout. Keep it running,
+  or set `CI_RUNNER=ubuntu-latest` (public repos get free hosted minutes).
 - Stop it with `docker compose -f ci/docker-compose.runner.yml down`; remove it
   from the repo via GitHub → Settings → Actions → Runners.
 - One machine, many repos: run one container per repo (same image, different
