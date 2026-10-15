@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Local quality gate in place of GitHub Actions.
+# Enable once with:  git config core.hooksPath .githooks
+# Skip in an emergency with:  git push --no-verify
+
+echo "Running local checks before push (git push --no-verify to skip)…"
+
+# Prefer PowerShell if present (Windows dev), else the POSIX script.
+if command -v pwsh >/dev/null 2>&1; then
+  pwsh -NoProfile -File scripts/check.ps1 || exit 1
+elif command -v powershell >/dev/null 2>&1; then
+  powershell -NoProfile -File scripts/check.ps1 || exit 1
+else
+  sh scripts/check.sh || exit 1
+fi

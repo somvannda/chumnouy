@@ -1,0 +1,28 @@
+# Self-hosted GitHub Actions runner for Chumnouy CI.
+#
+# Free, unlimited (self-hosted minutes are not billed), and keeps the existing
+# repo/PRs. See ci/README.md for the one-time setup.
+#
+#   docker compose -f ci/docker-compose.runner.yml up -d
+name: chumnouy-ci
+
+services:
+  runner:
+    image: myoung34/github-runner:latest
+    restart: unless-stopped
+    environment:
+      # REPO_URL selects a repo-scoped runner.
+      REPO_URL: ${REPO_URL:-https://github.com/somvannda/chumnouy}
+      RUNNER_SCOPE: repo
+      RUNNER_NAME: ${RUNNER_NAME:-chumnouy-local}
+      LABELS: self-hosted,linux
+      RUNNER_WORKDIR: /tmp/runner/work
+      # A registration token (short-lived) or a PAT named ACCESS_TOKEN.
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN:-}
+      EPHEMERAL: "false"
+    volumes:
+      - runner-work:/tmp/runner
+
+volumes:
+  runner-work:

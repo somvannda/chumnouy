@@ -5,10 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+# Runs on a self-hosted runner by default (free, no billed minutes). Set the
+# repository variable CI_RUNNER to e.g. "ubuntu-latest" to use GitHub-hosted
+# runners instead. See ci/README.md.
 jobs:
   api:
     name: API
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'self-hosted' }}
     defaults:
       run:
         working-directory: chumnouy_api
@@ -34,7 +37,7 @@ jobs:
 
   web:
     name: Web
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'self-hosted' }}
     defaults:
       run:
         working-directory: apps/web
@@ -52,7 +55,7 @@ jobs:
 
   client:
     name: API client
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'self-hosted' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
