@@ -147,6 +147,8 @@ workspace is seeded with a small generic default corpus. Scopes:
 | `GET` | `/v1/assistant/conversations/{id}` | Transcript |
 | `POST` | `/v1/assistant/feedback` | `{ message_id, rating: up|down, comment? }` |
 | `POST` | `/v1/tickets/{id}/assistant/draft` | AI-drafted agent reply (rewrite/suggest) |
+| `POST` | `/v1/tickets/{id}/assistant/summary` | Two-sentence thread summary |
+| `POST` | `/v1/tickets/{id}/assistant/triage` | Suggested `priority` + `tags` (does not modify the ticket) |
 
 Request body (`/assistant/chat`):
 

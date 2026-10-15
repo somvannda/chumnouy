@@ -265,6 +265,28 @@ export interface AssistantMessageRead {
   role: string;
 }
 
+/** AssistantSummaryRead */
+export interface AssistantSummaryRead {
+  /** Model */
+  model?: string | null;
+  /** Provider */
+  provider?: string | null;
+  /** Summary */
+  summary: string;
+}
+
+/** AssistantTriageRead */
+export interface AssistantTriageRead {
+  /** Model */
+  model?: string | null;
+  /** Priority */
+  priority: string;
+  /** Provider */
+  provider?: string | null;
+  /** Tags */
+  tags?: string[];
+}
+
 /** AttachmentClaim */
 export interface AttachmentClaim {
   /** Attachment Ids */

@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db import get_db
 from app.deps import TenantContext, require_tenant_scopes
-from app.models import TicketMessage
+from app.models import Ticket, TicketMessage
 from app.schemas import (
     AgentDraftRead,
     AgentDraftRequest,
@@ -27,6 +27,8 @@ from app.schemas import (
     AssistantFeedbackCreate,
     AssistantFeedbackRead,
     AssistantMessageRead,
+    AssistantSummaryRead,
+    AssistantTriageRead,
 )
 from app.services import ai as ai_service
 from app.services import assistant as svc
@@ -221,3 +223,49 @@ async def draft_reply(
     except ai_service.AIError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
     return AgentDraftRead(**result)
+
+
+async def _thread(db: AsyncSession, workspace_id, ticket_id: UUID) -> tuple[Ticket, list[TicketMessage]]:
+    ticket = await tickets_svc.load_ticket(db, workspace_id, ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    messages = (
+        await db.execute(
+            select(TicketMessage)
+            .where(TicketMessage.ticket_id == ticket_id)
+            .order_by(TicketMessage.created_at)
+        )
+    ).scalars().all()
+    return ticket, list(messages)
+
+
+@router.post("/tickets/{ticket_id}/assistant/summary", response_model=AssistantSummaryRead)
+async def summarize_ticket(
+    ticket_id: UUID,
+    ctx: TenantContext = Depends(_use),
+    db: AsyncSession = Depends(get_db),
+) -> AssistantSummaryRead:
+    ticket, messages = await _thread(db, ctx.workspace.id, ticket_id)
+    try:
+        result = await svc.summarize_thread(ctx.workspace, ticket=ticket, messages=messages)
+    except ai_service.AINotConfiguredError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except ai_service.AIError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+    return AssistantSummaryRead(**result)
+
+
+@router.post("/tickets/{ticket_id}/assistant/triage", response_model=AssistantTriageRead)
+async def triage_ticket(
+    ticket_id: UUID,
+    ctx: TenantContext = Depends(_use),
+    db: AsyncSession = Depends(get_db),
+) -> AssistantTriageRead:
+    ticket, messages = await _thread(db, ctx.workspace.id, ticket_id)
+    try:
+        result = await svc.suggest_triage(ctx.workspace, ticket=ticket, messages=messages)
+    except ai_service.AINotConfiguredError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except ai_service.AIError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+    return AssistantTriageRead(**result)
