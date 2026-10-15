@@ -156,7 +156,8 @@ hours** calendars and per-team policies.
 - **@mentions** in internal notes → notify the mentioned agent (Notifyr). ✅ **done**
   (reply `mentions: [user_id]` on an `internal` note enqueues a `ticket.mentioned`
   Notifyr event per mentioned member).
-- **Collision detection**: `GET /v1/tickets/{id}/presence` (who is viewing).
+- **Collision detection**: `GET /v1/tickets/{id}/presence` (who is viewing). ✅ **done**
+  (`POST`/`GET /v1/tickets/{id}/presence`, console heartbeat, 60s window).
 - **Bulk actions** on a ticket id list (assign/status/tag/team). ✅ **done**
   (`POST /v1/console/bulk`, scope `tickets:write`).
 - Console: keyboard shortcuts + command bar; saved views already exist.

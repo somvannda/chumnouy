@@ -471,6 +471,25 @@ class Macro(Base, TimestampMixin):
     actions: Mapped[list] = mapped_column(JSON, default=list)
 
 
+# --- Ticket presence ----------------------------------------------------------
+
+
+class TicketPresence(Base):
+    """Who is currently viewing a ticket (heartbeat; stale rows age out)."""
+
+    __tablename__ = "ticket_presence"
+    __table_args__ = (UniqueConstraint("ticket_id", "user_id", name="uq_ticket_presence"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tickets.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # --- Webhooks -----------------------------------------------------------------
 # A workspace registers URLs; ticket events fan out to one delivery row per
 # webhook. Delivery is signed (HMAC-SHA256) and retried with backoff.
