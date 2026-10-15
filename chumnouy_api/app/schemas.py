@@ -660,3 +660,25 @@ class CsatRead(BaseModel):
     rating: str
     comment: str | None = None
     created_at: datetime
+
+
+# --- Bulk actions -------------------------------------------------------------
+
+
+class BulkAction(BaseModel):
+    status: Literal["open", "pending", "resolved", "closed"] | None = None
+    priority: Literal["low", "normal", "high", "urgent"] | None = None
+    assignee_user_id: UUID | None = None
+    team_id: UUID | None = None
+    add_tags: list[str] = Field(default_factory=list)
+    remove_tags: list[str] = Field(default_factory=list)
+
+
+class BulkUpdate(BaseModel):
+    ticket_ids: list[UUID] = Field(min_length=1, max_length=200)
+    action: BulkAction
+
+
+class BulkResult(BaseModel):
+    updated: int
+    ticket_ids: list[UUID] = Field(default_factory=list)

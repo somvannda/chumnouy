@@ -978,6 +978,128 @@
         "title": "Body_upload_attachment_api_v1_uploads_post",
         "type": "object"
       },
+      "BulkAction": {
+        "properties": {
+          "add_tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Add Tags",
+            "type": "array"
+          },
+          "assignee_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee User Id"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "enum": [
+                  "low",
+                  "normal",
+                  "high",
+                  "urgent"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "remove_tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Remove Tags",
+            "type": "array"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "open",
+                  "pending",
+                  "resolved",
+                  "closed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          }
+        },
+        "title": "BulkAction",
+        "type": "object"
+      },
+      "BulkResult": {
+        "properties": {
+          "ticket_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Ticket Ids",
+            "type": "array"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "updated"
+        ],
+        "title": "BulkResult",
+        "type": "object"
+      },
+      "BulkUpdate": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/BulkAction"
+          },
+          "ticket_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Ticket Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ticket_ids",
+          "action"
+        ],
+        "title": "BulkUpdate",
+        "type": "object"
+      },
       "CannedResponseCreate": {
         "properties": {
           "body": {
@@ -4907,6 +5029,88 @@
         "summary": "Update Canned",
         "tags": [
           "canned-responses"
+        ]
+      }
+    },
+    "/api/v1/console/bulk": {
+      "post": {
+        "description": "Apply one action (status/priority/assignee/team/tags) to many tickets.",
+        "operationId": "bulk_update_api_v1_console_bulk_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bulk Update",
+        "tags": [
+          "console"
         ]
       }
     },

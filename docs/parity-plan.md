@@ -152,7 +152,8 @@ hours** calendars and per-team policies.
 
 - **@mentions** in internal notes → notify the mentioned agent (Notifyr).
 - **Collision detection**: `GET /v1/tickets/{id}/presence` (who is viewing).
-- **Bulk actions** on a ticket id list (assign/status/tag/team).
+- **Bulk actions** on a ticket id list (assign/status/tag/team). ✅ **done**
+  (`POST /v1/console/bulk`, scope `tickets:write`).
 - Console: keyboard shortcuts + command bar; saved views already exist.
 
 ### P6 — Self-service · L

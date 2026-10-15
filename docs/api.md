@@ -201,7 +201,7 @@ external process that drives the worker loop.
 | `GET` | `/v1/console/me` | Current user, workspace, role, scopes |
 | `GET` | `/v1/console/inbox` | Saved views: mine, unassigned, open, overdue |
 | `GET` | `/v1/console/overview` | Counts, first-response time, SLA, volume by integration |
-| `POST` | `/v1/console/bulk` | Bulk assign/status/tag on a ticket id list |
+| `POST` | `/v1/console/bulk` | Apply one action (status/priority/assignee/team/tags) to many tickets (`tickets:write`) |
 | `GET` | `/v1/console/settings` | Current workspace settings (AI + notifications) |
 | `PATCH` | `/v1/console/settings/ai` | Set AI provider/model/base_url/api_key (secret write-only) |
 | `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |

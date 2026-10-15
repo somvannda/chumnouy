@@ -329,6 +329,37 @@ export interface Body_upload_attachment_api_v1_uploads_post {
   file: string;
 }
 
+/** BulkAction */
+export interface BulkAction {
+  /** Add Tags */
+  add_tags?: string[];
+  /** Assignee User Id */
+  assignee_user_id?: string | null;
+  /** Priority */
+  priority?: "low" | "normal" | "high" | "urgent" | null;
+  /** Remove Tags */
+  remove_tags?: string[];
+  /** Status */
+  status?: "open" | "pending" | "resolved" | "closed" | null;
+  /** Team Id */
+  team_id?: string | null;
+}
+
+/** BulkResult */
+export interface BulkResult {
+  /** Ticket Ids */
+  ticket_ids?: string[];
+  /** Updated */
+  updated: number;
+}
+
+/** BulkUpdate */
+export interface BulkUpdate {
+  action: BulkAction;
+  /** Ticket Ids */
+  ticket_ids: string[];
+}
+
 /** CannedResponseCreate */
 export interface CannedResponseCreate {
   /** Body */
