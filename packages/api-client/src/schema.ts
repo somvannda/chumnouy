@@ -347,6 +347,24 @@ export interface HealthRead {
   version: string;
 }
 
+/** InboundEmailCreate */
+export interface InboundEmailCreate {
+  /** Body */
+  body: string;
+  /** Body Format */
+  body_format?: "text" | "html";
+  /** From Email */
+  from_email: string;
+  /** From Name */
+  from_name?: string | null;
+  /** In Reply To */
+  in_reply_to?: string | null;
+  /** Message Id */
+  message_id?: string | null;
+  /** Subject */
+  subject?: string;
+}
+
 /** IntegrationCreate */
 export interface IntegrationCreate {
   /** Name */

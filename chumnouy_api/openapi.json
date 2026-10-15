@@ -1019,6 +1019,77 @@
         "title": "HealthRead",
         "type": "object"
       },
+      "InboundEmailCreate": {
+        "properties": {
+          "body": {
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "body_format": {
+            "default": "text",
+            "enum": [
+              "text",
+              "html"
+            ],
+            "title": "Body Format",
+            "type": "string"
+          },
+          "from_email": {
+            "format": "email",
+            "title": "From Email",
+            "type": "string"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "maxLength": 160,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "subject": {
+            "default": "(no subject)",
+            "maxLength": 255,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_email",
+          "body"
+        ],
+        "title": "InboundEmailCreate",
+        "type": "object"
+      },
       "IntegrationCreate": {
         "properties": {
           "name": {
@@ -3977,6 +4048,88 @@
         "summary": "Health",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/v1/inbound/email": {
+      "post": {
+        "description": "Create or append a ticket from a parsed inbound email.\n\nThe transport and parsing live in Notifyr; this endpoint is the hand-off.\n``in_reply_to`` threads the message onto the matching ticket.",
+        "operationId": "inbound_email_api_v1_inbound_email_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboundEmailCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetailRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Inbound Email",
+        "tags": [
+          "inbound"
         ]
       }
     },
