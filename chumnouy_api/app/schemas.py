@@ -562,3 +562,27 @@ class InboundEmailCreate(BaseModel):
     body_format: Literal["text", "html"] = "text"
     message_id: str | None = Field(default=None, max_length=255)
     in_reply_to: str | None = Field(default=None, max_length=255)
+
+
+# --- Canned responses ---------------------------------------------------------
+
+
+class CannedResponseCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    body: str = Field(min_length=1)
+    body_format: Literal["text", "html"] = "text"
+
+
+class CannedResponseUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    body: str | None = Field(default=None, min_length=1)
+    body_format: Literal["text", "html"] | None = None
+
+
+class CannedResponseRead(BaseModel):
+    id: UUID
+    title: str
+    body: str
+    body_format: str = "text"
+    created_at: datetime
+    updated_at: datetime

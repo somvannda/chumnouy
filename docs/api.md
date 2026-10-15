@@ -299,3 +299,17 @@ Scope `tickets:write`; called by Notifyr (which owns transport + parsing). Body:
 `in_reply_to` threads the message onto the matching ticket (else the sender's
 latest open ticket, else a new ticket); the sender is created as a requester on
 first contact. A new ticket is subject to the workspace quota.
+
+## 16. Canned responses
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/canned-responses` | List saved replies |
+| `POST` | `/v1/canned-responses` | Create |
+| `GET` | `/v1/canned-responses/{id}` | Detail |
+| `PATCH` | `/v1/canned-responses/{id}` | Update |
+| `DELETE` | `/v1/canned-responses/{id}` | Delete |
+
+Workspace-scoped; `tickets:read` / `tickets:write`. Body carries `title`,
+`body` and `body_format` (`text`/`html`, sanitised). Titles are unique per
+workspace.
