@@ -289,6 +289,8 @@ class TicketAttachment(Base):
     url: Mapped[str] = mapped_column(String(500))
     sha256: Mapped[str] = mapped_column(String(64))
     content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # "image" or "file" (derived from the content type / suffix at upload time).
+    kind: Mapped[str] = mapped_column(String(10), default="image")
     byte_size: Mapped[int] = mapped_column(Integer, default=0)
     original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)

@@ -68,7 +68,9 @@ Everything else depends on these; do first.
   (`text|html`). Migration `0010`. ✅ **done** (`body_format`/`message_format`,
   sanitised via `services/sanitize.py`).
 - **Attachments breadth**: allow any content type with a per-workspace allowlist
-  + max size; keep content-addressed storage; add `kind` (image/file).
+  + max size; keep content-addressed storage; add `kind` (image/file). ✅ **done**
+  (configurable `UPLOAD_SUFFIXES` + `MAX_UPLOAD_BYTES`; `kind` column, migration
+  `0012_attachment_kind`).
 - **Full-text search**: Postgres `tsvector` on tickets/messages/articles +
   `GET /v1/search`. Migration `0011`. ✅ **done** (`GET /v1/search` over
   tickets/messages/articles; Postgres GIN expression indexes in `0011_search`,

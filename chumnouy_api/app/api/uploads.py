@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.deps import TenantContext, require_tenant_scopes
-from app.media import content_digest, read_image_upload, store_image
+from app.media import content_digest, kind_for, read_upload, store_image
 from app.schemas import AttachmentRead
 from app.services import attachments as svc
 
@@ -26,13 +26,14 @@ async def upload_attachment(
     ctx: TenantContext = Depends(_write),
     db: AsyncSession = Depends(get_db),
 ) -> AttachmentRead:
-    """Stage a file while composing a request or reply (images, 5 MB max).
+    """Stage a file while composing a request or reply (any allowlisted type).
 
     The row starts unowned and is claimed by ticket creation, a reply, or
     ``POST /tickets/{id}/attachments``, so abandoning a draft leaves nothing
-    visible on any ticket. Images only, 5 MB max, at most 5 per message.
+    visible on any ticket. Types are limited by ``UPLOAD_SUFFIXES`` and
+    ``MAX_UPLOAD_BYTES``; at most 5 per message.
     """
-    suffix, content = await read_image_upload(file)
+    suffix, content = await read_upload(file)
     url = store_image(content, suffix, ctx.workspace.id)
     return await svc.stage_attachment(
         db,
@@ -40,6 +41,7 @@ async def upload_attachment(
         url=url,
         sha256=content_digest(content),
         content_type=file.content_type,
+        kind=kind_for(file.content_type, suffix),
         byte_size=len(content),
         original_filename=file.filename,
     )

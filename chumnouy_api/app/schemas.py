@@ -134,6 +134,7 @@ class AttachmentRead(APIModel):
     id: UUID
     url: str
     content_type: str | None = None
+    kind: str = "image"
     byte_size: int
     original_filename: str | None = None
     position: int

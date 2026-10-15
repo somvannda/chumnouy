@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     media_url_prefix: str = "/media"
     max_upload_bytes: int = 5_000_000
     max_attachments_per_message: int = 5
+    # Comma-separated allowlist of uploadable file suffixes.
+    upload_suffixes: str = ".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.csv,.md,.zip,.doc,.docx,.xls,.xlsx"
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
