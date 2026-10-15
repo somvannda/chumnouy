@@ -53,6 +53,7 @@ Tailwind (react-router, lucide-react)** on the frontend, sharing the
 - `docs/reuse-from-chmaba.md` — exactly what to lift from Chmaba POS and how
 - `docs/tenancy.md` — account / workspace / integration isolation model
 - `docs/handoff.md` — current state, local run/verify steps, and the task backlog
+- `docs/review-checklist.md` — retrospective review checklist (security, decisions, process)
 
 ## Status
 
