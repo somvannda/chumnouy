@@ -279,6 +279,8 @@ export interface AttachmentRead {
   content_type?: string | null;
   /** Id */
   id: string;
+  /** Kind */
+  kind?: string;
   /** Original Filename */
   original_filename?: string | null;
   /** Position */

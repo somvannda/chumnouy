@@ -26,26 +26,39 @@ from fastapi import HTTPException, UploadFile, status
 
 from app.config import settings
 
-# Images are accepted only by suffix and size, shared by every upload surface.
+# Images are treated specially for the `kind` label; the uploadable allowlist is
+# configurable (``UPLOAD_SUFFIXES``) so a workspace can widen it without a code
+# change.
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 
 
-async def read_image_upload(file: UploadFile) -> tuple[str, bytes]:
-    """Validate an uploaded image and return ``(suffix, content)``.
+def allowed_suffixes() -> set[str]:
+    return {s.strip().lower() for s in settings.upload_suffixes.split(",") if s.strip()}
+
+
+def kind_for(content_type: str | None, suffix: str) -> str:
+    """``image`` for pictures, ``file`` for anything else."""
+    if (content_type or "").startswith("image/") or suffix in IMAGE_SUFFIXES:
+        return "image"
+    return "file"
+
+
+async def read_upload(file: UploadFile) -> tuple[str, bytes]:
+    """Validate an uploaded file and return ``(suffix, content)``.
 
     Raises ``HTTPException`` 400 for an unsupported type or a size outside the
     1 byte – ``max_upload_bytes`` window, matching the error shape the upload
     endpoints return.
     """
     suffix = Path(file.filename or "").suffix.lower()
-    if suffix not in IMAGE_SUFFIXES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image type")
+    if suffix not in allowed_suffixes():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type")
     content = await file.read()
     if not content or len(content) > settings.max_upload_bytes:
         limit_mb = settings.max_upload_bytes // 1_000_000
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Image must be 1 byte to {limit_mb}MB",
+            detail=f"File must be 1 byte to {limit_mb}MB",
         )
     return suffix, content
 

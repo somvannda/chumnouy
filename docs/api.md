@@ -111,10 +111,11 @@ Staged upload then claim (ported from Chmaba):
 | `POST` | `/v1/tickets/{id}/attachments` | Claim staged uploads: `{ "attachment_ids": [...] }` |
 
 Rules: only the caller's own, still-unowned rows can be claimed; foreign or
-already-claimed ids are rejected with `400`. Images only, 5 MB max, at most 5
-per message. Ticket create and reply accept an `attachment_ids` list that claims
-staged uploads in the same request (opening files land on the ticket; reply files
-land on the message).
+already-claimed ids are rejected with `400`. Any type in `UPLOAD_SUFFIXES`
+(default images + common documents/archives) up to `MAX_UPLOAD_BYTES` (5 MB), at
+most 5 per message; each attachment carries a `kind` (`image` or `file`). Ticket
+create and reply accept an `attachment_ids` list that claims staged uploads in the
+same request (opening files land on the ticket; reply files land on the message).
 
 ## 5. Knowledge (help corpus)
 

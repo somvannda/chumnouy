@@ -170,10 +170,25 @@ async def test_unsupported_type_is_rejected(client):
     _, key = await _workspace_with_key(client, email="type@example.com")
     resp = await client.post(
         "/api/v1/uploads",
-        files={"file": ("notes.txt", b"hello", "text/plain")},
+        files={"file": ("installer.exe", b"MZ", "application/octet-stream")},
         headers={"X-Api-Key": key},
     )
     assert resp.status_code == 400
+
+
+async def test_attachment_kind_is_derived(client):
+    _, key = await _workspace_with_key(client, email="kind@example.com")
+    image = await _upload(client, key, name="pic.png")
+    assert image.status_code == 201, image.text
+    assert image.json()["kind"] == "image"
+
+    document = await client.post(
+        "/api/v1/uploads",
+        files={"file": ("spec.txt", b"hello", "text/plain")},
+        headers={"X-Api-Key": key},
+    )
+    assert document.status_code == 201, document.text
+    assert document.json()["kind"] == "file"
 
 
 async def test_upload_requires_write_scope(client):

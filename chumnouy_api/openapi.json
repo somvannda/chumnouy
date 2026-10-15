@@ -832,6 +832,11 @@
             "title": "Id",
             "type": "string"
           },
+          "kind": {
+            "default": "image",
+            "title": "Kind",
+            "type": "string"
+          },
           "original_filename": {
             "anyOf": [
               {
@@ -6087,7 +6092,7 @@
     },
     "/api/v1/uploads": {
       "post": {
-        "description": "Stage a file while composing a request or reply (images, 5 MB max).\n\nThe row starts unowned and is claimed by ticket creation, a reply, or\n``POST /tickets/{id}/attachments``, so abandoning a draft leaves nothing\nvisible on any ticket. Images only, 5 MB max, at most 5 per message.",
+        "description": "Stage a file while composing a request or reply (any allowlisted type).\n\nThe row starts unowned and is claimed by ticket creation, a reply, or\n``POST /tickets/{id}/attachments``, so abandoning a draft leaves nothing\nvisible on any ticket. Types are limited by ``UPLOAD_SUFFIXES`` and\n``MAX_UPLOAD_BYTES``; at most 5 per message.",
         "operationId": "upload_attachment_api_v1_uploads_post",
         "parameters": [
           {

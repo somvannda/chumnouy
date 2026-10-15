@@ -19,7 +19,7 @@ implemented and tested.
 | Console auth: signup / login / me | Done |
 | Machine auth: scoped API keys (test/live) + `whoami` | Done |
 | Tickets: create / list / get / update / reply / resolve / reopen / events | Done |
-| Attachments: staged upload + claim, content-addressed media store | Done |
+| Attachments: staged upload + claim, allowlisted types + `kind`, content-addressed store | Done |
 | Webhooks: registrations, signed delivery, retry/backoff, delivery log + replay | Done |
 | Knowledge: workspace articles, sections/locales, seeded default corpus | Done |
 | AI assistant: grounded streaming chat, conversations, feedback, agent draft | Done |
@@ -34,8 +34,8 @@ implemented and tested.
 | Embeddable widget: dependency-free launcher over the public surface | Done |
 | Rich text: sanitised HTML message bodies (`body_format`) | Done |
 | Search: workspace-scoped tickets / messages / articles | Done |
-| Migrations | `0001`…`0011` (`0011_search`) |
-| Tests | 86 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Migrations | `0001`…`0012` (`0012_attachment_kind`) |
+| Tests | 87 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -46,7 +46,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 86 passing
+python -m pytest                       # 87 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)

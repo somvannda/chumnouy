@@ -26,6 +26,7 @@ def attachment_read(attachment: TicketAttachment) -> AttachmentRead:
         id=attachment.id,
         url=attachment.url,
         content_type=attachment.content_type,
+        kind=attachment.kind,
         byte_size=attachment.byte_size,
         original_filename=attachment.original_filename,
         position=attachment.position,
@@ -106,6 +107,7 @@ async def stage_attachment(
     url: str,
     sha256: str,
     content_type: str | None,
+    kind: str = "image",
     byte_size: int,
     original_filename: str | None,
 ) -> AttachmentRead:
@@ -115,6 +117,7 @@ async def stage_attachment(
         url=url,
         sha256=sha256,
         content_type=content_type,
+        kind=kind,
         byte_size=byte_size,
         original_filename=original_filename,
         created_by=ctx.user.id if ctx.user else None,
