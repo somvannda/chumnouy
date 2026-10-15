@@ -289,6 +289,32 @@ export interface AttachmentRead {
   url: string;
 }
 
+/** AuditEventRead */
+export interface AuditEventRead {
+  /** Actor Id */
+  actor_id?: string | null;
+  /** Actor Type */
+  actor_type: string;
+  /** Created At */
+  created_at: string;
+  /** Data */
+  data?: Record<string, unknown>;
+  /** Id */
+  id: string;
+  /** Ticket Id */
+  ticket_id: string;
+  /** Type */
+  type: string;
+}
+
+/** AuditListRead */
+export interface AuditListRead {
+  /** Data */
+  data?: AuditEventRead[];
+  /** Next Cursor */
+  next_cursor?: string | null;
+}
+
 /** AuthRead */
 export interface AuthRead {
   /** Token */

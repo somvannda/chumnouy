@@ -272,3 +272,13 @@ retry/backoff; an unconfigured workspace enqueues nothing.
 Workspace-scoped; scope `tickets:read`. `types` is a comma-separated subset of
 `ticket,message,article`. Each result carries `type`, `id`, `title`, `snippet`
 and, for tickets/messages, `ticket_id` + `reference`.
+
+## 14. Audit log
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/audit` | Ticket events (`type`, `actor_type`, `ticket_id`, `limit`, `cursor`) |
+
+Workspace-scoped; scope `tickets:read`. A filterable, newest-first trail over
+`ticket_events` (`ticket.created`, `ticket.replied`, `ticket.updated`,
+`ticket.resolved`, …) with `data` (the changed fields / visibility / team).

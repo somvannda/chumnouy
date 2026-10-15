@@ -512,3 +512,21 @@ class TeamRead(BaseModel):
     description: str | None = None
     members: list[TeamMemberRead] = Field(default_factory=list)
     created_at: datetime
+
+
+# --- Audit log ----------------------------------------------------------------
+
+
+class AuditEventRead(BaseModel):
+    id: UUID
+    ticket_id: UUID
+    type: str
+    actor_type: str
+    actor_id: UUID | None = None
+    data: dict = Field(default_factory=dict)
+    created_at: datetime
+
+
+class AuditListRead(BaseModel):
+    data: list[AuditEventRead] = Field(default_factory=list)
+    next_cursor: str | None = None
