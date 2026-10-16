@@ -1,11 +1,14 @@
 """Live chat — requester side (portal token)."""
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.chat_stream import stream_response
 from app.db import get_db
 from app.deps import RequesterContext, get_requester_context
 from app.schemas import ChatMessageCreate, ChatMessageRead, ChatSessionDetail, ChatSessionRead
@@ -55,3 +58,16 @@ async def send_message(
     if session.status != "open":
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Chat session is closed")
     return await svc.add_message(db, session, author_type="requester", author_user_id=None, body=payload.body)
+
+
+@router.get("/sessions/{session_id}/stream")
+async def stream_session(
+    session_id: UUID,
+    after: datetime | None = None,
+    timeout: float = 25.0,
+    ctx: RequesterContext = Depends(_requester),
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """SSE: agent replies in my session (bounded; the client reconnects)."""
+    session = await _session(db, ctx, session_id)
+    return stream_response(db, session, after=after, timeout=timeout)

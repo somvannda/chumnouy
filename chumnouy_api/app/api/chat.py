@@ -1,11 +1,14 @@
 """Live chat — agent side (console)."""
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.chat_stream import stream_response
 from app.db import get_db
 from app.deps import WorkspaceContext, get_workspace_context
 from app.schemas import ChatMessageCreate, ChatMessageRead, ChatSessionDetail, ChatSessionRead
@@ -54,6 +57,19 @@ async def reply(
     return await svc.add_message(
         db, session, author_type="agent", author_user_id=ctx.user.id, body=payload.body
     )
+
+
+@router.get("/sessions/{session_id}/stream")
+async def stream(
+    session_id: UUID,
+    after: datetime | None = None,
+    timeout: float = 25.0,
+    ctx: WorkspaceContext = Depends(get_workspace_context),
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """SSE: new messages in a session (bounded; the client reconnects)."""
+    session = await _session(db, ctx, session_id)
+    return stream_response(db, session, after=after, timeout=timeout)
 
 
 @router.post("/sessions/{session_id}/close", response_model=ChatSessionRead)
