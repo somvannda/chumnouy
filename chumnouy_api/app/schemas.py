@@ -980,6 +980,19 @@ class HelpArticleSummary(BaseModel):
 class HelpArticleRead(HelpArticleSummary):
     body: str
     updated_at: datetime
+    helpful_yes: int = 0
+    helpful_no: int = 0
+
+
+class HelpArticleFeedbackCreate(BaseModel):
+    helpful: bool
+    comment: str | None = Field(default=None, max_length=1000)
+
+
+class HelpArticleFeedbackRead(BaseModel):
+    helpful: bool
+    comment: str | None = None
+    created_at: datetime
 
 
 class HelpIndex(BaseModel):

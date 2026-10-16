@@ -189,7 +189,7 @@ team, and targets are re-stamped when a ticket's team changes.
   (sections, article pages, search, article feedback) — new `apps/help` or an
   SSR route in `apps/web`. ✅ **done** (`/v1/public/help/{slug}` API + public
   `/help/:slug` pages in the console app: index, search, section filter, article
-  view); article feedback and a dedicated SEO site remain.
+  view); a dedicated SEO site remains.
 - **Widget v2**: pre-chat form, live-chat handoff, article suggestions from the
   assistant, branding config per workspace. ✅ **article suggestions done**
   (`helpSlug` → help-centre search in the widget), **live-chat handoff done**

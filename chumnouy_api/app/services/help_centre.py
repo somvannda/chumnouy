@@ -11,8 +11,14 @@ from uuid import UUID
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import KnowledgeArticle, Workspace
-from app.schemas import HelpArticleRead, HelpArticleSummary, HelpIndex, HelpSection
+from app.models import HelpArticleFeedback, KnowledgeArticle, Workspace
+from app.schemas import (
+    HelpArticleFeedbackRead,
+    HelpArticleRead,
+    HelpArticleSummary,
+    HelpIndex,
+    HelpSection,
+)
 
 
 def _summary(article: KnowledgeArticle) -> HelpArticleSummary:
@@ -93,6 +99,7 @@ async def article(
     ).scalar_one_or_none()
     if row is None:
         return None
+    yes, no = await feedback_counts(db, row.id)
     return HelpArticleRead(
         slug=row.slug,
         title=row.title,
@@ -101,4 +108,57 @@ async def article(
         locale=row.locale,
         body=row.body,
         updated_at=row.updated_at,
+        helpful_yes=yes,
+        helpful_no=no,
+    )
+
+
+async def feedback_counts(db: AsyncSession, article_id: UUID) -> tuple[int, int]:
+    """``(helpful, not helpful)`` for one article."""
+    rows = (
+        await db.execute(
+            select(HelpArticleFeedback.helpful, func.count(HelpArticleFeedback.id))
+            .where(HelpArticleFeedback.article_id == article_id)
+            .group_by(HelpArticleFeedback.helpful)
+        )
+    ).all()
+    counts = {bool(helpful): int(count) for helpful, count in rows}
+    return counts.get(True, 0), counts.get(False, 0)
+
+
+async def submit_feedback(
+    db: AsyncSession,
+    workspace_id: UUID,
+    slug: str,
+    *,
+    helpful: bool,
+    comment: str | None = None,
+    locale: str = "en",
+) -> HelpArticleFeedbackRead | None:
+    """Record a reader's verdict. Returns ``None`` when the article is unknown."""
+    article_row = (
+        await db.execute(
+            select(KnowledgeArticle).where(
+                KnowledgeArticle.workspace_id == workspace_id,
+                KnowledgeArticle.slug == slug,
+                KnowledgeArticle.locale == locale,
+                KnowledgeArticle.is_active.is_(True),
+            )
+        )
+    ).scalar_one_or_none()
+    if article_row is None:
+        return None
+    feedback = HelpArticleFeedback(
+        workspace_id=workspace_id,
+        article_id=article_row.id,
+        helpful=helpful,
+        comment=(comment or "").strip() or None,
+    )
+    db.add(feedback)
+    await db.commit()
+    await db.refresh(feedback)
+    return HelpArticleFeedbackRead(
+        helpful=feedback.helpful,
+        comment=feedback.comment,
+        created_at=feedback.created_at,
     )

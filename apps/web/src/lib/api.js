@@ -116,6 +116,8 @@ export const api = {
   helpIndex: (slug, params = {}) => request(`/public/help/${slug}${buildQuery(params)}`),
   helpArticle: (slug, articleSlug, params = {}) =>
     request(`/public/help/${slug}/articles/${articleSlug}${buildQuery(params)}`),
+  helpFeedback: (slug, articleSlug, body) =>
+    request(`/public/help/${slug}/articles/${articleSlug}/feedback`, { method: "POST", body }),
 
   // Reporting & audit
   reportSummary: (token) => request("/reports/summary", { token }),

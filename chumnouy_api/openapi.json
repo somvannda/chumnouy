@@ -1927,11 +1927,76 @@
         "title": "HealthRead",
         "type": "object"
       },
+      "HelpArticleFeedbackCreate": {
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "helpful": {
+            "title": "Helpful",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "helpful"
+        ],
+        "title": "HelpArticleFeedbackCreate",
+        "type": "object"
+      },
+      "HelpArticleFeedbackRead": {
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "helpful": {
+            "title": "Helpful",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "helpful",
+          "created_at"
+        ],
+        "title": "HelpArticleFeedbackRead",
+        "type": "object"
+      },
       "HelpArticleRead": {
         "properties": {
           "body": {
             "title": "Body",
             "type": "string"
+          },
+          "helpful_no": {
+            "default": 0,
+            "title": "Helpful No",
+            "type": "integer"
+          },
+          "helpful_yes": {
+            "default": 0,
+            "title": "Helpful Yes",
+            "type": "integer"
           },
           "locale": {
             "title": "Locale",
@@ -10333,6 +10398,79 @@
           }
         },
         "summary": "Help Article",
+        "tags": [
+          "help-centre"
+        ]
+      }
+    },
+    "/api/v1/public/help/{workspace_slug}/articles/{article_slug}/feedback": {
+      "post": {
+        "description": "Record whether a help article was helpful (public, rate-limited).",
+        "operationId": "help_article_feedback_api_v1_public_help__workspace_slug__articles__article_slug__feedback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_slug",
+            "required": true,
+            "schema": {
+              "title": "Workspace Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "article_slug",
+            "required": true,
+            "schema": {
+              "title": "Article Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "required": false,
+            "schema": {
+              "default": "en",
+              "maxLength": 5,
+              "title": "Locale",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HelpArticleFeedbackCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HelpArticleFeedbackRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Help Article Feedback",
         "tags": [
           "help-centre"
         ]
