@@ -165,6 +165,15 @@ export const api = {
   // Business hours
   updateBusinessHours: (token, body) =>
     request("/console/settings/business-hours", { method: "PATCH", token, body }),
+
+  // Live chat (console)
+  chatSessions: (token, params = {}) =>
+    request(`/console/chat/sessions${buildQuery(params)}`, { token }),
+  chatSession: (token, id) => request(`/console/chat/sessions/${id}`, { token }),
+  chatReply: (token, id, body) =>
+    request(`/console/chat/sessions/${id}/messages`, { method: "POST", token, body }),
+  chatClose: (token, id) =>
+    request(`/console/chat/sessions/${id}/close`, { method: "POST", token }),
 };
 
 function parseSse(chunk) {

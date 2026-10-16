@@ -7,6 +7,7 @@ import Assistant from "./pages/Assistant";
 import Audit from "./pages/Audit";
 import Automations from "./pages/Automations";
 import CannedResponses from "./pages/CannedResponses";
+import Chat from "./pages/Chat";
 import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
@@ -49,6 +50,7 @@ export default function App() {
       >
         <Route path="/" element={<Navigate to="/inbox" replace />} />
         <Route path="/inbox" element={<Inbox />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/tickets/:id" element={<TicketView />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/knowledge" element={<Knowledge />} />
