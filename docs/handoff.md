@@ -64,7 +64,7 @@ implemented and tested.
 | Business hours: SLA due dates over working hours (P2) | Done |
 | Live chat: requester session + agent reply/close, SSE stream, Notifyr nudge (P1) | Done |
 | Migrations | `0001`…`0022` (`0022_chat`) |
-| Tests | 171 API (in-memory SQLite, incl. an end-to-end journey) + 7 web (`node --test`) |
+| Tests | 171 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 

@@ -2,6 +2,7 @@
 // absolute origin in production. Kept intentionally small; the generated client
 // in packages/api-client replaces it once the API contract stabilises.
 import { buildQuery } from "./format";
+import { streamSse } from "./sse";
 
 const BASE = ((import.meta.env?.VITE_API_URL) || "").replace(/\/$/, "");
 
@@ -178,6 +179,12 @@ export const api = {
     request(`/console/chat/sessions/${id}/messages`, { method: "POST", token, body }),
   chatClose: (token, id) =>
     request(`/console/chat/sessions/${id}/close`, { method: "POST", token }),
+  streamChat: (token, id, { signal, onEvent } = {}) =>
+    streamSse(`${BASE}/api/v1/console/chat/sessions/${id}/stream?timeout=25`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal,
+      onEvent,
+    }),
 };
 
 function parseSse(chunk) {

@@ -5,7 +5,9 @@ import { useAuth } from "../context/auth";
 import { Alert, Badge, Button, Card, EmptyState, Spinner, Textarea } from "../components/ui";
 import { formatRelativeTime } from "../lib/format";
 
-const POLL_MS = 4000;
+// The session list is polled; the open thread is streamed (SSE) so agent replies
+// and requester messages appear without a refresh.
+const LIST_POLL_MS = 10000;
 
 export default function Chat() {
   const { token } = useAuth();
@@ -37,17 +39,50 @@ export default function Chat() {
 
   useEffect(() => {
     loadSessions();
+    const timer = setInterval(loadSessions, LIST_POLL_MS);
+    return () => clearInterval(timer);
   }, [loadSessions]);
 
   useEffect(() => {
     if (!activeId) return undefined;
     loadActive(activeId);
-    const timer = setInterval(() => {
-      loadActive(activeId);
-      loadSessions();
-    }, POLL_MS);
-    return () => clearInterval(timer);
-  }, [activeId, loadActive, loadSessions]);
+
+    // Stream the thread; reconnect when the bounded window closes.
+    const controller = new AbortController();
+    let cancelled = false;
+
+    function append(message) {
+      setActive((current) => {
+        if (!current || current.id !== activeId) return current;
+        const messages = current.messages || [];
+        if (messages.some((existing) => existing.id === message.id)) return current;
+        return { ...current, messages: [...messages, message] };
+      });
+    }
+
+    async function run() {
+      while (!cancelled) {
+        try {
+          await api.streamChat(token, activeId, {
+            signal: controller.signal,
+            onEvent: (event) => {
+              if (event.event === "message" && event.data) append(event.data);
+            },
+          });
+        } catch (err) {
+          if (cancelled || err.name === "AbortError") return;
+          // A dropped stream is not fatal — fall back to the next reconnect.
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
+    }
+    run();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [activeId, token, loadActive]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,9 +94,13 @@ export default function Chat() {
     setBusy(true);
     setError(null);
     try {
-      await api.chatReply(token, activeId, { body: body.trim() });
+      const created = await api.chatReply(token, activeId, { body: body.trim() });
       setBody("");
-      await loadActive(activeId);
+      setActive((current) =>
+        current && current.id === activeId
+          ? { ...current, messages: [...(current.messages || []), created] }
+          : current,
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -124,7 +163,7 @@ export default function Chat() {
               )}
             </div>
             <div className="mt-4 flex-1 space-y-3">
-              {active.messages.map((message) => (
+              {(active.messages || []).map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.author_type === "agent" ? "justify-end" : ""}`}
