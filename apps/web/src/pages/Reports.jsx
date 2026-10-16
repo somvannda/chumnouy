@@ -23,6 +23,7 @@ function pick(obj, path) {
 export default function Reports() {
   const { token } = useAuth();
   const [summary, setSummary] = useState(null);
+  const [daily, setDaily] = useState(null);
   const [error, setError] = useState(null);
 
   const load = useCallback(
@@ -33,6 +34,10 @@ export default function Reports() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    api.reportDaily(token, { days: 14 }).then(setDaily).catch(() => setDaily(null));
+  }, [token]);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -73,6 +78,49 @@ export default function Reports() {
               </ul>
             </Card>
           ))}
+
+          {daily && (
+            <Card className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">
+                Last {daily.days.length} days
+              </p>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs font-bold uppercase tracking-[.08em] text-muted">
+                      <th className="py-1 pr-3">Day</th>
+                      <th className="py-1 pr-3">Created</th>
+                      <th className="py-1 pr-3">Resolved</th>
+                      <th className="py-1 pr-3">First responses</th>
+                      <th className="py-1">Breached</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {daily.days.map((row) => (
+                      <tr key={row.day} className="border-t border-line">
+                        <td className="py-1.5 pr-3 font-mono text-xs text-ink-soft">{row.day}</td>
+                        <td className="py-1.5 pr-3 font-bold text-ink">{row.created}</td>
+                        <td className="py-1.5 pr-3 font-bold text-ink">{row.resolved}</td>
+                        <td className="py-1.5 pr-3 font-bold text-ink">{row.first_responses}</td>
+                        <td className="py-1.5 font-bold text-ink">{row.breached}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  {daily.totals && (
+                    <tfoot>
+                      <tr className="border-t border-line text-xs font-bold uppercase tracking-[.08em] text-muted">
+                        <td className="py-1.5 pr-3">Total</td>
+                        <td className="py-1.5 pr-3">{daily.totals.created}</td>
+                        <td className="py-1.5 pr-3">{daily.totals.resolved}</td>
+                        <td className="py-1.5 pr-3">{daily.totals.first_responses}</td>
+                        <td className="py-1.5">{daily.totals.breached}</td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </Card>
+          )}
         </>
       )}
     </div>

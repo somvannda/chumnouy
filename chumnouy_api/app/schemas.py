@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
@@ -891,6 +891,21 @@ class ReportSummary(BaseModel):
     avg_resolution_minutes: float | None = None
     csat_responses: int = 0
     csat_positive_pct: float | None = None
+
+
+class ReportDay(BaseModel):
+    """One day of activity (a dense window: empty days are included as zeros)."""
+
+    day: date
+    created: int = 0
+    resolved: int = 0
+    first_responses: int = 0
+    breached: int = 0
+
+
+class ReportDaily(BaseModel):
+    days: list[ReportDay] = Field(default_factory=list)
+    totals: ReportDay | None = None
 
 
 # --- CSAT ---------------------------------------------------------------------

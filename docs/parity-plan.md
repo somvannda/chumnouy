@@ -157,8 +157,9 @@ team, and targets are re-stamped when a ticket's team changes.
 - **Metrics**: materialise `ticket_metrics` (first response, resolution, reopen,
   volume by channel/team/agent) with a daily rollup worker. ✅ **summary done**
   (`GET /v1/reports/summary`: counts, response/resolution averages, SLA
-  compliance, per-assignee/team breakdowns, computed on the fly); the daily
-  rollup remains.
+  compliance, per-assignee/team breakdowns, computed on the fly) and a **daily
+  series** (`/v1/reports/daily`: created/resolved/first-response/breached per day
+  over a dense 1–90 day window, plus totals); a background rollup worker remains.
 - **API + console**: `GET /v1/reports/*` and a Reports screen (volume, FRT,
   resolution, SLA compliance, agent/team breakdowns, CSV export).
 - **CSAT**: `csat_surveys` + `csat_responses`; send via Notifyr on resolve; a

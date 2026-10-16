@@ -119,6 +119,7 @@ export const api = {
 
   // Reporting & audit
   reportSummary: (token) => request("/reports/summary", { token }),
+  reportDaily: (token, params = {}) => request(`/reports/daily${buildQuery(params)}`, { token }),
   auditEvents: (token, params = {}) => request(`/audit${buildQuery(params)}`, { token }),
 
   // Ticket AI helpers
