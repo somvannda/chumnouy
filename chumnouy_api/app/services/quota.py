@@ -14,7 +14,9 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Membership, Ticket, Workspace
+from app.models import Membership, Ticket, TicketAttachment, Workspace
+
+STORAGE_BYTES_PER_MB = 1024 * 1024
 
 
 def _limit(workspace: Workspace, key: str) -> int:
@@ -31,6 +33,11 @@ def ticket_quota(workspace: Workspace) -> int:
 
 def seat_quota(workspace: Workspace) -> int:
     return _limit(workspace, "seats")
+
+
+def storage_quota(workspace: Workspace) -> int:
+    """Storage cap in whole megabytes (0 or absent = unlimited)."""
+    return _limit(workspace, "storage_mb")
 
 
 async def tickets_this_month(db: AsyncSession, workspace_id: UUID) -> int:
@@ -83,4 +90,33 @@ async def enforce_seat_quota(db: AsyncSession, workspace: Workspace) -> None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Seat quota reached",
+        )
+
+
+async def storage_used_bytes(db: AsyncSession, workspace_id: UUID) -> int:
+    """Total attachment bytes recorded for the workspace."""
+    return int(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(TicketAttachment.byte_size), 0)).where(
+                    TicketAttachment.workspace_id == workspace_id
+                )
+            )
+        ).scalar()
+        or 0
+    )
+
+
+async def enforce_storage_quota(
+    db: AsyncSession, workspace: Workspace, *, additional_bytes: int = 0
+) -> None:
+    """Raise 413 when an upload would push the workspace over its storage cap."""
+    limit = storage_quota(workspace)
+    if limit <= 0:
+        return
+    used = await storage_used_bytes(db, workspace.id)
+    if used + max(0, additional_bytes) > limit * STORAGE_BYTES_PER_MB:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail="Storage quota reached",
         )
