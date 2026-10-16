@@ -50,6 +50,7 @@ implemented and tested.
 | Mentions: @mentions on internal notes notify the members (P5) | Done |
 | Help centre: public API + rendered pages (`/help/:slug`) (P6) | Done |
 | Widget: help-centre search + article suggestions (P6) | Done |
+| Widget: live-chat start + polling thread (P6) | Done |
 | GDPR: requester data export + erasure (P7) | Done |
 | AI depth: thread summary + triage suggestions (P8) | Done |
 | RBAC: roles gate management + ticket writes (P7) | Done |

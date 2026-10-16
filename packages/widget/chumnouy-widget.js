@@ -60,6 +60,14 @@
     var apiUrl = (opts.apiUrl || "").replace(/\/$/, "");
     var token = opts.token;
     var helpSlug = opts.helpSlug || null;
+    var pollTimer = null;
+
+    function clearPoll() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
     var side = opts.position === "left" ? "left" : "right";
     var anchor = side + ":20px";
     var accent = opts.accent || "#6957f5";
@@ -119,7 +127,11 @@
     }
 
     function renderList() {
+      clearPoll();
       body.innerHTML = "";
+      var chatBtn = el("button", "cmy-ghost", "Live chat");
+      chatBtn.onclick = startChat;
+      body.appendChild(chatBtn);
       var newBtn = el("button", "cmy-ghost", "New request");
       newBtn.onclick = renderCompose;
       body.appendChild(newBtn);
@@ -146,7 +158,69 @@
         });
     }
 
+    function startChat() {
+      request("/public/chat/sessions", { method: "POST" })
+        .then(function (session) {
+          renderChat(session.id);
+        })
+        .catch(function (err) {
+          setError(err.message);
+        });
+    }
+
+    function renderChat(sessionId) {
+      clearPoll();
+      body.innerHTML = "";
+      var stream = el("div", null);
+      var reply = el("textarea", "cmy-area");
+      reply.placeholder = "Message…";
+      var send = el("button", "cmy-send", "Send");
+      var back = el("button", "cmy-ghost", "Back");
+      back.onclick = function () {
+        title.textContent = opts.title || "Support";
+        renderList();
+      };
+      var row = el("div", "cmy-row");
+      row.appendChild(send);
+      row.appendChild(back);
+      body.appendChild(stream);
+      body.appendChild(reply);
+      body.appendChild(row);
+      function draw() {
+        request("/public/chat/sessions/" + sessionId)
+          .then(function (session) {
+            stream.innerHTML = "";
+            (session.messages || []).forEach(function (m) {
+              var bubble = el("div", "cmy-msg " + (m.author_type === "requester" ? "me" : "them"));
+              bubble.textContent = m.body;
+              stream.appendChild(bubble);
+            });
+            body.scrollTop = body.scrollHeight;
+          })
+          .catch(function () {
+            /* polling is best-effort */
+          });
+      }
+      send.onclick = function () {
+        setError(null);
+        request("/public/chat/sessions/" + sessionId + "/messages", {
+          method: "POST",
+          body: { body: reply.value },
+        })
+          .then(function () {
+            reply.value = "";
+            draw();
+          })
+          .catch(function (err) {
+            setError(err.message);
+          });
+      };
+      draw();
+      pollTimer = setInterval(draw, 3000);
+    }
+
     function renderArticle(articleSlug) {
+      clearPoll();
       body.innerHTML = "";
       request("/public/help/" + encodeURIComponent(helpSlug) + "/articles/" + encodeURIComponent(articleSlug))
         .then(function (article) {
@@ -165,6 +239,7 @@
     }
 
     function renderCompose() {
+      clearPoll();
       body.innerHTML = "";
       // Optional help-centre search: suggest articles before opening a ticket.
       if (helpSlug) {
@@ -222,6 +297,7 @@
     }
 
     function renderThread(ticketId) {
+      clearPoll();
       body.innerHTML = "";
       request("/public/tickets/" + ticketId)
         .then(function (ticket) {

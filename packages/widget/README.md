@@ -42,6 +42,10 @@ into the page, or fetched with their session).
   CSS variable so it can be themed per integrator.
 - With `helpSlug` set, the compose view offers a help-centre search that suggests
   articles (and lets the user read one) before they open a ticket.
+- **Live chat**: the list view offers *Live chat*, which starts a session
+  (`POST /v1/public/chat/sessions`) and polls it every few seconds for agent
+  replies. Polling keeps the widget dependency-free; an SSE/WebSocket transport
+  can replace it later without changing the API.
 - It is intentionally small: a launcher, a ticket list, a compose form and a
   thread with replies. Embedders who want the full experience should build their
   own UI on the public API.
