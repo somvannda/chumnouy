@@ -5,7 +5,15 @@ import { useAuth } from "../context/auth";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Spinner } from "../components/ui";
 
 const FIELDS = ["tag", "priority", "status", "subject"];
-const ACTIONS = ["set_priority", "set_status", "add_tag", "remove_tag", "set_team"];
+const ACTIONS = [
+  "set_priority",
+  "set_status",
+  "add_tag",
+  "remove_tag",
+  "set_team",
+  "notify",
+  "webhook",
+];
 
 const EMPTY = {
   name: "",
@@ -21,6 +29,7 @@ export default function Automations() {
   const { token } = useAuth();
   const [items, setItems] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [webhooks, setWebhooks] = useState([]);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -32,6 +41,10 @@ export default function Automations() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    api.listWebhooks(token).then(setWebhooks).catch(() => setWebhooks([]));
+  }, [token]);
 
   async function run(action) {
     setBusy(true);
@@ -119,11 +132,34 @@ export default function Automations() {
                 ))}
               </Select>
             </Field>
-            <Field label="Action value">
-              <Input
-                value={form.actionValue}
-                onChange={(e) => setForm({ ...form, actionValue: e.target.value })}
-              />
+            <Field
+              label="Action value"
+              hint={
+                form.actionType === "notify"
+                  ? "requester, agents, or an email"
+                  : form.actionType === "webhook"
+                    ? "the webhook to call"
+                    : undefined
+              }
+            >
+              {form.actionType === "webhook" ? (
+                <Select
+                  value={form.actionValue}
+                  onChange={(e) => setForm({ ...form, actionValue: e.target.value })}
+                >
+                  <option value="">{webhooks.length ? "Pick a webhook…" : "No webhooks yet"}</option>
+                  {webhooks.map((hook) => (
+                    <option key={hook.id} value={hook.id}>
+                      {hook.description || hook.url}
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <Input
+                  value={form.actionValue}
+                  onChange={(e) => setForm({ ...form, actionValue: e.target.value })}
+                />
+              )}
             </Field>
           </div>
           <Button type="submit" disabled={busy || !form.name.trim()}>
