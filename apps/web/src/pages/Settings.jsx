@@ -6,6 +6,7 @@ import { Alert, Button, Card, Field, Input, Select, Spinner } from "../component
 const EMPTY_AI = { provider: "", model: "", base_url: "", api_key: "" };
 const EMPTY_NOTIFYR = { notifyr_api_url: "", notifyr_api_key: "" };
 const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const PRIORITIES = ["low", "normal", "high", "urgent"];
 
 export default function Settings() {
   const { token } = useAuth();
@@ -13,6 +14,8 @@ export default function Settings() {
   const [ai, setAi] = useState(EMPTY_AI);
   const [notifyr, setNotifyr] = useState(EMPTY_NOTIFYR);
   const [sla, setSla] = useState(null);
+  const [slaScope, setSlaScope] = useState("");
+  const [teams, setTeams] = useState([]);
   const [sso, setSso] = useState(null);
   const [hours, setHours] = useState(null);
   const [branding, setBranding] = useState(null);
@@ -39,6 +42,7 @@ export default function Settings() {
           setSla({
             first_response_minutes: data.sla?.first_response_minutes || {},
             resolution_minutes: data.sla?.resolution_minutes || {},
+            teams: data.sla?.teams || {},
           });
           setSso({
             enabled: data.sso?.enabled || false,
@@ -72,6 +76,32 @@ export default function Settings() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    api.listTeams(token).then(setTeams).catch(() => setTeams([]));
+  }, [token]);
+
+  // Editing a team that has no override yet starts from the workspace policy.
+  function selectSlaScope(scope) {
+    setSlaScope(scope);
+    if (!scope) return;
+    setSla((prev) => {
+      if (!prev || prev.teams[scope]) return prev;
+      return {
+        ...prev,
+        teams: {
+          ...prev.teams,
+          [scope]: {
+            first_response_minutes: { ...prev.first_response_minutes },
+            resolution_minutes: { ...prev.resolution_minutes },
+          },
+        },
+      };
+    });
+  }
+
+  const emptyPolicy = { first_response_minutes: {}, resolution_minutes: {} };
+  const slaValues = slaScope ? sla?.teams[slaScope] || emptyPolicy : sla || emptyPolicy;
 
   async function save(event, run, message) {
     event.preventDefault();
@@ -110,14 +140,24 @@ export default function Settings() {
   function saveSla(event) {
     const minutes = (values) =>
       Object.fromEntries(
-        Object.entries(values).map(([key, value]) => [key, Math.max(0, Number(value) || 0)]),
+        Object.entries(values || {}).map(([key, value]) => [key, Math.max(0, Number(value) || 0)]),
       );
+    const teamPolicies = Object.fromEntries(
+      Object.entries(sla.teams || {}).map(([teamId, policy]) => [
+        teamId,
+        {
+          first_response_minutes: minutes(policy.first_response_minutes),
+          resolution_minutes: minutes(policy.resolution_minutes),
+        },
+      ]),
+    );
     return save(
       event,
       () =>
         api.updateSlaSettings(token, {
           first_response_minutes: minutes(sla.first_response_minutes),
           resolution_minutes: minutes(sla.resolution_minutes),
+          teams: teamPolicies,
         }),
       "SLA settings saved.",
     );
@@ -249,26 +289,52 @@ export default function Settings() {
 
       <Card>
         <h2 className="text-sm font-extrabold text-ink">SLA targets</h2>
-        <p className="mt-1 text-sm text-ink-soft">Minutes by priority; 0 disables the target.</p>
+        <p className="mt-1 text-sm text-ink-soft">
+          Minutes by priority; 0 disables the target. A team policy overrides the workspace one, and
+          a ticket&apos;s targets follow its team.
+        </p>
         <form onSubmit={saveSla} className="mt-4 space-y-4">
+          <Field label="Applies to">
+            <Select value={slaScope} onChange={(event) => selectSlaScope(event.target.value)}>
+              <option value="">Workspace default</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  Team: {team.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
           {["first_response_minutes", "resolution_minutes"].map((key) => (
             <div key={key}>
               <p className="mb-1.5 text-xs font-bold uppercase tracking-[.08em] text-ink-soft">
                 {key === "first_response_minutes" ? "First response" : "Resolution"}
               </p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {["low", "normal", "high", "urgent"].map((priority) => (
+                {PRIORITIES.map((priority) => (
                   <label key={priority} className="text-xs font-bold capitalize text-muted">
                     {priority}
                     <Input
                       className="mt-1"
                       inputMode="numeric"
-                      value={sla?.[key]?.[priority] ?? ""}
+                      value={slaValues[key]?.[priority] ?? ""}
                       onChange={(event) =>
-                        setSla((prev) => ({
-                          ...prev,
-                          [key]: { ...prev[key], [priority]: event.target.value },
-                        }))
+                        setSla((prev) =>
+                          slaScope
+                            ? {
+                                ...prev,
+                                teams: {
+                                  ...prev.teams,
+                                  [slaScope]: {
+                                    ...prev.teams[slaScope],
+                                    [key]: {
+                                      ...prev.teams[slaScope]?.[key],
+                                      [priority]: event.target.value,
+                                    },
+                                  },
+                                },
+                              }
+                            : { ...prev, [key]: { ...prev[key], [priority]: event.target.value } },
+                        )
                       }
                     />
                   </label>

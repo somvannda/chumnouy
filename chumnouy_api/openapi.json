@@ -3496,6 +3496,13 @@
             },
             "title": "Resolution Minutes",
             "type": "object"
+          },
+          "teams": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SlaTeamPolicy"
+            },
+            "title": "Teams",
+            "type": "object"
           }
         },
         "title": "SlaSettingsRead",
@@ -3530,9 +3537,44 @@
               }
             ],
             "title": "Resolution Minutes"
+          },
+          "teams": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/SlaTeamPolicy"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Teams"
           }
         },
         "title": "SlaSettingsUpdate",
+        "type": "object"
+      },
+      "SlaTeamPolicy": {
+        "description": "Per-team overrides; any priority left out falls back to the workspace.",
+        "properties": {
+          "first_response_minutes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "First Response Minutes",
+            "type": "object"
+          },
+          "resolution_minutes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Resolution Minutes",
+            "type": "object"
+          }
+        },
+        "title": "SlaTeamPolicy",
         "type": "object"
       },
       "SsoSettingsRead": {

@@ -214,7 +214,7 @@ external process that drives the worker loop.
 | `PATCH` | `/v1/console/settings/ai` | Set AI provider/model/base_url/api_key (secret write-only) |
 | `PATCH` | `/v1/console/settings/notifications` | Set the Notifyr url/key override (secret write-only) |
 | `PATCH` | `/v1/console/settings/locale` | Set the workspace locale (`en`/`km`) |
-| `PATCH` | `/v1/console/settings/sla` | Set per-priority response/resolution targets (minutes) |
+| `PATCH` | `/v1/console/settings/sla` | Set per-priority response/resolution targets (minutes); `teams` adds per-team overrides |
 | `PATCH` | `/v1/console/settings/sso` | Configure OIDC SSO (issuer, client id/secret, allowed domains) |
 | `PATCH` | `/v1/console/settings/business-hours` | Set working hours (per weekday, timezone) for SLA due dates |
 
