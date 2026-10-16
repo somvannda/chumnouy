@@ -205,6 +205,10 @@ export const api = {
   updateRetentionSettings: (token, body) =>
     request("/console/settings/retention", { method: "PATCH", token, body }),
 
+  // SAML SSO
+  updateSamlSettings: (token, body) =>
+    request("/console/settings/saml", { method: "PATCH", token, body }),
+
   // Live chat (console)
   chatSessions: (token, params = {}) =>
     request(`/console/chat/sessions${buildQuery(params)}`, { token }),

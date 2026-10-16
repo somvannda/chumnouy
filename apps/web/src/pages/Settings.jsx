@@ -21,6 +21,7 @@ export default function Settings() {
   const [branding, setBranding] = useState(null);
   const [allowlist, setAllowlist] = useState("");
   const [retentionDays, setRetentionDays] = useState("0");
+  const [saml, setSaml] = useState(null);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -72,6 +73,15 @@ export default function Settings() {
           });
           setAllowlist((data.security?.ip_allowlist || []).join("\n"));
           setRetentionDays(String(data.retention?.days ?? 0));
+          setSaml({
+            enabled: data.saml?.enabled || false,
+            idp_sso_url: data.saml?.idp_sso_url || "",
+            idp_certificate: "",
+            idp_certificate_set: data.saml?.idp_certificate_set || false,
+            email_attribute: data.saml?.email_attribute || "email",
+            name_attribute: data.saml?.name_attribute || "",
+            allowed_domains: (data.saml?.allowed_domains || []).join(", "),
+          });
         })
         .catch((err) => setError(err.message)),
     [token],
@@ -231,6 +241,21 @@ export default function Settings() {
         }),
       "Retention saved.",
     );
+  }
+
+  function saveSaml(event) {
+    const body = {
+      enabled: saml.enabled,
+      idp_sso_url: saml.idp_sso_url || null,
+      email_attribute: saml.email_attribute || "email",
+      name_attribute: saml.name_attribute || null,
+      allowed_domains: saml.allowed_domains
+        .split(",")
+        .map((domain) => domain.trim())
+        .filter(Boolean),
+    };
+    if (saml.idp_certificate) body.idp_certificate = saml.idp_certificate;
+    return save(event, () => api.updateSamlSettings(token, body), "SAML settings saved.");
   }
 
   if (!settings) {
@@ -420,6 +445,68 @@ export default function Settings() {
           </Field>
           <Button type="submit" disabled={busy || !sso}>
             Save SSO settings
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Single sign-on (SAML 2.0)</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Paste your identity provider&apos;s signing certificate and SSO URL. Members are created on
+          first sign-in. Point the IdP at{" "}
+          <code>/api/v1/auth/saml/&lt;workspace-slug&gt;/acs</code> (metadata is served at{" "}
+          <code>/metadata</code>).
+        </p>
+        <form onSubmit={saveSaml} className="mt-4 space-y-4">
+          <label className="flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={saml?.enabled || false}
+              onChange={(event) => setSaml({ ...saml, enabled: event.target.checked })}
+            />
+            Enabled
+          </label>
+          <Field label="IdP SSO URL">
+            <Input
+              value={saml?.idp_sso_url || ""}
+              onChange={(event) => setSaml({ ...saml, idp_sso_url: event.target.value })}
+              placeholder="https://idp.example.com/sso"
+            />
+          </Field>
+          <Field
+            label="IdP signing certificate (PEM)"
+            hint="Write-only. Leave blank to keep the current certificate."
+          >
+            <Textarea
+              rows={4}
+              value={saml?.idp_certificate || ""}
+              onChange={(event) => setSaml({ ...saml, idp_certificate: event.target.value })}
+              placeholder={saml?.idp_certificate_set ? "•••••••• configured" : "-----BEGIN CERTIFICATE-----"}
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Email attribute" hint="SAML attribute carrying the email.">
+              <Input
+                value={saml?.email_attribute || ""}
+                onChange={(event) => setSaml({ ...saml, email_attribute: event.target.value })}
+              />
+            </Field>
+            <Field label="Name attribute" hint="Optional.">
+              <Input
+                value={saml?.name_attribute || ""}
+                onChange={(event) => setSaml({ ...saml, name_attribute: event.target.value })}
+              />
+            </Field>
+          </div>
+          <Field label="Allowed email domains" hint="Comma-separated; blank allows any.">
+            <Input
+              value={saml?.allowed_domains || ""}
+              onChange={(event) => setSaml({ ...saml, allowed_domains: event.target.value })}
+              placeholder="example.com"
+            />
+          </Field>
+          <Button type="submit" disabled={busy || !saml}>
+            Save SAML settings
           </Button>
         </form>
       </Card>

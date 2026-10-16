@@ -201,10 +201,12 @@ team, and targets are re-stamped when a ticket's team changes.
 
 - **SSO/SAML** (+ optional SCIM), **granular RBAC** wired to every endpoint. ✅ **OIDC SSO done**
   (`/v1/auth/sso/{slug}` + callback, JWKS verification, allowed domains, JIT
-  provisioning) and RBAC done, plus an **IP allowlist** for console sign-in
-  (`/v1/console/settings/security`) and **data retention** (resolved tickets are
-  purged after `settings.retention.days`, swept by the worker); data residency is
-  a deployment concern, and SAML/SCIM remain.
+  provisioning) and **SAML 2.0 done** (`/v1/auth/saml/{slug}` metadata + start +
+  ACS, signature verified with `signxml` against the IdP certificate, JIT
+  provisioning, allowed domains), RBAC done, plus an **IP allowlist** for console
+  sign-in (`/v1/console/settings/security`) and **data retention** (resolved
+  tickets are purged after `settings.retention.days`, swept by the worker); data
+  residency is a deployment concern, and SCIM remains.
 - **Audit log UI**; **GDPR**: requester data export/erasure endpoints. ✅ **GDPR done**
   (`GET /v1/requesters/{id}/export`, `DELETE /v1/requesters/{id}`); the audit-log
   console UI remains.

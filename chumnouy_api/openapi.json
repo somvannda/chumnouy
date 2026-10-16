@@ -1245,6 +1245,30 @@
         "title": "AutomationUpdate",
         "type": "object"
       },
+      "Body_saml_acs_api_v1_auth_saml__workspace_slug__acs_post": {
+        "properties": {
+          "RelayState": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relaystate"
+          },
+          "SAMLResponse": {
+            "title": "Samlresponse",
+            "type": "string"
+          }
+        },
+        "required": [
+          "SAMLResponse"
+        ],
+        "title": "Body_saml_acs_api_v1_auth_saml__workspace_slug__acs_post",
+        "type": "object"
+      },
       "Body_upload_attachment_api_v1_uploads_post": {
         "properties": {
           "file": {
@@ -3532,6 +3556,182 @@
         "title": "RetentionSettingsUpdate",
         "type": "object"
       },
+      "SamlSettingsRead": {
+        "properties": {
+          "allowed_domains": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Domains",
+            "type": "array"
+          },
+          "email_attribute": {
+            "default": "email",
+            "title": "Email Attribute",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "idp_certificate_set": {
+            "default": false,
+            "title": "Idp Certificate Set",
+            "type": "boolean"
+          },
+          "idp_sso_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idp Sso Url"
+          },
+          "name_attribute": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Attribute"
+          },
+          "sp_entity_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sp Entity Id"
+          }
+        },
+        "title": "SamlSettingsRead",
+        "type": "object"
+      },
+      "SamlSettingsUpdate": {
+        "properties": {
+          "allowed_domains": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Domains"
+          },
+          "email_attribute": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Attribute"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "idp_certificate": {
+            "anyOf": [
+              {
+                "maxLength": 8000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idp Certificate"
+          },
+          "idp_sso_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idp Sso Url"
+          },
+          "name_attribute": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Attribute"
+          },
+          "sp_entity_id": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sp Entity Id"
+          }
+        },
+        "title": "SamlSettingsUpdate",
+        "type": "object"
+      },
+      "SamlStart": {
+        "description": "Where to send the browser to start a SAML login.",
+        "properties": {
+          "acs_url": {
+            "title": "Acs Url",
+            "type": "string"
+          },
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "sso_url": {
+            "title": "Sso Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sso_url",
+          "entity_id",
+          "acs_url"
+        ],
+        "title": "SamlStart",
+        "type": "object"
+      },
       "SearchResult": {
         "properties": {
           "created_at": {
@@ -5421,6 +5621,9 @@
           "retention": {
             "$ref": "#/components/schemas/RetentionSettingsRead"
           },
+          "saml": {
+            "$ref": "#/components/schemas/SamlSettingsRead"
+          },
           "security": {
             "$ref": "#/components/schemas/SecuritySettingsRead"
           },
@@ -5436,6 +5639,7 @@
           "notifications",
           "sla",
           "sso",
+          "saml",
           "business_hours",
           "branding",
           "security",
@@ -6412,6 +6616,141 @@
           }
         ],
         "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/saml/{workspace_slug}/acs": {
+      "post": {
+        "description": "Consume the IdP's signed assertion and sign the user in.",
+        "operationId": "saml_acs_api_v1_auth_saml__workspace_slug__acs_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_slug",
+            "required": true,
+            "schema": {
+              "title": "Workspace Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_saml_acs_api_v1_auth_saml__workspace_slug__acs_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Saml Acs",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/saml/{workspace_slug}/metadata": {
+      "get": {
+        "operationId": "saml_metadata_api_v1_auth_saml__workspace_slug__metadata_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_slug",
+            "required": true,
+            "schema": {
+              "title": "Workspace Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Saml Metadata",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/saml/{workspace_slug}/start": {
+      "get": {
+        "operationId": "saml_start_api_v1_auth_saml__workspace_slug__start_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_slug",
+            "required": true,
+            "schema": {
+              "title": "Workspace Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SamlStart"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Saml Start",
         "tags": [
           "auth"
         ]
@@ -8240,6 +8579,71 @@
           }
         ],
         "summary": "Update Retention",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/saml": {
+      "patch": {
+        "operationId": "update_saml_api_v1_console_settings_saml_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SamlSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Saml",
         "tags": [
           "console"
         ]
