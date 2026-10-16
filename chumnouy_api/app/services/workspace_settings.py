@@ -25,6 +25,8 @@ from app.schemas import (
     NotificationSettingsUpdate,
     RetentionSettingsRead,
     RetentionSettingsUpdate,
+    SamlSettingsRead,
+    SamlSettingsUpdate,
     SecuritySettingsRead,
     SecuritySettingsUpdate,
     SlaSettingsUpdate,
@@ -94,6 +96,48 @@ def sso_settings(workspace: Workspace) -> SsoSettingsRead:
         allowed_domains=list(sso.get("allowed_domains") or []),
         client_secret_set=bool(sso.get("client_secret")),
     )
+
+
+def saml_settings(workspace: Workspace) -> SamlSettingsRead:
+    saml = _stored(workspace).get("saml") or {}
+    return SamlSettingsRead(
+        enabled=bool(saml.get("enabled")),
+        idp_sso_url=saml.get("idp_sso_url"),
+        idp_certificate_set=bool(saml.get("idp_certificate")),
+        sp_entity_id=saml.get("sp_entity_id"),
+        email_attribute=saml.get("email_attribute") or "email",
+        name_attribute=saml.get("name_attribute"),
+        allowed_domains=list(saml.get("allowed_domains") or []),
+    )
+
+
+async def update_saml(
+    db: AsyncSession, workspace: Workspace, payload: SamlSettingsUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    saml = dict(stored.get("saml") or {})
+    if payload.enabled is not None:
+        saml["enabled"] = payload.enabled
+    if payload.idp_sso_url is not None:
+        saml["idp_sso_url"] = payload.idp_sso_url.strip() or None
+    if payload.sp_entity_id is not None:
+        saml["sp_entity_id"] = payload.sp_entity_id.strip() or None
+    if payload.email_attribute is not None:
+        saml["email_attribute"] = payload.email_attribute.strip() or "email"
+    if payload.name_attribute is not None:
+        saml["name_attribute"] = payload.name_attribute.strip() or None
+    if payload.idp_certificate is not None:
+        certificate = payload.idp_certificate.strip()
+        saml["idp_certificate"] = certificate or None
+    if payload.allowed_domains is not None:
+        saml["allowed_domains"] = [
+            domain.strip().lower() for domain in payload.allowed_domains if domain.strip()
+        ]
+    stored["saml"] = {key: value for key, value in saml.items() if value is not None}
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
 
 
 def business_hours_settings(workspace: Workspace) -> BusinessHoursRead:
@@ -171,6 +215,7 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         notifications=notification_settings(workspace),
         sla=sla_svc.sla_settings(workspace),
         sso=sso_settings(workspace),
+        saml=saml_settings(workspace),
         business_hours=business_hours_settings(workspace),
         branding=branding_settings(workspace),
         security=security_settings(workspace),

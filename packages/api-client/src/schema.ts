@@ -403,6 +403,14 @@ export interface AutomationUpdate {
   position?: number | null;
 }
 
+/** Body_saml_acs_api_v1_auth_saml__workspace_slug__acs_post */
+export interface Body_saml_acs_api_v1_auth_saml__workspace_slug__acs_post {
+  /** Relaystate */
+  RelayState?: string | null;
+  /** Samlresponse */
+  SAMLResponse: string;
+}
+
 /** Body_upload_attachment_api_v1_uploads_post */
 export interface Body_upload_attachment_api_v1_uploads_post {
   /** File */
@@ -1095,6 +1103,52 @@ export interface RetentionSettingsUpdate {
   days?: number | null;
 }
 
+/** SamlSettingsRead */
+export interface SamlSettingsRead {
+  /** Allowed Domains */
+  allowed_domains?: string[];
+  /** Email Attribute */
+  email_attribute?: string;
+  /** Enabled */
+  enabled?: boolean;
+  /** Idp Certificate Set */
+  idp_certificate_set?: boolean;
+  /** Idp Sso Url */
+  idp_sso_url?: string | null;
+  /** Name Attribute */
+  name_attribute?: string | null;
+  /** Sp Entity Id */
+  sp_entity_id?: string | null;
+}
+
+/** SamlSettingsUpdate */
+export interface SamlSettingsUpdate {
+  /** Allowed Domains */
+  allowed_domains?: string[] | null;
+  /** Email Attribute */
+  email_attribute?: string | null;
+  /** Enabled */
+  enabled?: boolean | null;
+  /** Idp Certificate */
+  idp_certificate?: string | null;
+  /** Idp Sso Url */
+  idp_sso_url?: string | null;
+  /** Name Attribute */
+  name_attribute?: string | null;
+  /** Sp Entity Id */
+  sp_entity_id?: string | null;
+}
+
+/** SamlStart */
+export interface SamlStart {
+  /** Acs Url */
+  acs_url: string;
+  /** Entity Id */
+  entity_id: string;
+  /** Sso Url */
+  sso_url: string;
+}
+
 /** SearchResult */
 export interface SearchResult {
   /** Created At */
@@ -1642,6 +1696,7 @@ export interface WorkspaceSettingsRead {
   locale?: string;
   notifications: NotificationSettingsRead;
   retention: RetentionSettingsRead;
+  saml: SamlSettingsRead;
   security: SecuritySettingsRead;
   sla: SlaSettingsRead;
   sso: SsoSettingsRead;

@@ -219,6 +219,7 @@ external process that drives the worker loop.
 | `PATCH` | `/v1/console/settings/business-hours` | Set working hours (per weekday, timezone) for SLA due dates |
 | `PATCH` | `/v1/console/settings/security` | Set the sign-in IP allowlist (IPs/CIDR blocks; empty allows all) |
 | `PATCH` | `/v1/console/settings/retention` | Keep resolved tickets for `days` (0 keeps forever; purged by the worker) |
+| `PATCH` | `/v1/console/settings/saml` | Configure SAML (IdP SSO URL + signing certificate, attribute mapping, domains) |
 
 Settings are owner/admin only; secrets are never returned, only a `*_set` flag.
 

@@ -23,6 +23,7 @@ from app.schemas import (
     NotificationSettingsRead,
     NotificationSettingsUpdate,
     RetentionSettingsUpdate,
+    SamlSettingsUpdate,
     SecuritySettingsUpdate,
     SlaSettingsUpdate,
     SsoSettingsUpdate,
@@ -157,4 +158,15 @@ async def update_retention(
 ) -> WorkspaceSettingsRead:
     result = await svc.update_retention(db, ctx.workspace, payload)
     await _audit(db, ctx, "retention", payload)
+    return result
+
+
+@router.patch("/settings/saml", response_model=WorkspaceSettingsRead)
+async def update_saml(
+    payload: SamlSettingsUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    result = await svc.update_saml(db, ctx.workspace, payload)
+    await _audit(db, ctx, "saml", payload)
     return result

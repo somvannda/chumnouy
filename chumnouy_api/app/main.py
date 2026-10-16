@@ -28,6 +28,7 @@ from app.api.presence import router as presence_router
 from app.api.public import router as public_router
 from app.api.reports import router as reports_router
 from app.api.requesters import router as requesters_router
+from app.api.saml import router as saml_router
 from app.api.search import router as search_router
 from app.api.sso import router as sso_router
 from app.api.teams import router as teams_router
@@ -124,6 +125,7 @@ app.include_router(bulk_router, prefix="/api/v1")
 app.include_router(help_centre_router, prefix="/api/v1")
 app.include_router(automations_router, prefix="/api/v1")
 app.include_router(sso_router, prefix="/api/v1")
+app.include_router(saml_router, prefix="/api/v1")
 app.include_router(macros_router, prefix="/api/v1")
 app.include_router(presence_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")

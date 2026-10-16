@@ -562,6 +562,34 @@ class SsoStart(BaseModel):
     state: str
 
 
+class SamlSettingsRead(BaseModel):
+    enabled: bool = False
+    idp_sso_url: str | None = None
+    idp_certificate_set: bool = False
+    sp_entity_id: str | None = None
+    email_attribute: str = "email"
+    name_attribute: str | None = None
+    allowed_domains: list[str] = Field(default_factory=list)
+
+
+class SamlSettingsUpdate(BaseModel):
+    enabled: bool | None = None
+    idp_sso_url: str | None = Field(default=None, max_length=500)
+    idp_certificate: str | None = Field(default=None, max_length=8000)
+    sp_entity_id: str | None = Field(default=None, max_length=300)
+    email_attribute: str | None = Field(default=None, max_length=200)
+    name_attribute: str | None = Field(default=None, max_length=200)
+    allowed_domains: list[str] | None = None
+
+
+class SamlStart(BaseModel):
+    """Where to send the browser to start a SAML login."""
+
+    sso_url: str
+    entity_id: str
+    acs_url: str
+
+
 class BusinessHoursRead(BaseModel):
     enabled: bool = False
     timezone: str = "UTC"
@@ -598,6 +626,7 @@ class WorkspaceSettingsRead(BaseModel):
     notifications: NotificationSettingsRead
     sla: SlaSettingsRead
     sso: SsoSettingsRead
+    saml: SamlSettingsRead
     business_hours: BusinessHoursRead
     branding: BrandingRead
     security: SecuritySettingsRead
