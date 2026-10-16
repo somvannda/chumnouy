@@ -1259,6 +1259,132 @@
         "title": "Body_upload_attachment_api_v1_uploads_post",
         "type": "object"
       },
+      "BrandingRead": {
+        "properties": {
+          "accent": {
+            "default": "#6957f5",
+            "title": "Accent",
+            "type": "string"
+          },
+          "greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Greeting"
+          },
+          "label": {
+            "default": "Support",
+            "title": "Label",
+            "type": "string"
+          },
+          "position": {
+            "default": "right",
+            "enum": [
+              "right",
+              "left"
+            ],
+            "title": "Position",
+            "type": "string"
+          },
+          "pre_chat": {
+            "default": false,
+            "title": "Pre Chat",
+            "type": "boolean"
+          },
+          "title": {
+            "default": "Support",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "title": "BrandingRead",
+        "type": "object"
+      },
+      "BrandingUpdate": {
+        "properties": {
+          "accent": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent"
+          },
+          "greeting": {
+            "anyOf": [
+              {
+                "maxLength": 400,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Greeting"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "enum": [
+                  "right",
+                  "left"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "pre_chat": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pre Chat"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "BrandingUpdate",
+        "type": "object"
+      },
       "BulkAction": {
         "properties": {
           "add_tags": {
@@ -4694,6 +4820,9 @@
           "ai": {
             "$ref": "#/components/schemas/AISettingsRead"
           },
+          "branding": {
+            "$ref": "#/components/schemas/BrandingRead"
+          },
           "business_hours": {
             "$ref": "#/components/schemas/BusinessHoursRead"
           },
@@ -4717,7 +4846,8 @@
           "notifications",
           "sla",
           "sso",
-          "business_hours"
+          "business_hours",
+          "branding"
         ],
         "title": "WorkspaceSettingsRead",
         "type": "object"
@@ -6949,6 +7079,71 @@
         ]
       }
     },
+    "/api/v1/console/settings/branding": {
+      "patch": {
+        "operationId": "update_branding_api_v1_console_settings_branding_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandingUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Branding",
+        "tags": [
+          "console"
+        ]
+      }
+    },
     "/api/v1/console/settings/business-hours": {
       "patch": {
         "operationId": "update_business_hours_api_v1_console_settings_business_hours_patch",
@@ -8578,6 +8773,60 @@
         "summary": "Update Macro",
         "tags": [
           "macros"
+        ]
+      }
+    },
+    "/api/v1/public/branding": {
+      "get": {
+        "operationId": "get_branding_api_v1_public_branding_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Requester-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Requester-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Branding",
+        "tags": [
+          "public"
         ]
       }
     },

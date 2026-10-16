@@ -115,6 +115,35 @@
     document.body.appendChild(launcher);
     document.body.appendChild(panel);
 
+    var brandingGreeting = null;
+    var preChat = false;
+
+    function applyBranding(branding) {
+      var b = branding || {};
+      if (!opts.title && b.title) opts.title = b.title;
+      if (!opts.label && b.label) opts.label = b.label;
+      if (!opts.accent && b.accent) {
+        accent = b.accent;
+        panel.style.setProperty("--cmy-accent", accent);
+      }
+      if (!opts.position && b.position === "left") {
+        anchor = "left:20px";
+        launcher.style.cssText = anchor;
+        panel.style.cssText = anchor;
+      }
+      brandingGreeting = b.greeting || null;
+      preChat = !!b.pre_chat;
+      title.textContent = opts.title || "Support";
+      launcher.textContent = opts.label || "Support";
+      launcher.setAttribute("aria-label", opts.label || "Open support");
+    }
+
+    request("/public/branding")
+      .then(applyBranding)
+      .catch(function () {
+        /* branding is optional — fall back to the options passed to init */
+      });
+
     function show(visible) {
       panel.style.display = visible ? "flex" : "none";
       if (visible) renderList();
@@ -129,6 +158,7 @@
     function renderList() {
       clearPoll();
       body.innerHTML = "";
+      if (brandingGreeting) body.appendChild(el("div", "cmy-empty", brandingGreeting));
       var chatBtn = el("button", "cmy-ghost", "Live chat");
       chatBtn.onclick = startChat;
       body.appendChild(chatBtn);
@@ -159,6 +189,10 @@
     }
 
     function startChat() {
+      if (preChat) {
+        renderChatStart();
+        return;
+      }
       request("/public/chat/sessions", { method: "POST" })
         .then(function (session) {
           renderChat(session.id);
@@ -166,6 +200,42 @@
         .catch(function (err) {
           setError(err.message);
         });
+    }
+
+    function renderChatStart() {
+      clearPoll();
+      body.innerHTML = "";
+      if (brandingGreeting) body.appendChild(el("div", "cmy-empty", brandingGreeting));
+      var msg = el("textarea", "cmy-area");
+      msg.placeholder = "How can we help?";
+      var start = el("button", "cmy-send", "Start chat");
+      var back = el("button", "cmy-ghost", "Back");
+      back.onclick = renderList;
+      var row = el("div", "cmy-row");
+      row.appendChild(start);
+      row.appendChild(back);
+      body.appendChild(msg);
+      body.appendChild(row);
+      start.onclick = function () {
+        setError(null);
+        request("/public/chat/sessions", { method: "POST" })
+          .then(function (session) {
+            var text = (msg.value || "").trim();
+            if (!text) {
+              renderChat(session.id);
+              return null;
+            }
+            return request("/public/chat/sessions/" + session.id + "/messages", {
+              method: "POST",
+              body: { body: text },
+            }).then(function () {
+              renderChat(session.id);
+            });
+          })
+          .catch(function (err) {
+            setError(err.message);
+          });
+      };
     }
 
     function renderChat(sessionId) {

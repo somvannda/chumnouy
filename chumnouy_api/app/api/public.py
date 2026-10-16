@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.deps import RequesterContext, get_requester_context
 from app.schemas import (
+    BrandingRead,
     CsatRead,
     CsatSubmit,
     PublicTicketCreate,
@@ -25,6 +26,7 @@ from app.schemas import (
 from app.services import csat as csat_svc
 from app.services import public as svc
 from app.services import quota as quota_svc
+from app.services import workspace_settings as settings_svc
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -36,6 +38,13 @@ async def _ticket(db: AsyncSession, ctx: RequesterContext, ticket_id: UUID):
     if ticket is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
     return ticket
+
+
+@router.get("/branding", response_model=BrandingRead)
+async def get_branding(
+    ctx: RequesterContext = Depends(_requester),
+) -> BrandingRead:
+    return settings_svc.branding_settings(ctx.workspace)
 
 
 @router.get("/tickets", response_model=TicketListRead)

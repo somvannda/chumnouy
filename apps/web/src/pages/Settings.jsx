@@ -14,7 +14,9 @@ export default function Settings() {
   const [notifyr, setNotifyr] = useState(EMPTY_NOTIFYR);
   const [sla, setSla] = useState(null);
   const [sso, setSso] = useState(null);
-  const [hours, setHours] = useState(null);  const [error, setError] = useState(null);
+  const [hours, setHours] = useState(null);
+  const [branding, setBranding] = useState(null);
+  const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -53,6 +55,14 @@ export default function Settings() {
             days: Object.fromEntries(
               WEEKDAYS.map((day) => [day, days[day] || ["09:00", "17:00"]]),
             ),
+          });
+          setBranding({
+            title: data.branding?.title || "Support",
+            label: data.branding?.label || "Support",
+            accent: data.branding?.accent || "#6957f5",
+            position: data.branding?.position || "right",
+            greeting: data.branding?.greeting || "",
+            pre_chat: data.branding?.pre_chat || false,
           });
         })
         .catch((err) => setError(err.message)),
@@ -137,6 +147,22 @@ export default function Settings() {
           days: hours.days,
         }),
       "Business hours saved.",
+    );
+  }
+
+  function saveBranding(event) {
+    return save(
+      event,
+      () =>
+        api.updateBranding(token, {
+          title: branding.title || null,
+          label: branding.label || null,
+          accent: branding.accent || null,
+          position: branding.position,
+          greeting: branding.greeting || null,
+          pre_chat: branding.pre_chat,
+        }),
+      "Widget branding saved.",
     );
   }
 
@@ -355,6 +381,59 @@ export default function Settings() {
           </div>
           <Button type="submit" disabled={busy || !hours}>
             Save business hours
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Widget branding</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          The embeddable widget reads these from <code>/v1/public/branding</code>.
+        </p>
+        <form onSubmit={saveBranding} className="mt-4 space-y-4">
+          <Field label="Panel title">
+            <Input
+              value={branding?.title || ""}
+              onChange={(event) => setBranding({ ...branding, title: event.target.value })}
+            />
+          </Field>
+          <Field label="Launcher label">
+            <Input
+              value={branding?.label || ""}
+              onChange={(event) => setBranding({ ...branding, label: event.target.value })}
+            />
+          </Field>
+          <Field label="Accent colour" hint="Hex, e.g. #0ea5e9. Invalid values fall back to the default.">
+            <Input
+              value={branding?.accent || ""}
+              onChange={(event) => setBranding({ ...branding, accent: event.target.value })}
+            />
+          </Field>
+          <Field label="Position">
+            <Select
+              value={branding?.position || "right"}
+              onChange={(event) => setBranding({ ...branding, position: event.target.value })}
+            >
+              <option value="right">Right</option>
+              <option value="left">Left</option>
+            </Select>
+          </Field>
+          <Field label="Greeting" hint="Shown at the top of the widget and before a chat starts.">
+            <Input
+              value={branding?.greeting || ""}
+              onChange={(event) => setBranding({ ...branding, greeting: event.target.value })}
+            />
+          </Field>
+          <label className="flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={branding?.pre_chat || false}
+              onChange={(event) => setBranding({ ...branding, pre_chat: event.target.checked })}
+            />
+            Ask for a message before starting a chat
+          </label>
+          <Button type="submit" disabled={busy || !branding}>
+            Save widget branding
           </Button>
         </form>
       </Card>

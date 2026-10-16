@@ -14,6 +14,7 @@ from app.deps import WorkspaceContext, require_permission
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
+    BrandingUpdate,
     BusinessHoursUpdate,
     LocaleUpdate,
     NotificationSettingsRead,
@@ -86,3 +87,12 @@ async def update_business_hours(
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
     return await svc.update_business_hours(db, ctx.workspace, payload)
+
+
+@router.patch("/settings/branding", response_model=WorkspaceSettingsRead)
+async def update_branding(
+    payload: BrandingUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    return await svc.update_branding(db, ctx.workspace, payload)

@@ -46,6 +46,11 @@ into the page, or fetched with their session).
   (`POST /v1/public/chat/sessions`) and polls it every few seconds for agent
   replies. Polling keeps the widget dependency-free; an SSE/WebSocket transport
   can replace it later without changing the API.
+- **Branding**: the widget fetches `GET /v1/public/branding` on init and applies
+  the workspace's title, launcher label, accent colour, position and greeting.
+  Anything you pass to `init()` wins over the stored branding. With `pre_chat`
+  enabled in the console, *Live chat* first asks "How can we help?" and sends that
+  as the opening message.
 - It is intentionally small: a launcher, a ticket list, a compose form and a
   thread with replies. Embedders who want the full experience should build their
   own UI on the public API.

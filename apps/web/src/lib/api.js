@@ -166,6 +166,10 @@ export const api = {
   updateBusinessHours: (token, body) =>
     request("/console/settings/business-hours", { method: "PATCH", token, body }),
 
+  // Widget branding
+  updateBranding: (token, body) =>
+    request("/console/settings/branding", { method: "PATCH", token, body }),
+
   // Live chat (console)
   chatSessions: (token, params = {}) =>
     request(`/console/chat/sessions${buildQuery(params)}`, { token }),
