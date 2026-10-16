@@ -702,6 +702,16 @@ export interface IntegrationRead {
   slug: string;
 }
 
+/** InviteAccept */
+export interface InviteAccept {
+  /** Name */
+  name?: string | null;
+  /** Password */
+  password: string;
+  /** Token */
+  token: string;
+}
+
 /** KnowledgeArticleCreate */
 export interface KnowledgeArticleCreate {
   /** Body */
@@ -827,6 +837,56 @@ export interface MeRead {
   user: UserRead;
   /** Workspaces */
   workspaces: WorkspaceRead[];
+}
+
+/** MemberInvite */
+export interface MemberInvite {
+  /** Email */
+  email: string;
+  /** Name */
+  name?: string | null;
+  /** Role */
+  role?: "admin" | "team_lead" | "agent" | "viewer";
+}
+
+/** MemberInviteRead */
+export interface MemberInviteRead {
+  /** Accepted At */
+  accepted_at?: string | null;
+  /** Email */
+  email: string;
+  /** Expires At */
+  expires_at: string;
+  /** Id */
+  id: string;
+  /** Role */
+  role: string;
+  /** Status */
+  status: string;
+  /** Token */
+  token?: string | null;
+}
+
+/** MemberRead */
+export interface MemberRead {
+  /** Created At */
+  created_at: string;
+  /** Email */
+  email: string;
+  /** Name */
+  name?: string | null;
+  /** Role */
+  role: string;
+  /** Status */
+  status?: string;
+  /** User Id */
+  user_id: string;
+}
+
+/** MemberRoleUpdate */
+export interface MemberRoleUpdate {
+  /** Role */
+  role: "admin" | "team_lead" | "agent" | "viewer";
 }
 
 /** NotificationSettingsRead */

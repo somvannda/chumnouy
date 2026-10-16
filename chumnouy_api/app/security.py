@@ -56,8 +56,13 @@ def api_key_prefix(key: str, length: int = 16) -> str:
     return key[:length]
 
 
+def hash_token(value: str) -> str:
+    """SHA-256 digest for opaque one-time tokens (API keys, invitations)."""
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def hash_api_key(key: str) -> str:
-    return hashlib.sha256(key.encode("utf-8")).hexdigest()
+    return hash_token(key)
 
 
 def slugify(value: str) -> str:

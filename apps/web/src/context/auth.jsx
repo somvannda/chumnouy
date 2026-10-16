@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
       workspace: session?.workspace || null,
       login: (email, password) => api.login({ email, password }).then(persist),
       signup: (payload) => api.signup(payload).then(persist),
+      acceptInvite: (payload) => api.acceptInvite(payload).then(persist),
       logout: () => {
         clearSession();
         setSession(null);

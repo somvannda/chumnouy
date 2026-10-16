@@ -618,6 +618,49 @@ class TeamRead(BaseModel):
     created_at: datetime
 
 
+# --- Members & invitations (console) ------------------------------------------
+
+# Roles an invitation can grant (``owner`` is never invited — a workspace has one).
+INVITABLE_ROLES = ("admin", "team_lead", "agent", "viewer")
+
+
+class MemberRead(BaseModel):
+    user_id: UUID
+    email: EmailStr
+    name: str | None = None
+    role: str
+    status: str = "active"
+    created_at: datetime
+
+
+class MemberInvite(BaseModel):
+    email: EmailStr
+    name: str | None = Field(default=None, max_length=160)
+    role: Literal["admin", "team_lead", "agent", "viewer"] = "agent"
+
+
+class MemberInviteRead(BaseModel):
+    """An invitation. ``token`` is returned once, at creation, and never again."""
+
+    id: UUID
+    email: EmailStr
+    role: str
+    status: str
+    expires_at: datetime
+    accepted_at: datetime | None = None
+    token: str | None = None
+
+
+class MemberRoleUpdate(BaseModel):
+    role: Literal["admin", "team_lead", "agent", "viewer"]
+
+
+class InviteAccept(BaseModel):
+    token: str = Field(min_length=8, max_length=200)
+    password: str = Field(min_length=8, max_length=128)
+    name: str | None = Field(default=None, max_length=160)
+
+
 # --- Audit log ----------------------------------------------------------------
 
 
