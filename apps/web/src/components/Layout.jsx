@@ -8,6 +8,7 @@ import {
   KeyRound,
   LifeBuoy,
   LogOut,
+  MessagesSquare,
   MessageSquareText,
   Moon,
   ScrollText,
@@ -26,6 +27,7 @@ import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/chat", label: "Live chat", icon: MessagesSquare },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/assistant", label: "Assistant", icon: Bot },
   { to: "/knowledge", label: "Knowledge", icon: BookOpen },
