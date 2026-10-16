@@ -20,6 +20,7 @@ export default function Settings() {
   const [hours, setHours] = useState(null);
   const [branding, setBranding] = useState(null);
   const [allowlist, setAllowlist] = useState("");
+  const [retentionDays, setRetentionDays] = useState("0");
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -70,6 +71,7 @@ export default function Settings() {
             pre_chat: data.branding?.pre_chat || false,
           });
           setAllowlist((data.security?.ip_allowlist || []).join("\n"));
+          setRetentionDays(String(data.retention?.days ?? 0));
         })
         .catch((err) => setError(err.message)),
     [token],
@@ -217,6 +219,17 @@ export default function Settings() {
       event,
       () => api.updateSecuritySettings(token, { ip_allowlist: entries }),
       "Sign-in access saved.",
+    );
+  }
+
+  function saveRetention(event) {
+    return save(
+      event,
+      () =>
+        api.updateRetentionSettings(token, {
+          days: Math.max(0, Number(retentionDays) || 0),
+        }),
+      "Retention saved.",
     );
   }
 
@@ -536,6 +549,27 @@ export default function Settings() {
           </Field>
           <Button type="submit" disabled={busy}>
             Save sign-in access
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Data retention</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Resolved and closed tickets older than this are permanently deleted by the worker
+          (messages and attachments go with them). 0 keeps everything.
+        </p>
+        <form onSubmit={saveRetention} className="mt-4 space-y-4">
+          <Field label="Keep resolved tickets for (days)">
+            <Input
+              className="w-40"
+              inputMode="numeric"
+              value={retentionDays}
+              onChange={(event) => setRetentionDays(event.target.value)}
+            />
+          </Field>
+          <Button type="submit" disabled={busy}>
+            Save retention
           </Button>
         </form>
       </Card>

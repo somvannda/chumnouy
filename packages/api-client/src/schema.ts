@@ -1083,6 +1083,18 @@ export interface RequesterUpdate {
   phone?: string | null;
 }
 
+/** RetentionSettingsRead */
+export interface RetentionSettingsRead {
+  /** Days */
+  days?: number;
+}
+
+/** RetentionSettingsUpdate */
+export interface RetentionSettingsUpdate {
+  /** Days */
+  days?: number | null;
+}
+
 /** SearchResult */
 export interface SearchResult {
   /** Created At */
@@ -1629,6 +1641,7 @@ export interface WorkspaceSettingsRead {
   /** Locale */
   locale?: string;
   notifications: NotificationSettingsRead;
+  retention: RetentionSettingsRead;
   security: SecuritySettingsRead;
   sla: SlaSettingsRead;
   sso: SsoSettingsRead;
