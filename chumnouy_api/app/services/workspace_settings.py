@@ -6,6 +6,7 @@ are write-only — read models expose only a ``*_set`` flag.
 """
 from __future__ import annotations
 
+import ipaddress
 import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,13 +23,25 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    SecuritySettingsRead,
+    SecuritySettingsUpdate,
     SlaSettingsUpdate,
     SsoSettingsRead,
     SsoSettingsUpdate,
     WorkspaceSettingsRead,
 )
+from app.services import access as access_svc
 from app.services import ai as ai_service
 from app.services import business_hours as business_hours_svc
+
+
+def _valid_network(value: str) -> bool:
+    """Whether an allowlist entry parses as an IP or CIDR block."""
+    try:
+        ipaddress.ip_network(value, strict=False)
+    except ValueError:
+        return False
+    return True
 
 
 def _stored(workspace: Workspace) -> dict:
@@ -105,6 +118,29 @@ def branding_settings(workspace: Workspace) -> BrandingRead:
     )
 
 
+def security_settings(workspace: Workspace) -> SecuritySettingsRead:
+    return SecuritySettingsRead(ip_allowlist=access_svc.ip_allowlist(workspace))
+
+
+async def update_security(
+    db: AsyncSession, workspace: Workspace, payload: SecuritySettingsUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    security = dict(stored.get("security") or {})
+    if payload.ip_allowlist is not None:
+        # Keep only entries that parse as an IP or CIDR block.
+        security["ip_allowlist"] = [
+            entry.strip()
+            for entry in payload.ip_allowlist
+            if entry.strip() and _valid_network(entry.strip())
+        ]
+    stored["security"] = security
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
+
+
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
     from app.services import sla as sla_svc
 
@@ -116,6 +152,7 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         sso=sso_settings(workspace),
         business_hours=business_hours_settings(workspace),
         branding=branding_settings(workspace),
+        security=security_settings(workspace),
     )
 
 

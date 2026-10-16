@@ -22,6 +22,7 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    SecuritySettingsUpdate,
     SlaSettingsUpdate,
     SsoSettingsUpdate,
     WorkspaceSettingsRead,
@@ -133,4 +134,15 @@ async def update_branding(
 ) -> WorkspaceSettingsRead:
     result = await svc.update_branding(db, ctx.workspace, payload)
     await _audit(db, ctx, "branding", payload)
+    return result
+
+
+@router.patch("/settings/security", response_model=WorkspaceSettingsRead)
+async def update_security(
+    payload: SecuritySettingsUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    result = await svc.update_security(db, ctx.workspace, payload)
+    await _audit(db, ctx, "security", payload)
     return result

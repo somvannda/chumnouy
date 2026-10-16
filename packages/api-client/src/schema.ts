@@ -1109,6 +1109,18 @@ export interface SearchResults {
   results?: SearchResult[];
 }
 
+/** SecuritySettingsRead */
+export interface SecuritySettingsRead {
+  /** Ip Allowlist */
+  ip_allowlist?: string[];
+}
+
+/** SecuritySettingsUpdate */
+export interface SecuritySettingsUpdate {
+  /** Ip Allowlist */
+  ip_allowlist?: string[] | null;
+}
+
 /** SignupRequest */
 export interface SignupRequest {
   /** Email */
@@ -1617,6 +1629,7 @@ export interface WorkspaceSettingsRead {
   /** Locale */
   locale?: string;
   notifications: NotificationSettingsRead;
+  security: SecuritySettingsRead;
   sla: SlaSettingsRead;
   sso: SsoSettingsRead;
 }

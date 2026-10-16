@@ -197,6 +197,10 @@ export const api = {
   updateBranding: (token, body) =>
     request("/console/settings/branding", { method: "PATCH", token, body }),
 
+  // Sign-in access
+  updateSecuritySettings: (token, body) =>
+    request("/console/settings/security", { method: "PATCH", token, body }),
+
   // Live chat (console)
   chatSessions: (token, params = {}) =>
     request(`/console/chat/sessions${buildQuery(params)}`, { token }),
