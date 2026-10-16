@@ -43,9 +43,11 @@ into the page, or fetched with their session).
 - With `helpSlug` set, the compose view offers a help-centre search that suggests
   articles (and lets the user read one) before they open a ticket.
 - **Live chat**: the list view offers *Live chat*, which starts a session
-  (`POST /v1/public/chat/sessions`) and polls it every few seconds for agent
-  replies. Polling keeps the widget dependency-free; an SSE/WebSocket transport
-  can replace it later without changing the API.
+  (`POST /v1/public/chat/sessions`) and then **streams** it over SSE
+  (`/v1/public/chat/sessions/{id}/stream`) so agent replies appear immediately.
+  Because `EventSource` cannot send the `X-Requester-Token` header, the stream is
+  read with `fetch` + `TextDecoder`; browsers without those fall back to 3-second
+  polling. The bounded stream reconnects when its window closes.
 - **Branding**: the widget fetches `GET /v1/public/branding` on init and applies
   the workspace's title, launcher label, accent colour, position and greeting.
   Anything you pass to `init()` wins over the stored branding. With `pre_chat`
