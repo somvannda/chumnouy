@@ -23,36 +23,40 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../context/auth";
+import { useI18n } from "../context/i18n";
+import { LOCALES } from "../lib/i18n";
 import { initials, isPlatformAdmin } from "../lib/format";
 import CommandBar from "./CommandBar";
 import { Avatar, Button, useTheme } from "./ui";
 
 const NAV = [
-  { to: "/inbox", label: "Inbox", icon: Inbox },
-  { to: "/chat", label: "Live chat", icon: MessagesSquare },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/assistant", label: "Assistant", icon: Bot },
-  { to: "/knowledge", label: "Knowledge", icon: BookOpen },
-  { to: "/requesters", label: "Requesters", icon: Users },
-  { to: "/members", label: "Members", icon: UserPlus },
-  { to: "/teams", label: "Teams", icon: UsersRound },
-  { to: "/webhooks", label: "Webhooks", icon: Webhook },
-  { to: "/triggers", label: "Triggers", icon: Zap },
-  { to: "/automations", label: "Automations", icon: Clock },
-  { to: "/canned-responses", label: "Canned", icon: MessageSquareText },
-  { to: "/macros", label: "Macros", icon: Wand2 },
-  { to: "/audit", label: "Audit", icon: ScrollText },
-  { to: "/integrations", label: "Integrations", icon: KeyRound },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/inbox", key: "nav.inbox", icon: Inbox },
+  { to: "/chat", key: "nav.chat", icon: MessagesSquare },
+  { to: "/reports", key: "nav.reports", icon: BarChart3 },
+  { to: "/assistant", key: "nav.assistant", icon: Bot },
+  { to: "/knowledge", key: "nav.knowledge", icon: BookOpen },
+  { to: "/requesters", key: "nav.requesters", icon: Users },
+  { to: "/members", key: "nav.members", icon: UserPlus },
+  { to: "/teams", key: "nav.teams", icon: UsersRound },
+  { to: "/webhooks", key: "nav.webhooks", icon: Webhook },
+  { to: "/triggers", key: "nav.triggers", icon: Zap },
+  { to: "/automations", key: "nav.automations", icon: Clock },
+  { to: "/canned-responses", key: "nav.canned", icon: MessageSquareText },
+  { to: "/macros", key: "nav.macros", icon: Wand2 },
+  { to: "/audit", key: "nav.audit", icon: ScrollText },
+  { to: "/integrations", key: "nav.integrations", icon: KeyRound },
+  { to: "/settings", key: "nav.settings", icon: Settings },
 ];
 
 export default function Layout() {
   const { workspace, user, logout } = useAuth();
+  const { t, locale, setLocale } = useI18n();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
-  const nav = isPlatformAdmin(user)
-    ? [...NAV, { to: "/admin", label: "Admin", icon: ShieldCheck }]
-    : NAV;
+  const nav = (isPlatformAdmin(user)
+    ? [...NAV, { to: "/admin", key: "nav.admin", icon: ShieldCheck }]
+    : NAV
+  ).map(({ to, key, icon }) => ({ to, label: t(key), icon }));
 
   function signOut() {
     logout();
@@ -90,20 +94,35 @@ export default function Layout() {
         <header className="flex h-16 items-center justify-between gap-4 border-b border-line bg-surface px-6">
           <div className="min-w-0">
             <p className="truncate text-sm font-extrabold text-ink">
-              {workspace?.name || "Workspace"}
+              {workspace?.name || t("shell.workspace")}
             </p>
             <p className="truncate text-xs text-muted">{workspace?.slug}</p>
           </div>
           <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-1 rounded-xl bg-surface-sunken p-1 sm:flex">
+              {LOCALES.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setLocale(option.id)}
+                  aria-label={`${t("shell.language")}: ${option.label}`}
+                  className={`rounded-lg px-2 py-1 text-xs font-bold transition ${
+                    locale === option.id ? "bg-brand text-white" : "text-muted hover:text-ink-soft"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <Avatar label={initials(user?.name || user?.email)} />
             <div className="hidden text-right sm:block">
               <p className="text-sm font-bold text-ink">{user?.name}</p>
               <p className="text-xs text-muted capitalize">{workspace?.role}</p>
             </div>
-            <Button variant="ghost" onClick={toggle} aria-label="Toggle theme">
+            <Button variant="ghost" onClick={toggle} aria-label={t("shell.toggleTheme")}>
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
-            <Button variant="ghost" onClick={signOut} aria-label="Sign out">
+            <Button variant="ghost" onClick={signOut} aria-label={t("shell.signOut")}>
               <LogOut size={18} />
             </Button>
           </div>

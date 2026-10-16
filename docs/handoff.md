@@ -72,8 +72,9 @@ implemented and tested.
 | Custom webhook actions on triggers/automations (P3) | Done |
 | Daily report series: per-day created/resolved/first-response/breached (P4) | Done |
 | Account/workspace audit events: settings + member changes (P0) | Done |
+| Console i18n: EN/Khmer shell switch (nav + shell labels) (P0) | Done |
 | Migrations | `0001`…`0025` (`0025_workspace_events`) |
-| Tests | 197 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
+| Tests | 197 API (in-memory SQLite, incl. an end-to-end journey) + 18 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
