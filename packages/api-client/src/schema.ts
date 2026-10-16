@@ -1551,6 +1551,30 @@ export interface WebhookUpdate {
   url?: string | null;
 }
 
+/** WorkspaceEventListRead */
+export interface WorkspaceEventListRead {
+  /** Data */
+  data?: WorkspaceEventRead[];
+  /** Next Cursor */
+  next_cursor?: string | null;
+}
+
+/** WorkspaceEventRead */
+export interface WorkspaceEventRead {
+  /** Actor Id */
+  actor_id?: string | null;
+  /** Actor Type */
+  actor_type?: string;
+  /** Created At */
+  created_at: string;
+  /** Data */
+  data?: Record<string, unknown>;
+  /** Id */
+  id: string;
+  /** Type */
+  type: string;
+}
+
 /** WorkspaceRead */
 export interface WorkspaceRead {
   /** Id */

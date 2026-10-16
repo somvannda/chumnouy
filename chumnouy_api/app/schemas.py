@@ -701,6 +701,22 @@ class AuditListRead(BaseModel):
     next_cursor: str | None = None
 
 
+class WorkspaceEventRead(BaseModel):
+    """An account/workspace-level audit event (settings, members, keys, teams)."""
+
+    id: UUID
+    type: str
+    actor_type: str = "user"
+    actor_id: UUID | None = None
+    data: dict = Field(default_factory=dict)
+    created_at: datetime
+
+
+class WorkspaceEventListRead(BaseModel):
+    data: list[WorkspaceEventRead] = Field(default_factory=list)
+    next_cursor: str | None = None
+
+
 # --- Inbound email ------------------------------------------------------------
 
 

@@ -294,6 +294,7 @@ and, for tickets/messages, `ticket_id` + `reference`.
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/v1/audit` | Ticket events (`type`, `actor_type`, `ticket_id`, `limit`, `cursor`) |
+| `GET` | `/v1/audit/workspace` | Account/workspace events (`type`, `limit`, `cursor`) |
 
 Workspace-scoped; scope `tickets:read`. A filterable, newest-first trail over
 `ticket_events` (`ticket.created`, `ticket.replied`, `ticket.updated`,
