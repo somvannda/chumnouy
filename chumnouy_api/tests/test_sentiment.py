@@ -46,10 +46,12 @@ async def _ticket(client, key, *, message="This is broken and I am furious"):
 
 
 def _fake_reply(label):
+    """Mirror ``ai_service.complete_chat``, which returns a dict, not a string."""
+
     async def fake_complete(workspace, *, system, messages, temperature=0.3, max_tokens=900):
         assert "classify" in system.lower()
         assert messages[-1]["content"]
-        return label
+        return {"content": label, "provider": "openai", "model": "gpt-4o-mini", "usage": {}}
 
     return fake_complete
 
