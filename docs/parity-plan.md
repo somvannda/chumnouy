@@ -76,7 +76,10 @@ Everything else depends on these; do first.
   tickets/messages/articles; Postgres GIN expression indexes in `0011_search`,
   portable `ILIKE` query).
 - **Teams/groups + RBAC**: `teams`, `team_members`; roles
-  `owner|admin|team_lead|agent|viewer`; permission checks in `deps`.
+  `owner|admin|team_lead|agent|viewer`; permission checks in `deps`. ✅ **member
+  management done** (`/v1/members` roster + email invitations with a one-time
+  token at `/v1/members/invites`, accepted at `/v1/auth/invite/accept`,
+  migration `0023_members`); a console Teams page remains.
 - **Audit log surface**: expose `ticket_events` (and account/workspace events)
   via `GET /v1/audit`. ✅ **done** (`GET /v1/audit`, filterable ticket-event
   trail; account/workspace-level events still to add).

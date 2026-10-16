@@ -12,9 +12,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.deps import get_current_user
 from app.models import Account, Membership, User, Workspace
-from app.schemas import AuthRead, LoginRequest, MeRead, SignupRequest, UserRead, WorkspaceRead
+from app.schemas import (
+    AuthRead,
+    InviteAccept,
+    LoginRequest,
+    MeRead,
+    SignupRequest,
+    UserRead,
+    WorkspaceRead,
+)
 from app.security import create_access_token, hash_password, slugify, verify_password
 from app.services import knowledge as knowledge_svc
+from app.services import members as members_svc
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -113,6 +122,19 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> Au
         user=UserRead.model_validate(user),
         workspace=WorkspaceRead(id=workspace.id, name=workspace.name, slug=workspace.slug, role=membership.role),
     )
+
+
+@router.post("/invite/accept", response_model=AuthRead)
+async def accept_invite(payload: InviteAccept, db: AsyncSession = Depends(get_db)) -> AuthRead:
+    """Consume a workspace invitation and sign the new member in."""
+    try:
+        return await members_svc.accept(
+            db, token=payload.token, password=payload.password, name=payload.name
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except members_svc.MemberError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.get("/me", response_model=MeRead)

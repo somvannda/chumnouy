@@ -23,6 +23,7 @@ from app.api.inbound import router as inbound_router
 from app.api.integrations import router as integrations_router
 from app.api.knowledge import router as knowledge_router
 from app.api.macros import router as macros_router
+from app.api.members import router as members_router
 from app.api.presence import router as presence_router
 from app.api.public import router as public_router
 from app.api.reports import router as reports_router
@@ -127,6 +128,7 @@ app.include_router(macros_router, prefix="/api/v1")
 app.include_router(presence_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(chat_public_router, prefix="/api/v1")
+app.include_router(members_router, prefix="/api/v1")
 app.include_router(requesters_router, prefix="/api/v1")
 app.include_router(public_router, prefix="/api/v1")
 

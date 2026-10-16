@@ -103,6 +103,36 @@ class Membership(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(20), default="active")
 
 
+class WorkspaceInvite(Base, TimestampMixin):
+    """A pending invitation to join a workspace.
+
+    Stands alone until accepted (``Membership.user_id`` is not nullable, so the
+    ``User`` is only created when the invite is accepted). Only the SHA-256 digest
+    of the token is stored; the plaintext is returned once, like an API key.
+    """
+
+    __tablename__ = "workspace_invites"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "email", name="uq_invite_workspace_email"),
+        Index("ix_invite_token_hash", "token_hash"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    email: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    role: Mapped[str] = mapped_column(String(20), default="agent")
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    invited_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 class Integration(Base, TimestampMixin):
     """A registered client app inside a workspace (e.g. "Chmaba POS")."""
 

@@ -167,6 +167,16 @@ export const api = {
   updateBusinessHours: (token, body) =>
     request("/console/settings/business-hours", { method: "PATCH", token, body }),
 
+  // Members
+  listMembers: (token) => request("/members", { token }),
+  listInvites: (token) => request("/members/invites", { token }),
+  inviteMember: (token, body) => request("/members/invites", { method: "POST", token, body }),
+  revokeInvite: (token, id) => request(`/members/invites/${id}`, { method: "DELETE", token }),
+  updateMemberRole: (token, userId, body) =>
+    request(`/members/${userId}`, { method: "PATCH", token, body }),
+  removeMember: (token, userId) => request(`/members/${userId}`, { method: "DELETE", token }),
+  acceptInvite: (body) => request("/auth/invite/accept", { method: "POST", body }),
+
   // Widget branding
   updateBranding: (token, body) =>
     request("/console/settings/branding", { method: "PATCH", token, body }),

@@ -412,7 +412,29 @@ configured, and the requester needs an email.
 Requester sessions are reachable only with the matching portal token; a closed
 session rejects new requester messages with `409`.
 
-## 25. Widget branding
+## 26. Members & invitations
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/members` | Roster (any console session) |
+| `GET` | `/v1/members/invites` | Pending invitations (owner/admin) |
+| `POST` | `/v1/members/invites` | Invite by email (owner/admin) |
+| `DELETE` | `/v1/members/invites/{id}` | Revoke an invitation (owner/admin) |
+| `PATCH` | `/v1/members/{user_id}` | Change a role (owner/admin) |
+| `DELETE` | `/v1/members/{user_id}` | Remove a member (owner/admin) |
+| `POST` | `/v1/auth/invite/accept` | Accept an invitation (public) |
+
+Inviting an email that already has an account adds the membership straight away
+(`status: "accepted"`, no token). Anyone else gets a one-time `inv_…` token,
+returned **once** at creation and stored only as a SHA-256 digest; the console
+shows the link (`/invite/<token>`), and actual delivery stays Notifyr's job.
+Invitations expire after 7 days. Accepting creates the user (if needed) and the
+membership and returns an `AuthRead`, so the new member is signed in immediately.
+
+The workspace owner's role can never be changed and the owner can never be
+removed; nobody can remove themselves. Writes need `members:manage`.
+
+## 27. Widget branding
 
 | Method | Path | Purpose |
 |---|---|---|

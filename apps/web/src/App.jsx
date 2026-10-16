@@ -11,9 +11,11 @@ import Chat from "./pages/Chat";
 import HelpCentre from "./pages/HelpCentre";
 import Inbox from "./pages/Inbox";
 import Integrations from "./pages/Integrations";
+import Invite from "./pages/Invite";
 import Knowledge from "./pages/Knowledge";
 import Login from "./pages/Login";
 import Macros from "./pages/Macros";
+import Members from "./pages/Members";
 import Reports from "./pages/Reports";
 import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
@@ -41,6 +43,7 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/help/:slug" element={<HelpCentre />} />
       <Route path="/help/:slug/:articleSlug" element={<HelpCentre />} />
+      <Route path="/invite/:token" element={<Invite />} />
       <Route
         element={
           <RequireAuth>
@@ -56,6 +59,7 @@ export default function App() {
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/requesters" element={<Requesters />} />
+        <Route path="/members" element={<Members />} />
         <Route path="/webhooks" element={<Webhooks />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<Audit />} />

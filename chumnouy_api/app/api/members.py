@@ -1,0 +1,92 @@
+"""Workspace members and invitations (console).
+
+Reading the roster needs any console session (assignment pickers use it); every
+write requires the ``members:manage`` permission (owner/admin).
+"""
+from __future__ import annotations
+
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db import get_db
+from app.deps import WorkspaceContext, get_workspace_context, require_permission
+from app.schemas import MemberInvite, MemberInviteRead, MemberRead, MemberRoleUpdate
+from app.services import members as svc
+
+router = APIRouter(prefix="/members", tags=["members"])
+
+_manage = require_permission("members:manage")
+
+
+def _translate(exc: Exception) -> HTTPException:
+    if isinstance(exc, LookupError):
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.get("", response_model=list[MemberRead])
+async def list_members(
+    ctx: WorkspaceContext = Depends(get_workspace_context),
+    db: AsyncSession = Depends(get_db),
+) -> list[MemberRead]:
+    return await svc.list_members(db, ctx.workspace.id)
+
+
+# Declared before ``/{user_id}`` so the literal path wins.
+@router.get("/invites", response_model=list[MemberInviteRead])
+async def list_invites(
+    ctx: WorkspaceContext = Depends(_manage),
+    db: AsyncSession = Depends(get_db),
+) -> list[MemberInviteRead]:
+    return await svc.list_invites(db, ctx.workspace.id)
+
+
+@router.post("/invites", response_model=MemberInviteRead, status_code=status.HTTP_201_CREATED)
+async def invite_member(
+    payload: MemberInvite,
+    ctx: WorkspaceContext = Depends(_manage),
+    db: AsyncSession = Depends(get_db),
+) -> MemberInviteRead:
+    try:
+        return await svc.invite(db, ctx.workspace, payload, invited_by_user_id=ctx.user.id)
+    except svc.MemberError as exc:
+        raise _translate(exc) from exc
+
+
+@router.delete("/invites/{invite_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_invite(
+    invite_id: UUID,
+    ctx: WorkspaceContext = Depends(_manage),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    try:
+        await svc.revoke_invite(db, ctx.workspace.id, invite_id)
+    except LookupError as exc:
+        raise _translate(exc) from exc
+
+
+@router.patch("/{user_id}", response_model=MemberRead)
+async def update_member(
+    user_id: UUID,
+    payload: MemberRoleUpdate,
+    ctx: WorkspaceContext = Depends(_manage),
+    db: AsyncSession = Depends(get_db),
+) -> MemberRead:
+    try:
+        return await svc.update_role(db, ctx.workspace.id, user_id, payload.role)
+    except (svc.MemberError, LookupError) as exc:
+        raise _translate(exc) from exc
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_member(
+    user_id: UUID,
+    ctx: WorkspaceContext = Depends(_manage),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    try:
+        await svc.remove(db, ctx.workspace.id, user_id, actor_user_id=ctx.user.id)
+    except (svc.MemberError, LookupError) as exc:
+        raise _translate(exc) from exc
