@@ -1080,6 +1080,8 @@ export interface SlaSettingsRead {
   first_response_minutes?: Record<string, number>;
   /** Resolution Minutes */
   resolution_minutes?: Record<string, number>;
+  /** Teams */
+  teams?: Record<string, SlaTeamPolicy>;
 }
 
 /** SlaSettingsUpdate */
@@ -1088,6 +1090,16 @@ export interface SlaSettingsUpdate {
   first_response_minutes?: Record<string, number> | null;
   /** Resolution Minutes */
   resolution_minutes?: Record<string, number> | null;
+  /** Teams */
+  teams?: Record<string, SlaTeamPolicy> | null;
+}
+
+/** SlaTeamPolicy */
+export interface SlaTeamPolicy {
+  /** First Response Minutes */
+  first_response_minutes?: Record<string, number>;
+  /** Resolution Minutes */
+  resolution_minutes?: Record<string, number>;
 }
 
 /** SsoSettingsRead */

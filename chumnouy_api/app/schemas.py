@@ -496,14 +496,23 @@ class NotificationSettingsUpdate(BaseModel):
     notifyr_api_key: str | None = Field(default=None, max_length=400)
 
 
+class SlaTeamPolicy(BaseModel):
+    """Per-team overrides; any priority left out falls back to the workspace."""
+
+    first_response_minutes: dict[str, int] = Field(default_factory=dict)
+    resolution_minutes: dict[str, int] = Field(default_factory=dict)
+
+
 class SlaSettingsRead(BaseModel):
     first_response_minutes: dict[str, int] = Field(default_factory=dict)
     resolution_minutes: dict[str, int] = Field(default_factory=dict)
+    teams: dict[str, SlaTeamPolicy] = Field(default_factory=dict)
 
 
 class SlaSettingsUpdate(BaseModel):
     first_response_minutes: dict[str, int] | None = None
     resolution_minutes: dict[str, int] | None = None
+    teams: dict[str, SlaTeamPolicy] | None = None
 
 
 class SsoSettingsRead(BaseModel):

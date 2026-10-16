@@ -121,7 +121,9 @@ hours** (`/v1/console/settings/business-hours`; due dates are computed over
 working hours), due timestamps stamped on ticket creation, a worker sweep that
 marks breaches (`sla.breached` event + webhook), and
 `first_response_due_at` / `resolution_due_at` / `sla_breached_at` on the ticket.
-Still to add: per-team SLA policies.
+**Per-team SLA policies done**: `workspace.settings.sla.teams[<team_id>]` overrides
+any priority, the console SLA editor switches scope between the workspace and a
+team, and targets are re-stamped when a ticket's team changes.
 
 - `business_hours` (per workspace, calendars), `sla_policies` (per priority/
   team), `sla_events` (first-response/resolution targets + breaches).

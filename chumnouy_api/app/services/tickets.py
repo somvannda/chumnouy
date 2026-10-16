@@ -425,6 +425,9 @@ async def apply_update(
         ticket.assignee_user_id = None
     if payload.clear_team:
         ticket.team_id = None
+    if ticket.team_id != previous_team:
+        # Targets follow the team: re-stamp from the new team's policy.
+        sla_svc.apply_policy(ctx.workspace, ticket)
     if payload.status is not None:
         ticket.status = payload.status
         if payload.status in ("resolved", "closed"):

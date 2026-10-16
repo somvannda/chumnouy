@@ -1,4 +1,6 @@
 """SLA: due dates on create, policy override, breach sweep + event."""
+from datetime import datetime
+
 import pytest
 from sqlalchemy import select
 
@@ -84,3 +86,83 @@ async def test_breach_sweep_marks_and_raises_event(client, db_session):
 
     # The sweep is idempotent.
     assert await sla_svc.sweep_breaches(db_session) == 0
+
+
+def _minutes_between(body, field="first_response_due_at"):
+    created = datetime.fromisoformat(body["created_at"])
+    due = datetime.fromisoformat(body[field])
+    return round((due - created).total_seconds() / 60)
+
+
+async def test_per_team_sla_overrides_workspace_policy(client):
+    headers, key = await _workspace(client, email="slateam@example.com")
+    team_id = (
+        await client.post("/api/v1/teams", json={"name": "Billing"}, headers=headers)
+    ).json()["id"]
+
+    updated = await client.patch(
+        "/api/v1/console/settings/sla",
+        json={"teams": {team_id: {"first_response_minutes": {"normal": 5}}}},
+        headers=headers,
+    )
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["sla"]["teams"][team_id]["first_response_minutes"] == {"normal": 5}
+    # Only the override is stored; the workspace policy is untouched.
+    assert updated.json()["sla"]["first_response_minutes"]["normal"] == 240
+
+    created = await client.post("/api/v1/tickets", json=_body(), headers={"X-Api-Key": key})
+    ticket_id = created.json()["id"]
+    assert _minutes_between(created.json()) == 240
+
+    # Assigning the team re-stamps the targets from the team policy.
+    assigned = await client.patch(
+        f"/api/v1/tickets/{ticket_id}", json={"team_id": team_id}, headers=headers
+    )
+    assert _minutes_between(assigned.json()) == 5
+    # Priorities the team did not override still follow the workspace policy.
+    assert _minutes_between(assigned.json(), "resolution_due_at") == 2880
+
+
+async def test_clearing_the_team_restores_the_workspace_policy(client):
+    headers, key = await _workspace(client, email="slaclear@example.com")
+    team_id = (
+        await client.post("/api/v1/teams", json={"name": "Support"}, headers=headers)
+    ).json()["id"]
+    await client.patch(
+        "/api/v1/console/settings/sla",
+        json={"teams": {team_id: {"first_response_minutes": {"normal": 1}}}},
+        headers=headers,
+    )
+    ticket_id = (
+        await client.post("/api/v1/tickets", json=_body(), headers={"X-Api-Key": key})
+    ).json()["id"]
+
+    await client.patch(f"/api/v1/tickets/{ticket_id}", json={"team_id": team_id}, headers=headers)
+    cleared = await client.patch(
+        f"/api/v1/tickets/{ticket_id}", json={"clear_team": True}, headers=headers
+    )
+    assert cleared.json()["team_id"] is None
+    assert _minutes_between(cleared.json()) == 240
+
+
+async def test_sla_team_overrides_drop_bad_keys_and_values(client):
+    headers, _ = await _workspace(client, email="slasafe@example.com")
+    updated = await client.patch(
+        "/api/v1/console/settings/sla",
+        json={
+            "teams": {
+                "not-a-uuid": {"first_response_minutes": {"normal": 3}},
+                "11111111-1111-1111-1111-111111111111": {
+                    "first_response_minutes": {"normal": 7, "bogus": 9}
+                },
+            }
+        },
+        headers=headers,
+    )
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["sla"]["teams"] == {
+        "11111111-1111-1111-1111-111111111111": {
+            "first_response_minutes": {"normal": 7},
+            "resolution_minutes": {},
+        }
+    }

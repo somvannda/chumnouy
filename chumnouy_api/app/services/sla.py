@@ -1,20 +1,24 @@
 """SLA targets and breach detection.
 
 A workspace sets per-priority first-response and resolution targets (in minutes)
-under ``workspace.settings["sla"]``. Due timestamps are stamped on the ticket at
-creation; a worker sweep marks overdue tickets as breached and raises a
-``sla.breached`` event. Business hours are not modelled yet (calendar hours).
+under ``workspace.settings["sla"]``, and may override any priority per team under
+``workspace.settings["sla"]["teams"][<team_id>]``. Due timestamps are stamped on
+the ticket at creation — and re-stamped when its team changes — from the ticket's
+team policy, falling back to the workspace policy. A worker sweep marks overdue
+tickets as breached and raises a ``sla.breached`` event. Targets count calendar
+hours unless business hours are enabled.
 """
 from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Ticket, Workspace, utcnow
-from app.schemas import SlaSettingsRead, SlaSettingsUpdate
+from app.schemas import SlaSettingsRead, SlaSettingsUpdate, SlaTeamPolicy
 from app.services import business_hours as business_hours_svc
 from app.services import webhooks as webhooks_svc
 
@@ -39,17 +43,40 @@ def _minutes(raw: dict | None, default: dict[str, int]) -> dict[str, int]:
     return result
 
 
-def load_policy(workspace: Workspace) -> tuple[dict[str, int], dict[str, int]]:
+def _team_overrides(sla: dict) -> dict:
+    teams = sla.get("teams")
+    return teams if isinstance(teams, dict) else {}
+
+
+def load_policy(
+    workspace: Workspace, team_id: UUID | str | None = None
+) -> tuple[dict[str, int], dict[str, int]]:
+    """The effective targets: the workspace policy, then any team override."""
     sla = (workspace.settings or {}).get("sla") or {}
-    return (
-        _minutes(sla.get("first_response_minutes"), DEFAULT_FIRST_RESPONSE),
-        _minutes(sla.get("resolution_minutes"), DEFAULT_RESOLUTION),
-    )
+    first = _minutes(sla.get("first_response_minutes"), DEFAULT_FIRST_RESPONSE)
+    resolution = _minutes(sla.get("resolution_minutes"), DEFAULT_RESOLUTION)
+    if team_id is not None:
+        override = _team_overrides(sla).get(str(team_id))
+        if isinstance(override, dict):
+            first = _minutes(override.get("first_response_minutes"), first)
+            resolution = _minutes(override.get("resolution_minutes"), resolution)
+    return first, resolution
 
 
 def sla_settings(workspace: Workspace) -> SlaSettingsRead:
     first, resolution = load_policy(workspace)
-    return SlaSettingsRead(first_response_minutes=first, resolution_minutes=resolution)
+    stored = _team_overrides((workspace.settings or {}).get("sla") or {})
+    teams = {
+        str(team_id): SlaTeamPolicy(
+            first_response_minutes=_minutes(policy.get("first_response_minutes"), {}),
+            resolution_minutes=_minutes(policy.get("resolution_minutes"), {}),
+        )
+        for team_id, policy in stored.items()
+        if isinstance(policy, dict)
+    }
+    return SlaSettingsRead(
+        first_response_minutes=first, resolution_minutes=resolution, teams=teams
+    )
 
 
 def _due(workspace: Workspace, start, minutes: int):
@@ -65,11 +92,23 @@ def _due(workspace: Workspace, start, minutes: int):
 
 
 def apply_policy(workspace: Workspace, ticket: Ticket) -> None:
-    """Stamp the due timestamps for a freshly created ticket."""
-    first, resolution = load_policy(workspace)
+    """Stamp the due timestamps for a ticket (re-stamped when its team changes)."""
+    first, resolution = load_policy(workspace, ticket.team_id)
     now = ticket.created_at or utcnow()
     ticket.first_response_due_at = _due(workspace, now, first.get(ticket.priority, first["normal"]))
     ticket.resolution_due_at = _due(workspace, now, resolution.get(ticket.priority, resolution["normal"]))
+
+
+def _clean_minutes(raw: dict | None) -> dict[str, int]:
+    values: dict[str, int] = {}
+    for priority, value in (raw or {}).items():
+        if priority not in PRIORITIES:
+            continue
+        try:
+            values[priority] = max(0, int(value))
+        except (TypeError, ValueError):
+            continue
+    return values
 
 
 async def update_settings(
@@ -81,6 +120,18 @@ async def update_settings(
         sla["first_response_minutes"] = payload.first_response_minutes
     if payload.resolution_minutes is not None:
         sla["resolution_minutes"] = payload.resolution_minutes
+    if payload.teams is not None:
+        teams: dict[str, dict] = {}
+        for team_id, policy in payload.teams.items():
+            try:
+                key = str(UUID(str(team_id)))
+            except (TypeError, ValueError):
+                continue
+            teams[key] = {
+                "first_response_minutes": _clean_minutes(policy.first_response_minutes),
+                "resolution_minutes": _clean_minutes(policy.resolution_minutes),
+            }
+        sla["teams"] = teams
     settings["sla"] = sla
     workspace.settings = settings
     await db.commit()

@@ -65,8 +65,9 @@ implemented and tested.
 | Live chat: requester session + agent reply/close, SSE stream, Notifyr nudge (P1) | Done |
 | Members: roster + email invitations with a one-time token (P7) | Done |
 | Teams: console page (create, members, delete) + ticket team assignment (P2) | Done |
+| Per-team SLA policies; targets follow the ticket's team (P2) | Done |
 | Migrations | `0001`…`0023` (`0023_members`) |
-| Tests | 178 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
+| Tests | 181 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -77,7 +78,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 178 passing
+python -m pytest                       # 181 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
