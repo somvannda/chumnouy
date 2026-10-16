@@ -174,8 +174,9 @@ Still to add: per-team SLA policies.
   view); article feedback and a dedicated SEO site remain.
 - **Widget v2**: pre-chat form, live-chat handoff, article suggestions from the
   assistant, branding config per workspace. ✅ **article suggestions done**
-  (`helpSlug` → help-centre search in the widget); pre-chat/live-chat/branding
-  remain.
+  (`helpSlug` → help-centre search in the widget) and **live-chat handoff done**
+  (the widget starts a session and polls the thread, migration `0022_chat`);
+  pre-chat form and branding remain.
 
 ### P7 — Enterprise & security · XL
 
