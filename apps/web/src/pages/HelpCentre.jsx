@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { BookOpen, LifeBuoy, Search } from "lucide-react";
+import { BookOpen, LifeBuoy, Search, ThumbsDown, ThumbsUp } from "lucide-react";
 import { api } from "../lib/api";
-import { Alert, Badge, Card, EmptyState, Input, Spinner } from "../components/ui";
+import { Alert, Badge, Button, Card, EmptyState, Input, Spinner } from "../components/ui";
 
 export default function HelpCentre() {
   const { slug, articleSlug } = useParams();
@@ -11,6 +11,7 @@ export default function HelpCentre() {
   const [query, setQuery] = useState("");
   const [section, setSection] = useState("");
   const [error, setError] = useState(null);
+  const [voted, setVoted] = useState(null);
 
   const loadIndex = useCallback(() => {
     const params = {};
@@ -32,12 +33,32 @@ export default function HelpCentre() {
       return;
     }
     setArticle(null);
+    setVoted(null);
     setError(null);
     api
       .helpArticle(slug, articleSlug)
       .then(setArticle)
       .catch((err) => setError(err.message));
   }, [slug, articleSlug]);
+
+  async function vote(helpful) {
+    setVoted(helpful);
+    try {
+      await api.helpFeedback(slug, articleSlug, { helpful });
+      setArticle((current) =>
+        current
+          ? {
+              ...current,
+              helpful_yes: current.helpful_yes + (helpful ? 1 : 0),
+              helpful_no: current.helpful_no + (helpful ? 0 : 1),
+            }
+          : current,
+      );
+    } catch (err) {
+      setError(err.message);
+      setVoted(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-page px-6 py-10 text-ink-soft">
@@ -68,6 +89,33 @@ export default function HelpCentre() {
                 {article.summary && <p className="mt-2 text-sm text-muted">{article.summary}</p>}
                 <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-ink">
                   {article.body}
+                </div>
+                <div className="mt-8 border-t border-line pt-5">
+                  <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">
+                    Was this helpful?
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Button
+                      variant={voted === true ? "primary" : "secondary"}
+                      disabled={voted !== null}
+                      onClick={() => vote(true)}
+                    >
+                      <ThumbsUp size={16} /> Yes
+                    </Button>
+                    <Button
+                      variant={voted === false ? "primary" : "secondary"}
+                      disabled={voted !== null}
+                      onClick={() => vote(false)}
+                    >
+                      <ThumbsDown size={16} /> No
+                    </Button>
+                    <span className="text-xs text-muted">
+                      {article.helpful_yes} found this helpful · {article.helpful_no} did not
+                    </span>
+                  </div>
+                  {voted !== null && (
+                    <p className="mt-2 text-xs font-bold text-brand">Thanks for the feedback.</p>
+                  )}
                 </div>
               </>
             )}

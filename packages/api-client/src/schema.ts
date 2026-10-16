@@ -610,10 +610,32 @@ export interface HealthRead {
   version: string;
 }
 
+/** HelpArticleFeedbackCreate */
+export interface HelpArticleFeedbackCreate {
+  /** Comment */
+  comment?: string | null;
+  /** Helpful */
+  helpful: boolean;
+}
+
+/** HelpArticleFeedbackRead */
+export interface HelpArticleFeedbackRead {
+  /** Comment */
+  comment?: string | null;
+  /** Created At */
+  created_at: string;
+  /** Helpful */
+  helpful: boolean;
+}
+
 /** HelpArticleRead */
 export interface HelpArticleRead {
   /** Body */
   body: string;
+  /** Helpful No */
+  helpful_no?: number;
+  /** Helpful Yes */
+  helpful_yes?: number;
   /** Locale */
   locale: string;
   /** Section */

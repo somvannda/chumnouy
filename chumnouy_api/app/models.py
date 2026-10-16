@@ -744,6 +744,24 @@ class KnowledgeArticle(Base, TimestampMixin):
     )
 
 
+class HelpArticleFeedback(Base):
+    """A reader's verdict on a help article ("was this helpful?")."""
+
+    __tablename__ = "help_article_feedback"
+    __table_args__ = (Index("ix_help_feedback_article_created", "article_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    article_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("knowledge_articles.id", ondelete="CASCADE"), index=True
+    )
+    helpful: Mapped[bool] = mapped_column(Boolean, default=True)
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # --- AI assistant -------------------------------------------------------------
 # Conversations are grounded in the workspace knowledge corpus; every answer can
 # be rated. Provider credentials live in ``workspace.settings`` (services/ai.py).

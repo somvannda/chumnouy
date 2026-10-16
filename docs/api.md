@@ -471,7 +471,8 @@ unset), `breached`, `sla_compliance` (%), `avg_first_response_minutes` /
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/v1/public/help/{workspace_slug}` | Index: sections + articles (`section`, `q`, `locale`) |
-| `GET` | `/v1/public/help/{workspace_slug}/articles/{slug}` | One article (`locale`) |
+| `GET` | `/v1/public/help/{workspace_slug}/articles/{slug}` | One article (`locale`), incl. `helpful_yes`/`helpful_no` |
+| `POST` | `/v1/public/help/{workspace_slug}/articles/{slug}/feedback` | Record "was this helpful?" (`helpful`, optional `comment`) |
 
 **Unauthenticated**, addressed by workspace slug; only active articles are
 exposed. Rate-limited by the public middleware.

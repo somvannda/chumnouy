@@ -76,8 +76,9 @@ implemented and tested.
 | Seat quota: invites/accepts blocked beyond the allowance (P0) | Done |
 | Storage quota: uploads blocked beyond the cap (P0) | Done |
 | Widget live chat streams over SSE (polling fallback) (P1) | Done |
-| Migrations | `0001`…`0025` (`0025_workspace_events`) |
-| Tests | 202 API (in-memory SQLite, incl. an end-to-end journey) + 18 web (`node --test`) |
+| Help-centre article feedback: "was this helpful?" + counts (P6) | Done |
+| Migrations | `0001`…`0026` (`0026_help_feedback`) |
+| Tests | 205 API (in-memory SQLite, incl. an end-to-end journey) + 18 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -88,7 +89,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 202 passing
+python -m pytest                       # 205 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)
