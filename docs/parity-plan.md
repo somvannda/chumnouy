@@ -83,8 +83,10 @@ Everything else depends on these; do first.
   manage members, assign a team from the ticket view); skill-based routing
   remains.
 - **Audit log surface**: expose `ticket_events` (and account/workspace events)
-  via `GET /v1/audit`. ✅ **done** (`GET /v1/audit`, filterable ticket-event
-  trail; account/workspace-level events still to add).
+  via `GET /v1/audit`. ✅ **done** (`GET /v1/audit` for the filterable
+  ticket-event trail, plus `GET /v1/audit/workspace` for account/workspace
+  events — settings and member changes, migration `0025_workspace_events`, with
+  secrets stripped from the recorded payload).
 - **i18n**: content locales exist; add a UI locale switch (en/km) and
   translatable notification templates (rendered by Notifyr). ✅ **backend done**
   (workspace locale via `/v1/console/settings/locale`, included in every Notifyr

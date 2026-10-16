@@ -651,6 +651,30 @@ class IdempotencyKey(Base, TimestampMixin):
     response: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+# --- Workspace audit events ---------------------------------------------------
+# Ticket writes land in ``ticket_events``; workspace-level changes (settings,
+# members, keys, teams) land here so the audit trail covers the account too.
+
+
+class WorkspaceEvent(Base):
+    """An account/workspace-level audit event (no ticket involved)."""
+
+    __tablename__ = "workspace_events"
+    __table_args__ = (Index("ix_workspace_event_workspace_created", "workspace_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    type: Mapped[str] = mapped_column(String(60))
+    actor_type: Mapped[str] = mapped_column(String(20), default="user")
+    actor_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # --- Notifyr outbox -----------------------------------------------------------
 # Human-facing delivery is Notifyr's job; we only queue the event and hand it off
 # from a worker so a ticket write never blocks on (or fails because of) Notifyr.

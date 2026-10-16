@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.deps import TenantContext, require_tenant_scopes
-from app.schemas import AuditListRead
+from app.schemas import AuditListRead, WorkspaceEventListRead
 from app.services import audit as svc
 
 router = APIRouter(prefix="/audit", tags=["audit"])
@@ -34,4 +34,18 @@ async def list_events(
         ticket_id=ticket_id,
         limit=limit,
         cursor=cursor,
+    )
+
+
+@router.get("/workspace", response_model=WorkspaceEventListRead)
+async def list_workspace_events(
+    type: str | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+    cursor: str | None = None,
+    ctx: TenantContext = Depends(_read),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceEventListRead:
+    """Account/workspace-level events (settings, members, keys, teams)."""
+    return await svc.list_workspace_events(
+        db, ctx.workspace.id, type=type, limit=limit, cursor=cursor
     )

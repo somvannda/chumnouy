@@ -3,6 +3,9 @@
 AI provider credentials and the Notifyr override live in ``workspace.settings``;
 secrets (``api_key``, ``notifyr_api_key``) are write-only — set them here, read
 only a ``*_set`` flag back.
+
+Every change is recorded in the workspace audit trail (``settings.*``), with
+secret fields stripped from the recorded payload.
 """
 from __future__ import annotations
 
@@ -23,11 +26,32 @@ from app.schemas import (
     SsoSettingsUpdate,
     WorkspaceSettingsRead,
 )
+from app.services import audit as audit_svc
 from app.services import workspace_settings as svc
 
 router = APIRouter(prefix="/console", tags=["console"])
 
 _owner = require_permission("settings:manage")
+
+# Never copy these into the audit trail.
+_SECRET_FIELDS = {"api_key", "notifyr_api_key", "client_secret"}
+
+
+async def _audit(
+    db: AsyncSession, ctx: WorkspaceContext, section: str, payload=None
+) -> None:
+    data = (
+        payload.model_dump(exclude_none=True, exclude=_SECRET_FIELDS) if payload is not None else {}
+    )
+    audit_svc.record_workspace_event(
+        db,
+        ctx.workspace.id,
+        type=f"settings.{section}",
+        actor_type="user",
+        actor_id=ctx.user.id,
+        data=data,
+    )
+    await db.commit()
 
 
 @router.get("/settings", response_model=WorkspaceSettingsRead)
@@ -41,7 +65,9 @@ async def update_ai(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> AISettingsRead:
-    return await svc.update_ai(db, ctx.workspace, payload)
+    result = await svc.update_ai(db, ctx.workspace, payload)
+    await _audit(db, ctx, "ai", payload)
+    return result
 
 
 @router.patch("/settings/notifications", response_model=NotificationSettingsRead)
@@ -50,7 +76,9 @@ async def update_notifications(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> NotificationSettingsRead:
-    return await svc.update_notifications(db, ctx.workspace, payload)
+    result = await svc.update_notifications(db, ctx.workspace, payload)
+    await _audit(db, ctx, "notifications", payload)
+    return result
 
 
 @router.patch("/settings/locale", response_model=WorkspaceSettingsRead)
@@ -59,7 +87,9 @@ async def update_locale(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
-    return await svc.update_locale(db, ctx.workspace, payload)
+    result = await svc.update_locale(db, ctx.workspace, payload)
+    await _audit(db, ctx, "locale", payload)
+    return result
 
 
 @router.patch("/settings/sla", response_model=WorkspaceSettingsRead)
@@ -68,7 +98,9 @@ async def update_sla(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
-    return await svc.update_sla(db, ctx.workspace, payload)
+    result = await svc.update_sla(db, ctx.workspace, payload)
+    await _audit(db, ctx, "sla", payload)
+    return result
 
 
 @router.patch("/settings/sso", response_model=WorkspaceSettingsRead)
@@ -77,7 +109,9 @@ async def update_sso(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
-    return await svc.update_sso(db, ctx.workspace, payload)
+    result = await svc.update_sso(db, ctx.workspace, payload)
+    await _audit(db, ctx, "sso", payload)
+    return result
 
 
 @router.patch("/settings/business-hours", response_model=WorkspaceSettingsRead)
@@ -86,7 +120,9 @@ async def update_business_hours(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
-    return await svc.update_business_hours(db, ctx.workspace, payload)
+    result = await svc.update_business_hours(db, ctx.workspace, payload)
+    await _audit(db, ctx, "business-hours", payload)
+    return result
 
 
 @router.patch("/settings/branding", response_model=WorkspaceSettingsRead)
@@ -95,4 +131,6 @@ async def update_branding(
     ctx: WorkspaceContext = Depends(_owner),
     db: AsyncSession = Depends(get_db),
 ) -> WorkspaceSettingsRead:
-    return await svc.update_branding(db, ctx.workspace, payload)
+    result = await svc.update_branding(db, ctx.workspace, payload)
+    await _audit(db, ctx, "branding", payload)
+    return result
