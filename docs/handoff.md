@@ -80,7 +80,8 @@ implemented and tested.
 | IP allowlist: sign-in restricted to configured networks (P7) | Done |
 | Data retention: resolved tickets purged after the window (P7) | Done |
 | SAML 2.0 SP: metadata, IdP hand-off, verified ACS + JIT provisioning (P7) | Done |
-| Migrations | `0001`…`0026` (`0026_help_feedback`) |
+| Ticket sentiment: AI-labelled requester messages, scored in the worker (P8) | Done |
+| Migrations | `0001`…`0027` (`0027_sentiment`) |
 | Tests | 210 API (in-memory SQLite, incl. an end-to-end journey) + 18 web (`--test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
@@ -92,7 +93,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 220 passing
+python -m pytest                       # 225 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)

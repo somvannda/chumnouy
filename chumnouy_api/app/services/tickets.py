@@ -67,6 +67,7 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
         first_response_due_at=ticket.first_response_due_at,
         resolution_due_at=ticket.resolution_due_at,
         sla_breached_at=ticket.sla_breached_at,
+        sentiment=ticket.sentiment,
     )
 
 

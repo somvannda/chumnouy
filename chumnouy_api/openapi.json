@@ -3203,6 +3203,13 @@
             "title": "By Priority",
             "type": "object"
           },
+          "by_sentiment": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Sentiment",
+            "type": "object"
+          },
           "by_status": {
             "additionalProperties": {
               "type": "integer"
@@ -4499,6 +4506,17 @@
             ],
             "title": "Resolved At"
           },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sentiment"
+          },
           "sla_breached_at": {
             "anyOf": [
               {
@@ -4758,6 +4776,17 @@
               }
             ],
             "title": "Resolved At"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sentiment"
           },
           "sla_breached_at": {
             "anyOf": [

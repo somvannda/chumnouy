@@ -271,6 +271,7 @@ async def run_worker(stop: asyncio.Event) -> None:
     from app.services import automations as automations_svc
     from app.services import notifyr as notifyr_svc
     from app.services import retention as retention_svc
+    from app.services import sentiment as sentiment_svc
     from app.services import sla as sla_svc
 
     interval = max(1, settings.webhook_worker_interval_seconds)
@@ -281,6 +282,7 @@ async def run_worker(stop: asyncio.Event) -> None:
                 await notifyr_svc.process_due(session)
                 await sla_svc.sweep_breaches(session)
                 await retention_svc.purge(session)
+                await sentiment_svc.score_pending(session)
                 await automations_svc.sweep_automations(session)
         except Exception:  # noqa: BLE001 - the worker must never die
             logger.exception("webhook worker iteration failed")

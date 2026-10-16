@@ -251,6 +251,8 @@ class Ticket(Base, TimestampMixin):
     first_response_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     resolution_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sla_breached_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # AI sentiment of the requester's latest message (positive|neutral|negative).
+    sentiment: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
 
 class TicketMessage(Base):

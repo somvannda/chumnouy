@@ -65,6 +65,7 @@ export default function Reports() {
           {[
             ["by_team", "By team"],
             ["by_assignee", "By assignee"],
+            ["by_sentiment", "By sentiment"],
           ].map(([key, label]) => (
             <Card key={key} className="mt-4">
               <p className="text-xs font-bold uppercase tracking-[.08em] text-muted">{label}</p>

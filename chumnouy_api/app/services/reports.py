@@ -39,6 +39,7 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
                 Ticket.first_response_at,
                 Ticket.resolved_at,
                 Ticket.sla_breached_at,
+                Ticket.sentiment,
             ).where(Ticket.workspace_id == workspace_id)
         )
     ).all()
@@ -47,6 +48,7 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
     by_priority: Counter = Counter()
     by_assignee: Counter = Counter()
     by_team: Counter = Counter()
+    by_sentiment: Counter = Counter()
     first_responses: list[float] = []
     resolutions: list[float] = []
     breached = 0
@@ -59,11 +61,14 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
         first_response_at,
         resolved_at,
         sla_breached_at,
+        sentiment,
     ) in rows:
         by_status[status] += 1
         by_priority[priority] += 1
         by_assignee[str(assignee_user_id) if assignee_user_id else "unassigned"] += 1
         by_team[str(team_id) if team_id else "none"] += 1
+        if sentiment:
+            by_sentiment[sentiment] += 1
         if sla_breached_at is not None:
             breached += 1
         first = _minutes(created, first_response_at)
@@ -81,6 +86,7 @@ async def summary(db: AsyncSession, workspace_id: UUID) -> ReportSummary:
         by_priority=dict(by_priority),
         by_assignee=dict(by_assignee),
         by_team=dict(by_team),
+        by_sentiment=dict(by_sentiment),
         breached=breached,
         sla_compliance=round((total - breached) / total * 100, 1) if total else None,
         avg_first_response_minutes=round(mean(first_responses), 1) if first_responses else None,

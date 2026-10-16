@@ -219,7 +219,9 @@ team, and targets are re-stamped when a ticket's team changes.
   (`POST /v1/tickets/{id}/assistant/triage` for a suggestion, and
   `ai_auto_triage` applies it on ticket create); team suggestions remain.
 - **Copilot**: summarise thread, suggest macro, sentiment, reply QA. ✅ **summary
-  done** (`POST /v1/tickets/{id}/assistant/summary`); sentiment/QA/macro remain.
+  and sentiment done** (`POST /v1/tickets/{id}/assistant/summary`; the worker
+  labels each ticket's latest requester message and reports expose
+  `by_sentiment`); macro suggestions and reply QA remain.
 - **Agentic tools**: the integrator-supplied read-only tool contract (the
   long-open decision) so the assistant can answer data questions safely.
 - **AI agent**: auto-answer from the corpus with escalation to a human ticket

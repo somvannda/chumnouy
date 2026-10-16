@@ -116,6 +116,19 @@ export default function TicketView() {
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={statusTone(ticket.status)}>{ticket.status}</Badge>
           <Badge tone={priorityTone(ticket.priority)}>{ticket.priority}</Badge>
+          {ticket.sentiment && (
+            <Badge
+              tone={
+                ticket.sentiment === "negative"
+                  ? "danger"
+                  : ticket.sentiment === "positive"
+                    ? "success"
+                    : "neutral"
+              }
+            >
+              {ticket.sentiment}
+            </Badge>
+          )}
         </div>
       </div>
 
