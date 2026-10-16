@@ -47,13 +47,13 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 | `POST` | `/v1/tickets` | Create a ticket (+ first message) |
 | `GET` | `/v1/tickets` | List/filter: `status`, `priority`, `assignee`, `tag`, `integration`, `q`, `created_after/before` |
 | `GET` | `/v1/tickets/{id}` | Ticket + thread + attachments |
-| `PATCH` | `/v1/tickets/{id}` | `subject`, `status`, `priority`, `assignee_user_id`, `team_id`, `clear_assignee`, `clear_team`, `tags`, `metadata` |
+| `PATCH` | `/v1/tickets/{id}` | `subject`, `status`, `priority`, `assignee_user_id`, `team_id`, `clear_assignee`, `clear_team`, `tags`, `required_skills`, `metadata` |
 | `POST` | `/v1/tickets/{id}/messages` | Reply (`visibility`: `public` \| `internal`) |
 
 Messages are `text` by default; pass `body_format: "html"` (or `message_format`
 on ticket create) to send rich text, which is **stored sanitised** (strict tag/
 attribute allowlist) so any client can render it verbatim.
-| `POST` | `/v1/tickets/{id}/assign` | Assign by strategy (`round_robin`/`load_balanced`/`team`) or to a `user_id`/`team_id` |
+| `POST` | `/v1/tickets/{id}/assign` | Assign by strategy (`round_robin`/`load_balanced`/`team`/`skill`) or to a `user_id`/`team_id`; `skill` narrows candidates |
 | `POST` | `/v1/tickets/{id}/resolve` | Resolve (optional note) |
 | `POST` | `/v1/tickets/{id}/reopen` | Reopen |
 | `POST` | `/v1/tickets/{id}/attachments` | Attach an uploaded file to the ticket |
@@ -420,7 +420,7 @@ session rejects new requester messages with `409`.
 | `GET` | `/v1/members/invites` | Pending invitations (owner/admin) |
 | `POST` | `/v1/members/invites` | Invite by email (owner/admin) |
 | `DELETE` | `/v1/members/invites/{id}` | Revoke an invitation (owner/admin) |
-| `PATCH` | `/v1/members/{user_id}` | Change a role (owner/admin) |
+| `PATCH` | `/v1/members/{user_id}` | Change a role and/or skills (owner/admin) |
 | `DELETE` | `/v1/members/{user_id}` | Remove a member (owner/admin) |
 | `POST` | `/v1/auth/invite/accept` | Accept an invitation (public) |
 

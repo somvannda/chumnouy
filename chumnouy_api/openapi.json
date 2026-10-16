@@ -2800,6 +2800,13 @@
             "title": "Role",
             "type": "string"
           },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
           "status": {
             "default": "active",
             "title": "Status",
@@ -2820,23 +2827,42 @@
         "title": "MemberRead",
         "type": "object"
       },
-      "MemberRoleUpdate": {
+      "MemberUpdate": {
+        "description": "Partial member update: at least one of ``role`` / ``skills``.",
         "properties": {
           "role": {
-            "enum": [
-              "admin",
-              "team_lead",
-              "agent",
-              "viewer"
+            "anyOf": [
+              {
+                "enum": [
+                  "admin",
+                  "team_lead",
+                  "agent",
+                  "viewer"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Role",
-            "type": "string"
+            "title": "Role"
+          },
+          "skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skills"
           }
         },
-        "required": [
-          "role"
-        ],
-        "title": "MemberRoleUpdate",
+        "title": "MemberUpdate",
         "type": "object"
       },
       "NotificationSettingsRead": {
@@ -3858,12 +3884,25 @@
       "TicketAssign": {
         "description": "Assign a ticket. ``strategy`` picks among candidates; ``user_id`` forces one.",
         "properties": {
+          "skill": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill"
+          },
           "strategy": {
             "default": "round_robin",
             "enum": [
               "round_robin",
               "load_balanced",
-              "team"
+              "team",
+              "skill"
             ],
             "title": "Strategy",
             "type": "string"
@@ -3938,6 +3977,13 @@
           },
           "requester": {
             "$ref": "#/components/schemas/RequesterInput"
+          },
+          "required_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Skills",
+            "type": "array"
           },
           "subject": {
             "maxLength": 255,
@@ -4033,6 +4079,13 @@
                 "type": "null"
               }
             ]
+          },
+          "required_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Skills",
+            "type": "array"
           },
           "resolution_due_at": {
             "anyOf": [
@@ -4287,6 +4340,13 @@
               }
             ]
           },
+          "required_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Skills",
+            "type": "array"
+          },
           "resolution_due_at": {
             "anyOf": [
               {
@@ -4402,6 +4462,20 @@
               }
             ],
             "title": "Priority"
+          },
+          "required_skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Skills"
           },
           "status": {
             "anyOf": [
@@ -9489,7 +9563,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MemberRoleUpdate"
+                "$ref": "#/components/schemas/MemberUpdate"
               }
             }
           },

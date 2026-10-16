@@ -158,6 +158,7 @@ class TicketCreate(BaseModel):
     requester: RequesterInput
     priority: Literal["low", "normal", "high", "urgent"] = "normal"
     tags: list[str] = Field(default_factory=list)
+    required_skills: list[str] = Field(default_factory=list)
     metadata: dict = Field(default_factory=dict)
     attachment_ids: list[UUID] = Field(default_factory=list)
 
@@ -172,6 +173,7 @@ class TicketUpdate(BaseModel):
     clear_assignee: bool = False
     clear_team: bool = False
     tags: list[str] | None = None
+    required_skills: list[str] | None = None
 
 
 class TicketRead(BaseModel):
@@ -184,6 +186,7 @@ class TicketRead(BaseModel):
     team_id: UUID | None = None
     requester: RequesterRead | None = None
     tags: list[str] = Field(default_factory=list)
+    required_skills: list[str] = Field(default_factory=list)
     metadata: dict = Field(default_factory=dict)
     created_at: datetime
     resolved_at: datetime | None = None
@@ -200,9 +203,12 @@ class TicketDetailRead(TicketRead):
 class TicketAssign(BaseModel):
     """Assign a ticket. ``strategy`` picks among candidates; ``user_id`` forces one."""
 
-    strategy: Literal["round_robin", "load_balanced", "team"] = "round_robin"
+    strategy: Literal["round_robin", "load_balanced", "team", "skill"] = "round_robin"
     team_id: UUID | None = None
     user_id: UUID | None = None
+    # Restrict candidates to agents with this skill (else the ticket's own
+    # ``required_skills`` are used).
+    skill: str | None = Field(default=None, max_length=40)
 
 
 class AttachmentClaim(BaseModel):
@@ -642,6 +648,7 @@ class MemberRead(BaseModel):
     name: str | None = None
     role: str
     status: str = "active"
+    skills: list[str] = Field(default_factory=list)
     created_at: datetime
 
 
@@ -663,8 +670,11 @@ class MemberInviteRead(BaseModel):
     token: str | None = None
 
 
-class MemberRoleUpdate(BaseModel):
-    role: Literal["admin", "team_lead", "agent", "viewer"]
+class MemberUpdate(BaseModel):
+    """Partial member update: at least one of ``role`` / ``skills``."""
+
+    role: Literal["admin", "team_lead", "agent", "viewer"] | None = None
+    skills: list[str] | None = None
 
 
 class InviteAccept(BaseModel):

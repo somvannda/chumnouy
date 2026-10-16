@@ -101,6 +101,8 @@ class Membership(Base, TimestampMixin):
     )
     role: Mapped[str] = mapped_column(String(20), default="agent")
     status: Mapped[str] = mapped_column(String(20), default="active")
+    # Skills this agent can be routed by (lower-case tokens, e.g. "billing").
+    skills: Mapped[list] = mapped_column(JSON, default=list)
 
 
 class WorkspaceInvite(Base, TimestampMixin):
@@ -242,6 +244,7 @@ class Ticket(Base, TimestampMixin):
         Uuid, ForeignKey("teams.id", ondelete="SET NULL"), nullable=True, index=True
     )
     tags: Mapped[list] = mapped_column(JSON, default=list)
+    required_skills: Mapped[list] = mapped_column(JSON, default=list)
     metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     first_response_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
