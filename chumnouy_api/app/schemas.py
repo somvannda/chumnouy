@@ -168,6 +168,9 @@ class TicketUpdate(BaseModel):
     priority: Literal["low", "normal", "high", "urgent"] | None = None
     assignee_user_id: UUID | None = None
     team_id: UUID | None = None
+    # ``None`` above means "leave as is"; these explicitly clear the field.
+    clear_assignee: bool = False
+    clear_team: bool = False
     tags: list[str] | None = None
 
 

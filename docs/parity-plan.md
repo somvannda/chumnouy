@@ -79,7 +79,9 @@ Everything else depends on these; do first.
   `owner|admin|team_lead|agent|viewer`; permission checks in `deps`. ✅ **member
   management done** (`/v1/members` roster + email invitations with a one-time
   token at `/v1/members/invites`, accepted at `/v1/auth/invite/accept`,
-  migration `0023_members`); a console Teams page remains.
+  migration `0023_members`) and **the console Teams page done** (create teams,
+  manage members, assign a team from the ticket view); skill-based routing
+  remains.
 - **Audit log surface**: expose `ticket_events` (and account/workspace events)
   via `GET /v1/audit`. ✅ **done** (`GET /v1/audit`, filterable ticket-event
   trail; account/workspace-level events still to add).

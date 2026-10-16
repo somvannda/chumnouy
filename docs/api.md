@@ -47,7 +47,7 @@ Scopes: `tickets:read`, `tickets:write`, `requesters:read`, `requesters:write`,
 | `POST` | `/v1/tickets` | Create a ticket (+ first message) |
 | `GET` | `/v1/tickets` | List/filter: `status`, `priority`, `assignee`, `tag`, `integration`, `q`, `created_after/before` |
 | `GET` | `/v1/tickets/{id}` | Ticket + thread + attachments |
-| `PATCH` | `/v1/tickets/{id}` | `subject`, `status`, `priority`, `assignee_user_id`, `tags`, `metadata` |
+| `PATCH` | `/v1/tickets/{id}` | `subject`, `status`, `priority`, `assignee_user_id`, `team_id`, `clear_assignee`, `clear_team`, `tags`, `metadata` |
 | `POST` | `/v1/tickets/{id}/messages` | Reply (`visibility`: `public` \| `internal`) |
 
 Messages are `text` by default; pass `body_format: "html"` (or `message_format`

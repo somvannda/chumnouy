@@ -30,6 +30,7 @@ export default function TicketView() {
   const [aiError, setAiError] = useState(null);
   const [macros, setMacros] = useState([]);
   const [macroId, setMacroId] = useState("");
+  const [teams, setTeams] = useState([]);
 
   const load = useCallback(
     () =>
@@ -46,6 +47,7 @@ export default function TicketView() {
 
   useEffect(() => {
     api.listMacros(token).then(setMacros).catch(() => setMacros([]));
+    api.listTeams(token).then(setTeams).catch(() => setTeams([]));
   }, [token]);
 
   async function run(action) {
@@ -134,6 +136,27 @@ export default function TicketView() {
           {PRIORITIES.map((priority) => (
             <option key={priority} value={priority}>
               {priority}
+            </option>
+          ))}
+        </Select>
+        <label className="text-xs font-bold uppercase tracking-[.08em] text-muted">Team</label>
+        <Select
+          value={ticket.team_id || ""}
+          disabled={busy || !teams.length}
+          onChange={(event) =>
+            run(() =>
+              api.updateTicket(
+                token,
+                id,
+                event.target.value ? { team_id: event.target.value } : { clear_team: true },
+              ),
+            )
+          }
+        >
+          <option value="">{teams.length ? "No team" : "No teams yet"}</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
             </option>
           ))}
         </Select>

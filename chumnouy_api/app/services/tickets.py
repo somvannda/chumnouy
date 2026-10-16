@@ -421,6 +421,10 @@ async def apply_update(
         ticket.assignee_user_id = payload.assignee_user_id
     if payload.team_id is not None:
         ticket.team_id = payload.team_id
+    if payload.clear_assignee:
+        ticket.assignee_user_id = None
+    if payload.clear_team:
+        ticket.team_id = None
     if payload.status is not None:
         ticket.status = payload.status
         if payload.status in ("resolved", "closed"):

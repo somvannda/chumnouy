@@ -114,3 +114,43 @@ async def test_teams_are_workspace_isolated(client):
 
     assert (await client.get("/api/v1/teams", headers=headers_b)).json() == []
     assert (await client.get(f"/api/v1/teams/{team_id}", headers=headers_b)).status_code == 404
+
+
+async def test_ticket_team_and_assignee_can_be_cleared(client):
+    user_id, headers = await _owner(client, email="clear@example.com")
+    key = await _key(client, headers)
+    team_id = (
+        await client.post("/api/v1/teams", json={"name": "Support"}, headers=headers)
+    ).json()["id"]
+
+    ticket_id = (
+        await client.post(
+            "/api/v1/tickets",
+            json={"subject": "Reset", "message": "hi", "requester": {"external_id": "cl1"}},
+            headers={"X-Api-Key": key},
+        )
+    ).json()["id"]
+
+    assigned = await client.patch(
+        f"/api/v1/tickets/{ticket_id}",
+        json={"team_id": team_id, "assignee_user_id": user_id},
+        headers=headers,
+    )
+    assert assigned.json()["team_id"] == team_id
+    assert assigned.json()["assignee_user_id"] == user_id
+
+    # A plain update leaves both untouched (``None`` means "leave as is").
+    untouched = await client.patch(
+        f"/api/v1/tickets/{ticket_id}", json={"priority": "high"}, headers=headers
+    )
+    assert untouched.json()["team_id"] == team_id
+    assert untouched.json()["assignee_user_id"] == user_id
+
+    cleared = await client.patch(
+        f"/api/v1/tickets/{ticket_id}",
+        json={"clear_team": True, "clear_assignee": True},
+        headers=headers,
+    )
+    assert cleared.status_code == 200, cleared.text
+    assert cleared.json()["team_id"] is None
+    assert cleared.json()["assignee_user_id"] is None
