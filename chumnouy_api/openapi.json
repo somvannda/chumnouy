@@ -3590,6 +3590,40 @@
         "title": "SearchResults",
         "type": "object"
       },
+      "SecuritySettingsRead": {
+        "properties": {
+          "ip_allowlist": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ip Allowlist",
+            "type": "array"
+          }
+        },
+        "title": "SecuritySettingsRead",
+        "type": "object"
+      },
+      "SecuritySettingsUpdate": {
+        "description": "``ip_allowlist`` entries are IPs or CIDR blocks; an empty list allows all.",
+        "properties": {
+          "ip_allowlist": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Allowlist"
+          }
+        },
+        "title": "SecuritySettingsUpdate",
+        "type": "object"
+      },
       "SignupRequest": {
         "properties": {
           "email": {
@@ -5353,6 +5387,9 @@
           "notifications": {
             "$ref": "#/components/schemas/NotificationSettingsRead"
           },
+          "security": {
+            "$ref": "#/components/schemas/SecuritySettingsRead"
+          },
           "sla": {
             "$ref": "#/components/schemas/SlaSettingsRead"
           },
@@ -5366,7 +5403,8 @@
           "sla",
           "sso",
           "business_hours",
-          "branding"
+          "branding",
+          "security"
         ],
         "title": "WorkspaceSettingsRead",
         "type": "object"
@@ -8102,6 +8140,71 @@
           }
         ],
         "summary": "Update Notifications",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/security": {
+      "patch": {
+        "operationId": "update_security_api_v1_console_settings_security_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecuritySettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Security",
         "tags": [
           "console"
         ]

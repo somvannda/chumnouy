@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { useAuth } from "../context/auth";
-import { Alert, Button, Card, Field, Input, Select, Spinner } from "../components/ui";
+import { Alert, Button, Card, Field, Input, Select, Spinner, Textarea } from "../components/ui";
 
 const EMPTY_AI = { provider: "", model: "", base_url: "", api_key: "" };
 const EMPTY_NOTIFYR = { notifyr_api_url: "", notifyr_api_key: "" };
@@ -19,6 +19,7 @@ export default function Settings() {
   const [sso, setSso] = useState(null);
   const [hours, setHours] = useState(null);
   const [branding, setBranding] = useState(null);
+  const [allowlist, setAllowlist] = useState("");
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -68,6 +69,7 @@ export default function Settings() {
             greeting: data.branding?.greeting || "",
             pre_chat: data.branding?.pre_chat || false,
           });
+          setAllowlist((data.security?.ip_allowlist || []).join("\n"));
         })
         .catch((err) => setError(err.message)),
     [token],
@@ -203,6 +205,18 @@ export default function Settings() {
           pre_chat: branding.pre_chat,
         }),
       "Widget branding saved.",
+    );
+  }
+
+  function saveSecurity(event) {
+    const entries = allowlist
+      .split(/[\n,]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    return save(
+      event,
+      () => api.updateSecuritySettings(token, { ip_allowlist: entries }),
+      "Sign-in access saved.",
     );
   }
 
@@ -500,6 +514,28 @@ export default function Settings() {
           </label>
           <Button type="submit" disabled={busy || !branding}>
             Save widget branding
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-extrabold text-ink">Sign-in access</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Restrict console sign-in to a set of networks. One IP or CIDR block per line; leave empty
+          to allow any address. The client address comes from <code>X-Forwarded-For</code> when a
+          proxy sets it, so only enable this behind a trusted proxy.
+        </p>
+        <form onSubmit={saveSecurity} className="mt-4 space-y-4">
+          <Field label="Allowed IPs / CIDR blocks">
+            <Textarea
+              rows={3}
+              value={allowlist}
+              onChange={(event) => setAllowlist(event.target.value)}
+              placeholder={"10.0.0.0/8\n192.168.1.5"}
+            />
+          </Field>
+          <Button type="submit" disabled={busy}>
+            Save sign-in access
           </Button>
         </form>
       </Card>

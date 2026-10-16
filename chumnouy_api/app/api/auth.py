@@ -5,7 +5,7 @@ owner Membership — so an integrator can take an API key immediately after.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +22,7 @@ from app.schemas import (
     WorkspaceRead,
 )
 from app.security import create_access_token, hash_password, slugify, verify_password
+from app.services import access as access_svc
 from app.services import knowledge as knowledge_svc
 from app.services import members as members_svc
 
@@ -103,7 +104,9 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)) -> 
 
 
 @router.post("/login", response_model=AuthRead)
-async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> AuthRead:
+async def login(
+    payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)
+) -> AuthRead:
     email = payload.email.lower()
     user = (
         await db.execute(select(User).where(User.email == email, User.is_active.is_(True)))
@@ -117,6 +120,11 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> Au
             detail="This account has no active workspace",
         )
     membership, workspace = primary
+    if not access_svc.is_allowed(workspace, access_svc.client_ip(request)):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Sign-in is not allowed from this network",
+        )
     return AuthRead(
         token=create_access_token(user.id),
         user=UserRead.model_validate(user),

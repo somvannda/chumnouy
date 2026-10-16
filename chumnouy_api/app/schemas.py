@@ -529,6 +529,16 @@ class SsoSettingsRead(BaseModel):
     client_secret_set: bool = False
 
 
+class SecuritySettingsRead(BaseModel):
+    ip_allowlist: list[str] = Field(default_factory=list)
+
+
+class SecuritySettingsUpdate(BaseModel):
+    """``ip_allowlist`` entries are IPs or CIDR blocks; an empty list allows all."""
+
+    ip_allowlist: list[str] | None = None
+
+
 class SsoSettingsUpdate(BaseModel):
     enabled: bool | None = None
     issuer: str | None = Field(default=None, max_length=300)
@@ -580,6 +590,7 @@ class WorkspaceSettingsRead(BaseModel):
     sso: SsoSettingsRead
     business_hours: BusinessHoursRead
     branding: BrandingRead
+    security: SecuritySettingsRead
 
 
 class LocaleUpdate(BaseModel):
