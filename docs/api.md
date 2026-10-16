@@ -457,6 +457,7 @@ table, so no migration is involved.
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/v1/reports/summary` | Ticket counts, response/resolution averages, SLA compliance |
+| `GET` | `/v1/reports/daily` | Per-day activity for the last `days` days (1–90, dense window) |
 
 Workspace-scoped; scope `tickets:read`. Returns `total`, `by_status`,
 `by_priority`, `by_assignee` / `by_team` (id → count; `unassigned`/`none` for

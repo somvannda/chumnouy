@@ -3013,6 +3013,64 @@
         "title": "PublicTicketMessageCreate",
         "type": "object"
       },
+      "ReportDaily": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/ReportDay"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportDay"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "ReportDaily",
+        "type": "object"
+      },
+      "ReportDay": {
+        "description": "One day of activity (a dense window: empty days are included as zeros).",
+        "properties": {
+          "breached": {
+            "default": 0,
+            "title": "Breached",
+            "type": "integer"
+          },
+          "created": {
+            "default": 0,
+            "title": "Created",
+            "type": "integer"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "first_responses": {
+            "default": 0,
+            "title": "First Responses",
+            "type": "integer"
+          },
+          "resolved": {
+            "default": 0,
+            "title": "Resolved",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day"
+        ],
+        "title": "ReportDay",
+        "type": "object"
+      },
       "ReportSummary": {
         "properties": {
           "avg_first_response_minutes": {
@@ -10427,6 +10485,88 @@
         "summary": "Reply My Ticket",
         "tags": [
           "public"
+        ]
+      }
+    },
+    "/api/v1/reports/daily": {
+      "get": {
+        "description": "Per-day activity for the last ``days`` days (1\u201390, dense window).",
+        "operationId": "daily_api_v1_reports_daily_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 14,
+              "title": "Days",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDaily"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Daily",
+        "tags": [
+          "reports"
         ]
       }
     },

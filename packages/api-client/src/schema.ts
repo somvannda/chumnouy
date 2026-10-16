@@ -939,6 +939,27 @@ export interface PublicTicketMessageCreate {
   body_format?: "text" | "html";
 }
 
+/** ReportDaily */
+export interface ReportDaily {
+  /** Days */
+  days?: ReportDay[];
+  totals?: ReportDay | null;
+}
+
+/** ReportDay */
+export interface ReportDay {
+  /** Breached */
+  breached?: number;
+  /** Created */
+  created?: number;
+  /** Day */
+  day: string;
+  /** First Responses */
+  first_responses?: number;
+  /** Resolved */
+  resolved?: number;
+}
+
 /** ReportSummary */
 export interface ReportSummary {
   /** Avg First Response Minutes */
