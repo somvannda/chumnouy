@@ -11,13 +11,16 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Ticket, Trigger, Workspace
+from app.models import Ticket, Trigger, Webhook, Workspace
 from app.schemas import TriggerCreate, TriggerRead, TriggerUpdate
 from app.services import notifyr as notifyr_svc
+from app.services import webhooks as webhooks_svc
 
 TRIGGER_EVENTS = ("ticket.created", "ticket.replied", "ticket.updated")
 VALID_STATUSES = ("open", "pending", "resolved", "closed")
 VALID_PRIORITIES = ("low", "normal", "high", "urgent")
+# The event name used for deliveries queued by a ``webhook`` action.
+WEBHOOK_ACTION_EVENT = "action.webhook"
 
 
 def trigger_read(trigger: Trigger) -> TriggerRead:
@@ -180,6 +183,46 @@ async def apply_notify_actions(
     return applied
 
 
+async def apply_webhook_actions(
+    db: AsyncSession, ticket: Ticket, actions: list[dict], *, source: str
+) -> list[str]:
+    """Run ``webhook`` actions: queue a delivery to the referenced workspace webhook.
+
+    ``value`` is the id of a webhook configured for this workspace. Deliveries use
+    the usual retry/backoff worker and delivery log, and carry ``source`` (the
+    trigger/automation name) so the receiver can tell why it was called.
+    """
+    targets = [a for a in (actions or []) if a.get("type") == "webhook"]
+    if not targets:
+        return []
+    applied: list[str] = []
+    for action in targets:
+        try:
+            webhook_id = UUID(str(action.get("value")))
+        except (TypeError, ValueError):
+            continue
+        hook = (
+            await db.execute(
+                select(Webhook).where(
+                    Webhook.id == webhook_id,
+                    Webhook.workspace_id == ticket.workspace_id,
+                    Webhook.is_active.is_(True),
+                )
+            )
+        ).scalar_one_or_none()
+        if hook is None:
+            continue
+        await webhooks_svc.enqueue_delivery(
+            db,
+            ticket=ticket,
+            webhook=hook,
+            event=WEBHOOK_ACTION_EVENT,
+            data={"source": source},
+        )
+        applied.append(f"webhook={hook.id}")
+    return applied
+
+
 async def apply_triggers(db: AsyncSession, *, ticket: Ticket, event: str) -> list[str]:
     """Run the workspace's active triggers for ``event`` against ``ticket``."""
     rows = (
@@ -199,6 +242,9 @@ async def apply_triggers(db: AsyncSession, *, ticket: Ticket, event: str) -> lis
             continue
         changes = _apply_actions(ticket, trigger.actions)
         changes += await apply_notify_actions(
+            db, ticket, trigger.actions, source=f"trigger:{trigger.name}"
+        )
+        changes += await apply_webhook_actions(
             db, ticket, trigger.actions, source=f"trigger:{trigger.name}"
         )
         if changes:

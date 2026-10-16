@@ -139,7 +139,8 @@ team, and targets are re-stamped when a ticket's team changes.
   (`/v1/triggers`, event `ticket.created|replied|updated`, conditions →
   set_status/priority/tag/team, `trigger.applied` audit); **automations** (time-based)
   also ship (`/v1/automations` + a worker sweep); **`notify` actions** hand off
-  to Notifyr. Custom webhook actions remain.
+  to Notifyr, and **custom `webhook` actions** call a workspace webhook by id
+  (queued as an `action.webhook` delivery on the usual retry/backoff worker).
 - **Macros / canned responses**: workspace-scoped saved replies + macros
   (a trigger bundle applied on demand). ✅ **done** (`/v1/canned-responses` CRUD;
   `/v1/macros` + `POST /v1/tickets/{id}/macros/{id}` applies an action bundle).

@@ -137,6 +137,9 @@ async def sweep_automations(db: AsyncSession, *, limit: int = 100) -> int:
             changes += await triggers_svc.apply_notify_actions(
                 db, ticket, automation.actions, source=f"automation:{automation.name}"
             )
+            changes += await triggers_svc.apply_webhook_actions(
+                db, ticket, automation.actions, source=f"automation:{automation.name}"
+            )
             db.add(TicketAutomation(ticket_id=ticket.id, automation_id=automation.id))
             await tickets_svc.record_event(
                 db,

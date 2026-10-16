@@ -748,7 +748,15 @@ class TriggerCondition(BaseModel):
 
 
 class TriggerAction(BaseModel):
-    type: Literal["set_status", "set_priority", "add_tag", "remove_tag", "set_team", "notify"]
+    type: Literal[
+        "set_status",
+        "set_priority",
+        "add_tag",
+        "remove_tag",
+        "set_team",
+        "notify",
+        "webhook",
+    ]
     value: str = Field(max_length=255)
 
 

@@ -1362,7 +1362,7 @@ export interface TicketUpdate {
 /** TriggerAction */
 export interface TriggerAction {
   /** Type */
-  type: "set_status" | "set_priority" | "add_tag" | "remove_tag" | "set_team" | "notify";
+  type: "set_status" | "set_priority" | "add_tag" | "remove_tag" | "set_team" | "notify" | "webhook";
   /** Value */
   value: string;
 }

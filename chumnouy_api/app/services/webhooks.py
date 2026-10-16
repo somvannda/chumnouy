@@ -106,6 +106,19 @@ def _payload(ticket: Ticket, event: str, data: dict | None) -> dict:
     }
 
 
+def _delivery(ticket: Ticket, webhook: Webhook, event: str, data: dict | None) -> WebhookDelivery:
+    return WebhookDelivery(
+        webhook_id=webhook.id,
+        workspace_id=ticket.workspace_id,
+        event=event,
+        event_id=str(uuid4()),
+        payload=_payload(ticket, event, data),
+        status="pending",
+        attempts=0,
+        next_attempt_at=utcnow(),
+    )
+
+
 async def enqueue_event(
     db: AsyncSession, *, ticket: Ticket, event: str, data: dict | None = None
 ) -> list[WebhookDelivery]:
@@ -122,24 +135,32 @@ async def enqueue_event(
             )
         )
     ).scalars().all()
-    payload = _payload(ticket, event, data)
     queued: list[WebhookDelivery] = []
     for hook in hooks:
         if event not in (hook.events or []):
             continue
-        delivery = WebhookDelivery(
-            webhook_id=hook.id,
-            workspace_id=ticket.workspace_id,
-            event=event,
-            event_id=str(uuid4()),
-            payload=payload,
-            status="pending",
-            attempts=0,
-            next_attempt_at=utcnow(),
-        )
+        delivery = _delivery(ticket, hook, event, data)
         db.add(delivery)
         queued.append(delivery)
     return queued
+
+
+async def enqueue_delivery(
+    db: AsyncSession,
+    *,
+    ticket: Ticket,
+    webhook: Webhook,
+    event: str,
+    data: dict | None = None,
+) -> WebhookDelivery:
+    """Queue one delivery to a *specific* webhook, regardless of its subscriptions.
+
+    Used by trigger/automation ``webhook`` actions, which name their target. Adds
+    the row to the caller's transaction (no commit).
+    """
+    delivery = _delivery(ticket, webhook, event, data)
+    db.add(delivery)
+    return delivery
 
 
 async def _post(
