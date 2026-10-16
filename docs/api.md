@@ -400,6 +400,20 @@ Polling v1 (the client re-fetches the session); an SSE/WebSocket transport can b
 added later. Requester sessions are reachable only with the matching portal
 token; a closed session rejects new requester messages with `409`.
 
+## 25. Widget branding
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/v1/public/branding` | Branding for the widget (requester token) |
+| `PATCH` | `/v1/console/settings/branding` | Update branding (owner/admin) |
+
+Branding lives in `workspace.settings["branding"]` and covers `title`, `label`,
+`accent` (hex; invalid values fall back to `#6957f5`), `position`
+(`right`/`left`), `greeting` and `pre_chat`. The widget reads
+`/v1/public/branding` on init (explicit `init()` options still win) and, when
+`pre_chat` is on, asks for a message before starting a chat. There is no separate
+table, so no migration is involved.
+
 ## 18. Reports
 
 | Method | Path | Purpose |

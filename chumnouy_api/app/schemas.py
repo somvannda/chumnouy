@@ -536,6 +536,24 @@ class BusinessHoursUpdate(BaseModel):
     days: dict[str, list[str]] | None = None
 
 
+class BrandingRead(BaseModel):
+    title: str = "Support"
+    label: str = "Support"
+    accent: str = "#6957f5"
+    position: Literal["right", "left"] = "right"
+    greeting: str | None = None
+    pre_chat: bool = False
+
+
+class BrandingUpdate(BaseModel):
+    title: str | None = Field(default=None, max_length=60)
+    label: str | None = Field(default=None, max_length=30)
+    accent: str | None = Field(default=None, max_length=20)
+    position: Literal["right", "left"] | None = None
+    greeting: str | None = Field(default=None, max_length=400)
+    pre_chat: bool | None = None
+
+
 class WorkspaceSettingsRead(BaseModel):
     locale: str = "en"
     ai: AISettingsRead
@@ -543,6 +561,7 @@ class WorkspaceSettingsRead(BaseModel):
     sla: SlaSettingsRead
     sso: SsoSettingsRead
     business_hours: BusinessHoursRead
+    branding: BrandingRead
 
 
 class LocaleUpdate(BaseModel):

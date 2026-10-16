@@ -409,6 +409,38 @@ export interface Body_upload_attachment_api_v1_uploads_post {
   file: string;
 }
 
+/** BrandingRead */
+export interface BrandingRead {
+  /** Accent */
+  accent?: string;
+  /** Greeting */
+  greeting?: string | null;
+  /** Label */
+  label?: string;
+  /** Position */
+  position?: "right" | "left";
+  /** Pre Chat */
+  pre_chat?: boolean;
+  /** Title */
+  title?: string;
+}
+
+/** BrandingUpdate */
+export interface BrandingUpdate {
+  /** Accent */
+  accent?: string | null;
+  /** Greeting */
+  greeting?: string | null;
+  /** Label */
+  label?: string | null;
+  /** Position */
+  position?: "right" | "left" | null;
+  /** Pre Chat */
+  pre_chat?: boolean | null;
+  /** Title */
+  title?: string | null;
+}
+
 /** BulkAction */
 export interface BulkAction {
   /** Add Tags */
@@ -1423,6 +1455,7 @@ export interface WorkspaceRead {
 /** WorkspaceSettingsRead */
 export interface WorkspaceSettingsRead {
   ai: AISettingsRead;
+  branding: BrandingRead;
   business_hours: BusinessHoursRead;
   /** Locale */
   locale?: string;

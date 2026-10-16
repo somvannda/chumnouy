@@ -6,6 +6,8 @@ are write-only — read models expose only a ``*_set`` flag.
 """
 from __future__ import annotations
 
+import re
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings as app_settings
@@ -13,6 +15,8 @@ from app.models import Workspace
 from app.schemas import (
     AISettingsRead,
     AISettingsUpdate,
+    BrandingRead,
+    BrandingUpdate,
     BusinessHoursRead,
     BusinessHoursUpdate,
     LocaleUpdate,
@@ -85,6 +89,22 @@ def business_hours_settings(workspace: Workspace) -> BusinessHoursRead:
     )
 
 
+_ACCENT_RE = re.compile(r"^#[0-9a-fA-F]{3,8}$")
+
+
+def branding_settings(workspace: Workspace) -> BrandingRead:
+    stored = _stored(workspace).get("branding") or {}
+    accent = (stored.get("accent") or "").strip()
+    return BrandingRead(
+        title=stored.get("title") or "Support",
+        label=stored.get("label") or "Support",
+        accent=accent if _ACCENT_RE.match(accent) else "#6957f5",
+        position="left" if stored.get("position") == "left" else "right",
+        greeting=stored.get("greeting"),
+        pre_chat=bool(stored.get("pre_chat")),
+    )
+
+
 def read(workspace: Workspace) -> WorkspaceSettingsRead:
     from app.services import sla as sla_svc
 
@@ -95,7 +115,33 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         sla=sla_svc.sla_settings(workspace),
         sso=sso_settings(workspace),
         business_hours=business_hours_settings(workspace),
+        branding=branding_settings(workspace),
     )
+
+
+async def update_branding(
+    db: AsyncSession, workspace: Workspace, payload: BrandingUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    branding = dict(stored.get("branding") or {})
+    if payload.title is not None:
+        branding["title"] = payload.title.strip() or None
+    if payload.label is not None:
+        branding["label"] = payload.label.strip() or None
+    if payload.accent is not None:
+        accent = payload.accent.strip()
+        branding["accent"] = accent if _ACCENT_RE.match(accent) else None
+    if payload.position is not None:
+        branding["position"] = payload.position
+    if payload.greeting is not None:
+        branding["greeting"] = payload.greeting.strip() or None
+    if payload.pre_chat is not None:
+        branding["pre_chat"] = payload.pre_chat
+    stored["branding"] = {key: value for key, value in branding.items() if value is not None}
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
 
 
 async def update_business_hours(
