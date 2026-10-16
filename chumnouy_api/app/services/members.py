@@ -25,6 +25,7 @@ from app.schemas import (
     WorkspaceRead,
 )
 from app.security import create_access_token, hash_password, hash_token
+from app.services import quota as quota_svc
 
 INVITE_TTL_DAYS = 7
 INVITE_PREFIX = "inv"
@@ -121,6 +122,7 @@ async def invite(
     invited_by_user_id: UUID | None = None,
 ) -> MemberInviteRead:
     """Add an existing user, or queue a one-time invitation for a new one."""
+    await quota_svc.enforce_seat_quota(db, workspace)
     email = payload.email.lower()
     user = await _user_by_email(db, email)
     if user is not None:
@@ -243,6 +245,7 @@ async def accept(db: AsyncSession, *, token: str, password: str, name: str | Non
     workspace = await db.get(Workspace, invite_row.workspace_id)
     if workspace is None:
         raise LookupError("This invitation is no longer valid")
+    await quota_svc.enforce_seat_quota(db, workspace)
 
     user = await _user_by_email(db, invite_row.email)
     if user is None:

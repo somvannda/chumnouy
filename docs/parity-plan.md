@@ -94,9 +94,10 @@ Everything else depends on these; do first.
   `I18nProvider`, EN/ខ្មែរ toggle in the header translating the navigation and
   shell labels); page bodies and per-string translation remain.
 - **Quotas**: per-workspace limits (tickets/mo, seats, storage) enforced in
-  middleware, surfaced in admin. ✅ **done for tickets/month**
-  (`workspace.settings.quota.tickets_per_month`, enforced on the tenant and
-  public create paths with a `429`; seats/storage still to add).
+  middleware, surfaced in admin. ✅ **done for tickets/month and seats**
+  (`workspace.settings.quota.tickets_per_month` → `429` on the tenant and public
+  create paths; `quota.seats` → `409` when inviting or accepting beyond the
+  allowance; storage still to add).
 
 ### P1 — Channels · XL
 
