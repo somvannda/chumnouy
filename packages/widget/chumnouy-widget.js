@@ -61,11 +61,16 @@
     var token = opts.token;
     var helpSlug = opts.helpSlug || null;
     var pollTimer = null;
+    var streamAbort = null;
 
     function clearPoll() {
       if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
+      }
+      if (streamAbort) {
+        streamAbort.abort();
+        streamAbort = null;
       }
     }
     var side = opts.position === "left" ? "left" : "right";
@@ -188,6 +193,68 @@
         });
     }
 
+    function streamChat(sessionId, refresh) {
+      if (typeof TextDecoder === "undefined" || typeof AbortController === "undefined") {
+        // No streaming in this browser: fall back to polling.
+        pollTimer = setInterval(refresh, 3000);
+        return;
+      }
+      var controller = new AbortController();
+      streamAbort = controller;
+
+      function parseEvent(raw) {
+        var name = "message";
+        var data = [];
+        raw.split("\n").forEach(function (line) {
+          var text = line.replace(/\r$/, "");
+          if (!text || text.charAt(0) === ":") return; // blank line or heartbeat
+          var separator = text.indexOf(":");
+          var field = separator === -1 ? text : text.slice(0, separator);
+          var value = separator === -1 ? "" : text.slice(separator + 1).replace(/^ /, "");
+          if (field === "event") name = value;
+          else if (field === "data") data.push(value);
+        });
+        return data.length ? { event: name, data: data.join("\n") } : null;
+      }
+
+      function once() {
+        return fetch(apiUrl + "/api/v1/public/chat/sessions/" + sessionId + "/stream?timeout=25", {
+          headers: { "X-Requester-Token": token, Accept: "text/event-stream" },
+          signal: controller.signal,
+        }).then(function (res) {
+          if (!res.ok || !res.body) throw new Error("stream failed");
+          var reader = res.body.getReader();
+          var decoder = new TextDecoder();
+          var buffer = "";
+          function pump() {
+            return reader.read().then(function (result) {
+              if (result.done) return null;
+              buffer = (buffer + decoder.decode(result.value, { stream: true })).replace(/\r\n/g, "\n");
+              var index;
+              while ((index = buffer.indexOf("\n\n")) !== -1) {
+                var event = parseEvent(buffer.slice(0, index));
+                buffer = buffer.slice(index + 2);
+                if (event && event.event === "message") refresh();
+              }
+              return pump();
+            });
+          }
+          return pump();
+        });
+      }
+
+      function loop() {
+        once()
+          .catch(function () {
+            /* a dropped stream is not fatal — we reconnect below */
+          })
+          .then(function () {
+            if (!controller.signal.aborted) setTimeout(loop, 1500);
+          });
+      }
+      loop();
+    }
+
     function startChat() {
       if (preChat) {
         renderChatStart();
@@ -286,7 +353,7 @@
           });
       };
       draw();
-      pollTimer = setInterval(draw, 3000);
+      streamChat(sessionId, draw);
     }
 
     function renderArticle(articleSlug) {

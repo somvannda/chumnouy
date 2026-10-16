@@ -111,8 +111,8 @@ The biggest gap. Split so the boundary stays clean:
 - **Live chat (L)**: a real-time widget session (`/v1/chat/sessions`, WS/SSE
   stream), agents reply from the console; delivery/notification via Notifyr. ✅ **done**
   (`/v1/public/chat/sessions` + `/v1/console/chat/sessions`, migration
-  `0022_chat`; a bounded SSE stream on both surfaces — the console thread streams
-  while the session list polls — plus a `chat.replied`
+  `0022_chat`; a bounded SSE stream on both surfaces — the console thread and the
+  widget both stream, while the console session list polls — plus a `chat.replied`
   Notifyr nudge on agent replies); a WebSocket transport remains if ever needed.
 - **Social/SMS/WhatsApp (delegated, M)**: define the channel adapter contract —
   Notifyr owns transport and posts inbound to `/v1/inbound/{channel}`; Chumnouy

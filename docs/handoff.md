@@ -75,6 +75,7 @@ implemented and tested.
 | Console i18n: EN/Khmer shell switch (nav + shell labels) (P0) | Done |
 | Seat quota: invites/accepts blocked beyond the allowance (P0) | Done |
 | Storage quota: uploads blocked beyond the cap (P0) | Done |
+| Widget live chat streams over SSE (polling fallback) (P1) | Done |
 | Migrations | `0001`…`0025` (`0025_workspace_events`) |
 | Tests | 202 API (in-memory SQLite, incl. an end-to-end journey) + 18 web (`node --test`) |
 
