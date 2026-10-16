@@ -28,6 +28,20 @@ from app.security import create_access_token, hash_password, hash_token
 
 INVITE_TTL_DAYS = 7
 INVITE_PREFIX = "inv"
+MAX_SKILLS = 20
+MAX_SKILL_LENGTH = 40
+
+
+def normalize_skills(values: list[str] | None) -> list[str]:
+    """Lower-case, trim, drop blanks/duplicates and cap the list (routing tokens)."""
+    result: list[str] = []
+    for value in values or []:
+        skill = str(value).strip().lower()[:MAX_SKILL_LENGTH]
+        if skill and skill not in result:
+            result.append(skill)
+        if len(result) >= MAX_SKILLS:
+            break
+    return result
 
 
 class MemberError(Exception):
@@ -46,6 +60,7 @@ def _member_read(membership: Membership, user: User) -> MemberRead:
         role=membership.role,
         status=membership.status,
         created_at=membership.created_at,
+        skills=list(membership.skills or []),
     )
 
 
@@ -177,15 +192,23 @@ async def revoke_invite(db: AsyncSession, workspace_id: UUID, invite_id: UUID) -
     await db.commit()
 
 
-async def update_role(
-    db: AsyncSession, workspace_id: UUID, user_id: UUID, role: str
+async def update_member(
+    db: AsyncSession,
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    role: str | None = None,
+    skills: list[str] | None = None,
 ) -> MemberRead:
     membership = await _membership(db, workspace_id, user_id)
     if membership is None:
         raise LookupError("Member not found")
-    if membership.role == "owner":
-        raise MemberError("The workspace owner's role cannot be changed")
-    membership.role = role
+    if role is not None:
+        if membership.role == "owner":
+            raise MemberError("The workspace owner's role cannot be changed")
+        membership.role = role
+    if skills is not None:
+        membership.skills = normalize_skills(skills)
     await db.commit()
     await db.refresh(membership)
     user = await db.get(User, user_id)

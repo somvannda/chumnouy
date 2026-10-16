@@ -60,6 +60,7 @@ def ticket_read(ticket: Ticket, requester: Requester | None) -> TicketRead:
         team_id=ticket.team_id,
         requester=_requester_read(requester),
         tags=list(ticket.tags or []),
+        required_skills=list(ticket.required_skills or []),
         metadata=dict(ticket.metadata_json or {}),
         created_at=ticket.created_at,
         resolved_at=ticket.resolved_at,
@@ -162,6 +163,7 @@ async def create_ticket(db: AsyncSession, ctx: TenantContext, payload: TicketCre
         requester_id=requester.id,
         source_integration_id=ctx.integration.id if ctx.integration else None,
         tags=payload.tags,
+        required_skills=payload.required_skills,
         metadata_json=payload.metadata,
     )
     db.add(ticket)
@@ -417,6 +419,8 @@ async def apply_update(
         ticket.priority = payload.priority
     if payload.tags is not None:
         ticket.tags = payload.tags
+    if payload.required_skills is not None:
+        ticket.required_skills = payload.required_skills
     if payload.assignee_user_id is not None:
         ticket.assignee_user_id = payload.assignee_user_id
     if payload.team_id is not None:

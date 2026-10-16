@@ -4,8 +4,12 @@
   never-assigned agent first) — no cursor state needed.
 - ``load_balanced``: the candidate with the fewest open tickets.
 - ``team``: assign the ticket to a team (no individual).
+- ``skill``: skill-filtered candidates, then load-balanced.
 
-Candidates are the given team's members, or the workspace's active agents.
+Candidates are the given team's members, or the workspace's active agents, and
+are narrowed to agents holding the ticket's ``required_skills`` (or the explicit
+``skill`` on the request). If nobody matches, routing falls back to the unfiltered
+candidates so a ticket is never left unassigned.
 """
 from __future__ import annotations
 
@@ -22,24 +26,53 @@ from app.services import webhooks as webhooks_svc
 
 AGENT_ROLES = ("owner", "admin", "team_lead", "agent")
 OPEN_STATUSES = ("open", "pending")
+ASSIGN_STRATEGIES = ("round_robin", "load_balanced", "skill")
 
 
-async def _candidates(db: AsyncSession, workspace_id: UUID, team_id: UUID | None) -> list[UUID]:
+def _wanted_skills(payload: TicketAssign, ticket: Ticket) -> list[str]:
+    if payload.skill:
+        return [payload.skill.strip().lower()]
+    return [str(skill).strip().lower() for skill in (ticket.required_skills or []) if str(skill).strip()]
+
+
+async def _candidates(
+    db: AsyncSession,
+    workspace_id: UUID,
+    team_id: UUID | None,
+    skills: list[str] | None = None,
+) -> list[UUID]:
+    """Candidate agents, narrowed to those holding every requested skill."""
     if team_id is not None:
         rows = (
             await db.execute(select(TeamMember.user_id).where(TeamMember.team_id == team_id))
         ).scalars().all()
-        return list(rows)
+        user_ids = list(rows)
+    else:
+        rows = (
+            await db.execute(
+                select(Membership.user_id).where(
+                    Membership.workspace_id == workspace_id,
+                    Membership.status == "active",
+                    Membership.role.in_(AGENT_ROLES),
+                )
+            )
+        ).scalars().all()
+        user_ids = list(rows)
+    if not user_ids or not skills:
+        return user_ids
     rows = (
         await db.execute(
-            select(Membership.user_id).where(
-                Membership.workspace_id == workspace_id,
-                Membership.status == "active",
-                Membership.role.in_(AGENT_ROLES),
+            select(Membership.user_id, Membership.skills).where(
+                Membership.workspace_id == workspace_id, Membership.user_id.in_(user_ids)
             )
         )
-    ).scalars().all()
-    return list(rows)
+    ).all()
+    held = {
+        user_id: {str(skill).strip().lower() for skill in (skills_row or [])}
+        for user_id, skills_row in rows
+    }
+    matched = [user_id for user_id in user_ids if all(skill in held.get(user_id, set()) for skill in skills)]
+    return matched or user_ids
 
 
 async def _round_robin(db: AsyncSession, workspace_id: UUID, candidates: list[UUID]) -> UUID | None:
@@ -83,11 +116,14 @@ async def assign(db: AsyncSession, ctx: TenantContext, ticket: Ticket, payload: 
 
     if payload.user_id is not None:
         ticket.assignee_user_id = payload.user_id
-    elif payload.strategy in ("round_robin", "load_balanced"):
-        candidates = await _candidates(db, ctx.workspace.id, payload.team_id)
+    elif payload.strategy in ASSIGN_STRATEGIES:
+        candidates = await _candidates(
+            db, ctx.workspace.id, payload.team_id, _wanted_skills(payload, ticket)
+        )
         if payload.strategy == "round_robin":
             chosen = await _round_robin(db, ctx.workspace.id, candidates)
         else:
+            # ``skill`` and ``load_balanced`` share the fewest-open-tickets pick.
             chosen = await _load_balanced(db, ctx.workspace.id, candidates)
         if chosen is not None:
             ticket.assignee_user_id = chosen
@@ -103,6 +139,7 @@ async def assign(db: AsyncSession, ctx: TenantContext, ticket: Ticket, payload: 
                 "assignee_user_id": str(ticket.assignee_user_id) if ticket.assignee_user_id else None,
                 "team_id": str(ticket.team_id) if ticket.team_id else None,
                 "strategy": payload.strategy,
+                "skill": payload.skill,
             },
         )
         await webhooks_svc.enqueue_event(

@@ -183,7 +183,7 @@ export const api = {
   listInvites: (token) => request("/members/invites", { token }),
   inviteMember: (token, body) => request("/members/invites", { method: "POST", token, body }),
   revokeInvite: (token, id) => request(`/members/invites/${id}`, { method: "DELETE", token }),
-  updateMemberRole: (token, userId, body) =>
+  updateMember: (token, userId, body) =>
     request(`/members/${userId}`, { method: "PATCH", token, body }),
   removeMember: (token, userId) => request(`/members/${userId}`, { method: "DELETE", token }),
   acceptInvite: (body) => request("/auth/invite/accept", { method: "POST", body }),

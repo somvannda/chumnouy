@@ -13,6 +13,7 @@ export default function Members() {
   const [invites, setInvites] = useState([]);
   const [form, setForm] = useState({ email: "", name: "", role: "agent" });
   const [link, setLink] = useState(null);
+  const [skillDraft, setSkillDraft] = useState({});
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -48,6 +49,29 @@ export default function Members() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function draftFor(member) {
+    return skillDraft[member.user_id] ?? (member.skills || []).join(", ");
+  }
+
+  function skillsChanged(member) {
+    return draftFor(member) !== (member.skills || []).join(", ");
+  }
+
+  function saveSkills(member) {
+    const skills = draftFor(member)
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+    return run(async () => {
+      await api.updateMember(token, member.user_id, { skills });
+      setSkillDraft((prev) => {
+        const next = { ...prev };
+        delete next[member.user_id];
+        return next;
+      });
+    }, "Skills updated.");
   }
 
   function invite(event) {
@@ -187,6 +211,27 @@ export default function Members() {
                     {member.user_id === user?.id && <span className="ml-2 text-xs text-muted">you</span>}
                   </p>
                   <p className="truncate text-xs text-muted">{member.email}</p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <Input
+                      className="w-56 py-1 text-xs"
+                      placeholder="skills, comma separated"
+                      value={draftFor(member)}
+                      disabled={busy}
+                      onChange={(event) =>
+                        setSkillDraft({ ...skillDraft, [member.user_id]: event.target.value })
+                      }
+                    />
+                    {skillsChanged(member) && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={busy}
+                        onClick={() => saveSkills(member)}
+                      >
+                        Save
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 {member.role === "owner" ? (
                   <Badge tone="brand">owner</Badge>
@@ -197,7 +242,7 @@ export default function Members() {
                     disabled={busy}
                     onChange={(event) =>
                       run(
-                        () => api.updateMemberRole(token, member.user_id, { role: event.target.value }),
+                        () => api.updateMember(token, member.user_id, { role: event.target.value }),
                         "Role updated.",
                       )
                     }

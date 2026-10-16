@@ -145,8 +145,10 @@ team, and targets are re-stamped when a ticket's team changes.
   `/v1/macros` + `POST /v1/tickets/{id}/macros/{id}` applies an action bundle).
 - **Routing**: round-robin, load-balanced (agent capacity), skill-based
   (teams/skills), on the ticket-assign path. ✅ **done** (`POST /v1/tickets/{id}/assign`
-  with `round_robin`/`load_balanced`/`team` or a forced `user_id`; candidates are
-  a team's members or the workspace's agents); skill-based matching remains.
+  with `round_robin`/`load_balanced`/`team`/`skill` or a forced `user_id`;
+  candidates are a team's members or the workspace's agents, narrowed to agents
+  holding the ticket's `required_skills` — or the request's `skill` — with a
+  fallback so a ticket is never left unowned).
 - Reuse the worker for time-based sweeps.
 
 ### P4 — Reporting & CSAT · L

@@ -877,16 +877,20 @@ export interface MemberRead {
   name?: string | null;
   /** Role */
   role: string;
+  /** Skills */
+  skills?: string[];
   /** Status */
   status?: string;
   /** User Id */
   user_id: string;
 }
 
-/** MemberRoleUpdate */
-export interface MemberRoleUpdate {
+/** MemberUpdate */
+export interface MemberUpdate {
   /** Role */
-  role: "admin" | "team_lead" | "agent" | "viewer";
+  role?: "admin" | "team_lead" | "agent" | "viewer" | null;
+  /** Skills */
+  skills?: string[] | null;
 }
 
 /** NotificationSettingsRead */
@@ -1188,8 +1192,10 @@ export interface TeamUpdate {
 
 /** TicketAssign */
 export interface TicketAssign {
+  /** Skill */
+  skill?: string | null;
   /** Strategy */
-  strategy?: "round_robin" | "load_balanced" | "team";
+  strategy?: "round_robin" | "load_balanced" | "team" | "skill";
   /** Team Id */
   team_id?: string | null;
   /** User Id */
@@ -1209,6 +1215,8 @@ export interface TicketCreate {
   /** Priority */
   priority?: "low" | "normal" | "high" | "urgent";
   requester: RequesterInput;
+  /** Required Skills */
+  required_skills?: string[];
   /** Subject */
   subject: string;
   /** Tags */
@@ -1236,6 +1244,8 @@ export interface TicketDetailRead {
   /** Reference */
   reference: string;
   requester?: RequesterRead | null;
+  /** Required Skills */
+  required_skills?: string[];
   /** Resolution Due At */
   resolution_due_at?: string | null;
   /** Resolved At */
@@ -1309,6 +1319,8 @@ export interface TicketRead {
   /** Reference */
   reference: string;
   requester?: RequesterRead | null;
+  /** Required Skills */
+  required_skills?: string[];
   /** Resolution Due At */
   resolution_due_at?: string | null;
   /** Resolved At */
@@ -1335,6 +1347,8 @@ export interface TicketUpdate {
   clear_team?: boolean;
   /** Priority */
   priority?: "low" | "normal" | "high" | "urgent" | null;
+  /** Required Skills */
+  required_skills?: string[] | null;
   /** Status */
   status?: "open" | "pending" | "resolved" | "closed" | null;
   /** Subject */

@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   EmptyState,
+  Input,
   Select,
   Spinner,
   Textarea,
@@ -31,12 +32,16 @@ export default function TicketView() {
   const [macros, setMacros] = useState([]);
   const [macroId, setMacroId] = useState("");
   const [teams, setTeams] = useState([]);
+  const [skillsDraft, setSkillsDraft] = useState("");
 
   const load = useCallback(
     () =>
       api
         .getTicket(token, id)
-        .then(setTicket)
+        .then((data) => {
+          setTicket(data);
+          setSkillsDraft((data.required_skills || []).join(", "));
+        })
         .catch((err) => setError(err.message)),
     [token, id],
   );
@@ -160,6 +165,23 @@ export default function TicketView() {
             </option>
           ))}
         </Select>
+        <label className="text-xs font-bold uppercase tracking-[.08em] text-muted">Skills</label>
+        <Input
+          className="w-48"
+          placeholder="billing, refunds"
+          value={skillsDraft}
+          disabled={busy}
+          onChange={(event) => setSkillsDraft(event.target.value)}
+          onBlur={() => {
+            const next = skillsDraft
+              .split(",")
+              .map((skill) => skill.trim())
+              .filter(Boolean);
+            if (next.join("|") !== (ticket.required_skills || []).join("|")) {
+              run(() => api.updateTicket(token, id, { required_skills: next }));
+            }
+          }}
+        />
         <div className="ml-auto flex gap-2">
           {ticket.status === "resolved" || ticket.status === "closed" ? (
             <Button variant="secondary" disabled={busy} onClick={() => run(() => api.reopenTicket(token, id))}>

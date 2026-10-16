@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.deps import WorkspaceContext, get_workspace_context, require_permission
-from app.schemas import MemberInvite, MemberInviteRead, MemberRead, MemberRoleUpdate
+from app.schemas import MemberInvite, MemberInviteRead, MemberRead, MemberUpdate
 from app.services import members as svc
 
 router = APIRouter(prefix="/members", tags=["members"])
@@ -70,12 +70,18 @@ async def revoke_invite(
 @router.patch("/{user_id}", response_model=MemberRead)
 async def update_member(
     user_id: UUID,
-    payload: MemberRoleUpdate,
+    payload: MemberUpdate,
     ctx: WorkspaceContext = Depends(_manage),
     db: AsyncSession = Depends(get_db),
 ) -> MemberRead:
+    if payload.role is None and payload.skills is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Nothing to update"
+        )
     try:
-        return await svc.update_role(db, ctx.workspace.id, user_id, payload.role)
+        return await svc.update_member(
+            db, ctx.workspace.id, user_id, role=payload.role, skills=payload.skills
+        )
     except (svc.MemberError, LookupError) as exc:
         raise _translate(exc) from exc
 
