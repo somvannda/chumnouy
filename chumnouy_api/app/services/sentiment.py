@@ -41,7 +41,7 @@ async def analyze(workspace: Workspace, text: str) -> str | None:
     except ai_service.AINotConfiguredError:
         return None
     try:
-        reply = await ai_service.complete_chat(
+        result = await ai_service.complete_chat(
             workspace,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": text.strip()[:2000]}],
@@ -51,7 +51,8 @@ async def analyze(workspace: Workspace, text: str) -> str | None:
     except ai_service.AIError as exc:
         logger.info("sentiment: provider failed (%s)", exc)
         return None
-    return _parse(reply)
+    # ``complete_chat`` returns {"content", "provider", "model", "usage"}.
+    return _parse((result or {}).get("content") or "")
 
 
 async def score_pending(db: AsyncSession, *, limit: int = 20) -> int:
