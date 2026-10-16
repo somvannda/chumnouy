@@ -22,6 +22,7 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    RetentionSettingsUpdate,
     SecuritySettingsUpdate,
     SlaSettingsUpdate,
     SsoSettingsUpdate,
@@ -145,4 +146,15 @@ async def update_security(
 ) -> WorkspaceSettingsRead:
     result = await svc.update_security(db, ctx.workspace, payload)
     await _audit(db, ctx, "security", payload)
+    return result
+
+
+@router.patch("/settings/retention", response_model=WorkspaceSettingsRead)
+async def update_retention(
+    payload: RetentionSettingsUpdate,
+    ctx: WorkspaceContext = Depends(_owner),
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceSettingsRead:
+    result = await svc.update_retention(db, ctx.workspace, payload)
+    await _audit(db, ctx, "retention", payload)
     return result

@@ -23,6 +23,8 @@ from app.schemas import (
     LocaleUpdate,
     NotificationSettingsRead,
     NotificationSettingsUpdate,
+    RetentionSettingsRead,
+    RetentionSettingsUpdate,
     SecuritySettingsRead,
     SecuritySettingsUpdate,
     SlaSettingsUpdate,
@@ -33,6 +35,7 @@ from app.schemas import (
 from app.services import access as access_svc
 from app.services import ai as ai_service
 from app.services import business_hours as business_hours_svc
+from app.services import retention as retention_svc
 
 
 def _valid_network(value: str) -> bool:
@@ -122,6 +125,24 @@ def security_settings(workspace: Workspace) -> SecuritySettingsRead:
     return SecuritySettingsRead(ip_allowlist=access_svc.ip_allowlist(workspace))
 
 
+def retention_settings(workspace: Workspace) -> RetentionSettingsRead:
+    return RetentionSettingsRead(days=retention_svc.retention_days(workspace))
+
+
+async def update_retention(
+    db: AsyncSession, workspace: Workspace, payload: RetentionSettingsUpdate
+) -> WorkspaceSettingsRead:
+    stored = _stored(workspace)
+    retention = dict(stored.get("retention") or {})
+    if payload.days is not None:
+        retention["days"] = max(0, int(payload.days))
+    stored["retention"] = retention
+    workspace.settings = stored
+    await db.commit()
+    await db.refresh(workspace)
+    return read(workspace)
+
+
 async def update_security(
     db: AsyncSession, workspace: Workspace, payload: SecuritySettingsUpdate
 ) -> WorkspaceSettingsRead:
@@ -153,6 +174,7 @@ def read(workspace: Workspace) -> WorkspaceSettingsRead:
         business_hours=business_hours_settings(workspace),
         branding=branding_settings(workspace),
         security=security_settings(workspace),
+        retention=retention_settings(workspace),
     )
 
 

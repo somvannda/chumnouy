@@ -3501,6 +3501,37 @@
         "title": "RequesterUpdate",
         "type": "object"
       },
+      "RetentionSettingsRead": {
+        "description": "``days`` = how long resolved tickets are kept (0 = forever).",
+        "properties": {
+          "days": {
+            "default": 0,
+            "title": "Days",
+            "type": "integer"
+          }
+        },
+        "title": "RetentionSettingsRead",
+        "type": "object"
+      },
+      "RetentionSettingsUpdate": {
+        "properties": {
+          "days": {
+            "anyOf": [
+              {
+                "maximum": 3650.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          }
+        },
+        "title": "RetentionSettingsUpdate",
+        "type": "object"
+      },
       "SearchResult": {
         "properties": {
           "created_at": {
@@ -5387,6 +5418,9 @@
           "notifications": {
             "$ref": "#/components/schemas/NotificationSettingsRead"
           },
+          "retention": {
+            "$ref": "#/components/schemas/RetentionSettingsRead"
+          },
           "security": {
             "$ref": "#/components/schemas/SecuritySettingsRead"
           },
@@ -5404,7 +5438,8 @@
           "sso",
           "business_hours",
           "branding",
-          "security"
+          "security",
+          "retention"
         ],
         "title": "WorkspaceSettingsRead",
         "type": "object"
@@ -8140,6 +8175,71 @@
           }
         ],
         "summary": "Update Notifications",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/api/v1/console/settings/retention": {
+      "patch": {
+        "operationId": "update_retention_api_v1_console_settings_retention_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Workspace-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetentionSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Retention",
         "tags": [
           "console"
         ]

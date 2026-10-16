@@ -201,6 +201,10 @@ export const api = {
   updateSecuritySettings: (token, body) =>
     request("/console/settings/security", { method: "PATCH", token, body }),
 
+  // Data retention
+  updateRetentionSettings: (token, body) =>
+    request("/console/settings/retention", { method: "PATCH", token, body }),
+
   // Live chat (console)
   chatSessions: (token, params = {}) =>
     request(`/console/chat/sessions${buildQuery(params)}`, { token }),

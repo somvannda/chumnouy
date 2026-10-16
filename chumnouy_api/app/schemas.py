@@ -533,6 +533,16 @@ class SecuritySettingsRead(BaseModel):
     ip_allowlist: list[str] = Field(default_factory=list)
 
 
+class RetentionSettingsRead(BaseModel):
+    """``days`` = how long resolved tickets are kept (0 = forever)."""
+
+    days: int = 0
+
+
+class RetentionSettingsUpdate(BaseModel):
+    days: int | None = Field(default=None, ge=0, le=3650)
+
+
 class SecuritySettingsUpdate(BaseModel):
     """``ip_allowlist`` entries are IPs or CIDR blocks; an empty list allows all."""
 
@@ -591,6 +601,7 @@ class WorkspaceSettingsRead(BaseModel):
     business_hours: BusinessHoursRead
     branding: BrandingRead
     security: SecuritySettingsRead
+    retention: RetentionSettingsRead
 
 
 class LocaleUpdate(BaseModel):
