@@ -193,6 +193,7 @@ class TicketRead(BaseModel):
     first_response_due_at: datetime | None = None
     resolution_due_at: datetime | None = None
     sla_breached_at: datetime | None = None
+    sentiment: str | None = None
 
 
 class TicketDetailRead(TicketRead):
@@ -952,6 +953,7 @@ class ReportSummary(BaseModel):
     by_priority: dict[str, int] = Field(default_factory=dict)
     by_assignee: dict[str, int] = Field(default_factory=dict)
     by_team: dict[str, int] = Field(default_factory=dict)
+    by_sentiment: dict[str, int] = Field(default_factory=dict)
     breached: int = 0
     sla_compliance: float | None = None
     avg_first_response_minutes: float | None = None

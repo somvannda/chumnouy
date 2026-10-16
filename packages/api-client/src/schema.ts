@@ -1002,6 +1002,8 @@ export interface ReportSummary {
   by_assignee?: Record<string, number>;
   /** By Priority */
   by_priority?: Record<string, number>;
+  /** By Sentiment */
+  by_sentiment?: Record<string, number>;
   /** By Status */
   by_status?: Record<string, number>;
   /** By Team */
@@ -1371,6 +1373,8 @@ export interface TicketDetailRead {
   resolution_due_at?: string | null;
   /** Resolved At */
   resolved_at?: string | null;
+  /** Sentiment */
+  sentiment?: string | null;
   /** Sla Breached At */
   sla_breached_at?: string | null;
   /** Status */
@@ -1446,6 +1450,8 @@ export interface TicketRead {
   resolution_due_at?: string | null;
   /** Resolved At */
   resolved_at?: string | null;
+  /** Sentiment */
+  sentiment?: string | null;
   /** Sla Breached At */
   sla_breached_at?: string | null;
   /** Status */
