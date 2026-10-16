@@ -339,10 +339,13 @@ Workspace-scoped; `tickets:read` / `tickets:write`. A trigger fires on an
 `event` (`ticket.created`, `ticket.replied`, `ticket.updated`) when its
 `conditions` match and runs its `actions` on the ticket:
 `conditions` = `[{field: status|priority|tag|subject, op: is|contains, value}]`;
-`actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team|notify, value}]`.
+`actions` = `[{type: set_status|set_priority|add_tag|remove_tag|set_team|notify|webhook, value}]`.
 Evaluated once per write, in `position` order; each application records a
 `trigger.applied` audit event. A `notify` action hands the ticket to Notifyr
-(`value` is `requester`, `agents`, or an email).
+(`value` is `requester`, `agents`, or an email). A `webhook` action calls a
+workspace webhook (`value` is its id) — the delivery is queued on the usual
+retry/backoff worker as an `action.webhook` event whose `data.source` names the
+trigger, so an action can fire a webhook that is not subscribed to ticket events.
 
 ## 20. Automations
 
@@ -357,7 +360,8 @@ Evaluated once per write, in `position` order; each application records a
 Workspace-scoped; `tickets:read` / `tickets:write`. After `after_minutes`, a
 ticket that is still open and matches `conditions` (the trigger DSL) runs
 `actions` **once** (tracked in `ticket_automations`); a `automation.applied`
-audit event is recorded. Actions include `notify` (hand off to Notifyr). Driven
+audit event is recorded. Actions include `notify` (hand off to Notifyr) and
+`webhook` (call a workspace webhook by id). Driven
 by the worker sweep.
 
 ## 22. Macros

@@ -67,8 +67,10 @@ implemented and tested.
 | Teams: console page (create, members, delete) + ticket team assignment (P2) | Done |
 | Per-team SLA policies; targets follow the ticket's team (P2) | Done |
 | Skills: member skills + ticket required skills; skill-aware routing (P3) | Done |
+| Custom webhook actions on triggers/automations (P3) | Done |
+| Custom webhook actions on triggers/automations (P3) | Done |
 | Migrations | `0001`…`0024` (`0024_skills`) |
-| Tests | 186 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
+| Tests | 189 API (in-memory SQLite, incl. an end-to-end journey) + 13 web (`node --test`) |
 
 Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and review.
 
@@ -79,7 +81,7 @@ Backlog complete (C1–C8, D1–D5). Remaining work is process: CI/merge and rev
 cd chumnouy_api
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest                       # 186 passing
+python -m pytest                       # 189 passing
 python -m ruff check app tests
 python scripts\export_openapi.py        # regenerate committed openapi.json
 python scripts\smoke_live.py            # live smoke vs the real DB (needs alembic upgrade head)

@@ -4545,7 +4545,8 @@
               "add_tag",
               "remove_tag",
               "set_team",
-              "notify"
+              "notify",
+              "webhook"
             ],
             "title": "Type",
             "type": "string"
