@@ -14,6 +14,7 @@ from app.deps import TenantContext, require_tenant_scopes
 from app.media import content_digest, kind_for, read_upload, store_image
 from app.schemas import AttachmentRead
 from app.services import attachments as svc
+from app.services import quota as quota_svc
 
 router = APIRouter(prefix="/uploads", tags=["attachments"])
 
@@ -34,6 +35,7 @@ async def upload_attachment(
     ``MAX_UPLOAD_BYTES``; at most 5 per message.
     """
     suffix, content = await read_upload(file)
+    await quota_svc.enforce_storage_quota(db, ctx.workspace, additional_bytes=len(content))
     url = store_image(content, suffix, ctx.workspace.id)
     return await svc.stage_attachment(
         db,
