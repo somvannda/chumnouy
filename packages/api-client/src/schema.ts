@@ -1317,6 +1317,10 @@ export interface TicketRead {
 export interface TicketUpdate {
   /** Assignee User Id */
   assignee_user_id?: string | null;
+  /** Clear Assignee */
+  clear_assignee?: boolean;
+  /** Clear Team */
+  clear_team?: boolean;
   /** Priority */
   priority?: "low" | "normal" | "high" | "urgent" | null;
   /** Status */

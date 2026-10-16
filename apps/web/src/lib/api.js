@@ -167,6 +167,17 @@ export const api = {
   updateBusinessHours: (token, body) =>
     request("/console/settings/business-hours", { method: "PATCH", token, body }),
 
+  // Teams
+  listTeams: (token) => request("/teams", { token }),
+  createTeam: (token, body) => request("/teams", { method: "POST", token, body }),
+  updateTeam: (token, teamId, body) =>
+    request(`/teams/${teamId}`, { method: "PATCH", token, body }),
+  deleteTeam: (token, teamId) => request(`/teams/${teamId}`, { method: "DELETE", token }),
+  addTeamMember: (token, teamId, body) =>
+    request(`/teams/${teamId}/members`, { method: "POST", token, body }),
+  removeTeamMember: (token, teamId, userId) =>
+    request(`/teams/${teamId}/members/${userId}`, { method: "DELETE", token }),
+
   // Members
   listMembers: (token) => request("/members", { token }),
   listInvites: (token) => request("/members/invites", { token }),

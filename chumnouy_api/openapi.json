@@ -4334,6 +4334,16 @@
             ],
             "title": "Assignee User Id"
           },
+          "clear_assignee": {
+            "default": false,
+            "title": "Clear Assignee",
+            "type": "boolean"
+          },
+          "clear_team": {
+            "default": false,
+            "title": "Clear Team",
+            "type": "boolean"
+          },
           "priority": {
             "anyOf": [
               {

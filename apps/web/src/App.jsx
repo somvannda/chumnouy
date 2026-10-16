@@ -19,6 +19,7 @@ import Members from "./pages/Members";
 import Reports from "./pages/Reports";
 import Requesters from "./pages/Requesters";
 import Signup from "./pages/Signup";
+import Teams from "./pages/Teams";
 import TicketView from "./pages/TicketView";
 import Triggers from "./pages/Triggers";
 import Settings from "./pages/Settings";
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/requesters" element={<Requesters />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/teams" element={<Teams />} />
         <Route path="/webhooks" element={<Webhooks />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<Audit />} />
