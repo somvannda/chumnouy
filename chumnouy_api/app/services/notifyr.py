@@ -25,6 +25,7 @@ TICKET_REPLIED = "ticket.replied"
 TICKET_MENTIONED = "ticket.mentioned"
 TICKET_RESOLVED = "ticket.resolved"
 TICKET_NOTIFIED = "ticket.notified"
+CHAT_REPLIED = "chat.replied"
 
 BACKOFF_SECONDS: tuple[int, ...] = (10, 60, 300, 1800)
 
@@ -89,6 +90,50 @@ async def enqueue(
         event=event,
         recipient=recipient,
         payload=_payload(event, workspace, ticket, recipient, variables),
+        status="pending",
+        attempts=0,
+        next_attempt_at=utcnow(),
+    )
+    db.add(record)
+    return record
+
+
+def _chat_payload(
+    event: str,
+    workspace: Workspace,
+    session,
+    recipient: str | None,
+    variables: dict | None,
+) -> dict:
+    merged = {"locale": (workspace.settings or {}).get("locale") or "en"}
+    merged.update(variables or {})
+    return {
+        "event": event,
+        "workspace": {"id": str(workspace.id), "slug": workspace.slug},
+        "chat": {"session_id": str(session.id), "status": session.status},
+        "recipient": recipient,
+        "variables": merged,
+    }
+
+
+async def enqueue_chat(
+    db: AsyncSession,
+    *,
+    workspace: Workspace,
+    session,
+    event: str = CHAT_REPLIED,
+    recipient: str | None = None,
+    variables: dict | None = None,
+) -> NotifyrEvent | None:
+    """Queue a live-chat hand-off (no ticket). No-op when Notifyr is unconfigured."""
+    if not is_configured(workspace):
+        return None
+    record = NotifyrEvent(
+        workspace_id=workspace.id,
+        ticket_id=None,
+        event=event,
+        recipient=recipient,
+        payload=_chat_payload(event, workspace, session, recipient, variables),
         status="pending",
         attempts=0,
         next_attempt_at=utcnow(),

@@ -395,10 +395,22 @@ Console only (JWT). Used for collision detection when two agents open a ticket.
 | `GET` | `/v1/console/chat/sessions/{id}` | Session + messages |
 | `POST` | `/v1/console/chat/sessions/{id}/messages` | Reply (agent) |
 | `POST` | `/v1/console/chat/sessions/{id}/close` | Close |
+| `GET` | `/v1/public/chat/sessions/{id}/stream` | SSE: agent replies (requester) |
+| `GET` | `/v1/console/chat/sessions/{id}/stream` | SSE: new messages (agent) |
 
-Polling v1 (the client re-fetches the session); an SSE/WebSocket transport can be
-added later. Requester sessions are reachable only with the matching portal
-token; a closed session rejects new requester messages with `409`.
+Both surfaces support polling (re-fetch the session) **and** SSE. The stream is
+deliberately **bounded** — it ends after `timeout` seconds (default 25, max 60)
+and the client reconnects — so it needs no pub/sub broker and behaves the same on
+one process or many. `after` (ISO-8601) catches the client up on messages it has
+not seen; the stream emits `ready`, then one `message` event per message, then
+`done`.
+
+An agent reply also queues a `chat.replied` hand-off for the requester through
+Notifyr (delivery stays Notifyr's job); the workspace must have Notifyr
+configured, and the requester needs an email.
+
+Requester sessions are reachable only with the matching portal token; a closed
+session rejects new requester messages with `409`.
 
 ## 25. Widget branding
 
