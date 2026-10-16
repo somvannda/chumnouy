@@ -90,7 +90,9 @@ Everything else depends on these; do first.
 - **i18n**: content locales exist; add a UI locale switch (en/km) and
   translatable notification templates (rendered by Notifyr). ✅ **backend done**
   (workspace locale via `/v1/console/settings/locale`, included in every Notifyr
-  event's variables); the console UI switch and per-string translation remain.
+  event's variables) and the **console shell switch done** (`lib/i18n.js` +
+  `I18nProvider`, EN/ខ្មែរ toggle in the header translating the navigation and
+  shell labels); page bodies and per-string translation remain.
 - **Quotas**: per-workspace limits (tickets/mo, seats, storage) enforced in
   middleware, surfaced in admin. ✅ **done for tickets/month**
   (`workspace.settings.quota.tickets_per_month`, enforced on the tenant and

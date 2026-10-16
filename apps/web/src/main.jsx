@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ThemeProvider } from "./components/ui";
 import { AuthProvider } from "./context/auth";
+import { I18nProvider } from "./context/i18n";
 import "./styles.css";
 
 class AppErrorBoundary extends React.Component {
@@ -41,11 +42,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AppErrorBoundary>
       <ThemeProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </BrowserRouter>
+        <I18nProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </BrowserRouter>
+        </I18nProvider>
       </ThemeProvider>
     </AppErrorBoundary>
   </React.StrictMode>,
